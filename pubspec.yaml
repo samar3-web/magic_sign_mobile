@@ -1,0 +1,40 @@
+name: magic_sign_mobile
+description: "A new Flutter project."
+
+publish_to: 'none' 
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  local_auth: ^1.1.6
+
+  cupertino_icons: ^1.0.6
+  animated_splash_screen: ^1.3.0
+  page_transition: ^2.1.0
+  google_fonts: ^6.2.1
+  flutter_svg: ^2.0.10+1
+  sizer: ^2.0.15
+  dart_format: ^0.0.2
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_launcher_icons: "^0.13.1"
+  flutter_lints: ^3.0.0
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.jpg"
+  background_color: "#ffffff"
+
+  
+flutter:
+
+  uses-material-design: true
+  assets:
+    - assets/images/
+
