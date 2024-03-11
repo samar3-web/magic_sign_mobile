@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:magic_sign_mobile/constants.dart';
-import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart'; // Import your home screen file
+import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart'; 
 
 late bool _passwordVisible;
 
@@ -35,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
         // Navigate to the home screen
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()), // Replace HomeScreen() with your actual home screen widget
+          MaterialPageRoute(builder: (context) => HomeScreen()), 
         );
       }
     } catch (e) {

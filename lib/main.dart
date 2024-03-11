@@ -20,6 +20,11 @@ class MyApp extends StatelessWidget {
         // scaffold default color
         scaffoldBackgroundColor: kPrimaryColor,
         primaryColor: kPrimaryColor,
+        appBarTheme: AppBarTheme(
+          color: boxColor,
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
         textTheme: GoogleFonts.sourceCodeProTextTheme(Theme.of(context).textTheme).apply().copyWith(
           // custom text for bodyText1
           bodyText1: TextStyle(

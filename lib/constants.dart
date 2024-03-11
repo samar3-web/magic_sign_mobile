@@ -4,8 +4,9 @@ import 'package:sizer/sizer.dart';
 
 const Color kTextBlackColor = Color(0xFF313131);
 const Color kSecondaryColor = Color.fromRGBO(141, 174, 62, 1.0);
+const Color kContainerColor = Color(0xFF777777);
 
-const Color kOtherColor = Color(0xFFF4F6F7);
+const Color kOtherColor = Color(0xFFFFFFFFF);
 const Color kTextWhiteColor = Color(0xFFFFFFFF);
 const Color kTextLightColor = Color(0xFFA5A5A5);
 const Color kErrorBorderColor = Color(0xFFE74C3C);
