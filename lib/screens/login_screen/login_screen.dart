@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:magic_sign_mobile/constants.dart';
-import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart'; 
+import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart';
+import 'package:magic_sign_mobile/screens/login_screen/loginController.dart';
 
 late bool _passwordVisible;
 
 class LoginScreen extends StatefulWidget {
   static String routeName = 'LoginScreen';
-
   const LoginScreen({Key? key});
 
   @override
@@ -16,6 +16,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final LocalAuthentication _localAuthentication = LocalAuthentication();
+  LoginController controller = LoginController();
 
   @override
   void initState() {
@@ -35,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
         // Navigate to the home screen
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()), 
+          MaterialPageRoute(builder: (context) => HomeScreen()),
         );
       }
     } catch (e) {
@@ -109,6 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             height: kDefaultPadding,
                           ),
                           TextFormField(
+                            controller: controller.username,
                             textAlign: TextAlign.start,
                             keyboardType: TextInputType.visiblePassword,
                             style: TextStyle(
@@ -135,6 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             height: kDefaultPadding,
                           ),
                           TextFormField(
+                            controller: controller.password,
                             obscureText: _passwordVisible,
                             textAlign: TextAlign.start,
                             keyboardType: TextInputType.emailAddress,
@@ -171,12 +174,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               ElevatedButton(
                                 onPressed: () {
-                                  // Handle simple sign in
+                                  controller.login();
                                 },
-                                child: Text('Sign in',
-                                        style :TextStyle(color: kSecondaryColor
-                                        ),
-
+                                child: Text(
+                                  'Sign in',
+                                  style: TextStyle(color: kSecondaryColor),
                                 ),
                               ),
                               SizedBox(height: kDefaultPadding),
@@ -192,8 +194,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               SizedBox(height: kDefaultPadding),
                               IconButton(
                                 onPressed: _authenticateWithFingerprint,
-                                icon: Icon(Icons.fingerprint, color: kSecondaryColor, size: 52
-                                ),
+                                icon: Icon(Icons.fingerprint,
+                                    color: kSecondaryColor, size: 52),
                               ),
                             ],
                           ),

@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/routes.dart';
 import 'package:magic_sign_mobile/screens/splash_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const HomeScreen());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class HomeScreen extends StatelessWidget {
+  
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
        debugShowCheckedModeBanner: false,
       title: 'Magic Sign Mobile',        
       theme: ThemeData.light().copyWith(
