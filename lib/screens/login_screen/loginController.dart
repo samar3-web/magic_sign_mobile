@@ -30,10 +30,21 @@ class LoginController extends GetxController {
       try {
         var data = jsonDecode(response.body);
         var accessToken = data['access_token'];
-        print(data);
+        var tokenType = data['token_type'];
+        var expirationDate = data['expires_in'];
+        print('**********response data *********');
         print(accessToken);
+        print(tokenType);
+        print(expirationDate);
+        print('**********response data *********');
+
         // Store access token securely using SharedPreferences
-        storeAccessToken(accessToken);
+        saveAccessToken(accessToken);
+        print(await getAccessToken());
+
+        // Affichez un snackbar pour indiquer que la connexion a réussi
+        Get.snackbar('Login Successful', 'Welcome!',
+            backgroundColor: Colors.green);
         Get.to(() => HomeScreen());
       } catch (error) {
         print("Parsing Error: $error");
@@ -41,14 +52,19 @@ class LoginController extends GetxController {
     } else {
       print("Login Failed");
       // Show error message to the user
-      // Get.snackbar("Login Failed", "Incorrect username or password");
+      // Affichez un snackbar pour indiquer que la connexion a échoué
+      Get.snackbar('Login Failed', 'Incorrect username or password',
+          backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
 
-  void storeAccessToken(String accessToken) async {
+  Future<void> saveAccessToken(String accessToken) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('access_token', accessToken);
-    print('Access token stored successfully');
+    
+      await prefs.setString('access_token', accessToken);
+      print('Access Token Saved: $accessToken');
+
+    
   }
 
   Future<String?> getAccessToken() async {
