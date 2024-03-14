@@ -40,7 +40,6 @@ class LoginController extends GetxController {
 
         // Store access token securely using SharedPreferences
         saveAccessToken(accessToken);
-        print(await getAccessToken());
 
         // Affichez un snackbar pour indiquer que la connexion a réussi
         Get.snackbar('Login Successful', 'Welcome!',
@@ -66,21 +65,7 @@ class LoginController extends GetxController {
 
     
   }
+  
 
-  Future<String?> getAccessToken() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString('access_token');
-  }
 
-  @override
-  void onInit() {
-    super.onInit();
-    // Check if access token is already stored during app initialization
-    getAccessToken().then((accessToken) {
-      if (accessToken != null && accessToken.isNotEmpty) {
-        // Access token exists, navigate to home screen directly
-        Get.off(() => HomeScreen());
-      }
-    });
-  }
 }

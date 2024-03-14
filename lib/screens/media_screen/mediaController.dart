@@ -16,7 +16,7 @@ class MediaController extends GetxController {
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('access_token');
-    print('Access Token: $accessToken'); // Print the access token
+    print('Access Token stored  ***********: $accessToken'); // Print the access token
     return accessToken;
   }
 
