@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -11,12 +12,15 @@ class MediaController extends GetxController {
 
   // Define isLoading property to handle loading state
   var isLoading = false.obs;
+  // Define mediaList to store fetched media data
+  var mediaList = <Media>[].obs;
 
   // Function to retrieve the access token from SharedPreferences
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('access_token');
-    print('Access Token stored  ***********: $accessToken'); // Print the access token
+    print(
+        'Access Token stored  ***********: $accessToken'); // Print the access token
     return accessToken;
   }
 
@@ -55,6 +59,8 @@ class MediaController extends GetxController {
         jsonData.forEach((element) {
           print(element.name);
         });
+        // Update mediaList with fetched data
+        mediaList.assignAll(jsonData);
       } else {
         // Handle error response
         print('Failed to load media. Status code: ${response.statusCode}');
@@ -77,4 +83,30 @@ class MediaController extends GetxController {
       isLoading(false);
     }
   }
+
+ Future<String> getImageUrl(String storedAs) async {
+    String? accessToken = await getAccessToken();
+
+    final response = await http.get(
+      Uri.parse('https://magic-sign.cloud/v_ar/web/MSlibrary/$storedAs'),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    print("Response Status Code: ${response.statusCode}");
+
+    // Check if the response status code is 200 and content-type is image/png
+    if (response.statusCode == 200 && response.headers['content-type'] == 'image/png') {
+      // Convert the response body from bytes to base64 string
+      Uint8List bytes = response.bodyBytes;
+      String base64String = base64Encode(bytes);
+      return base64String;
+    } else {
+      // Handle different error scenarios
+      throw Exception('Failed to load image URL: ${response.statusCode}');
+    }
+  }
+
+
 }
