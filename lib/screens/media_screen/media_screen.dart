@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/screens/media_screen/mediaController.dart';
+import 'package:magic_sign_mobile/screens/media_screen/media_details_dialog.dart';
 import 'package:magic_sign_mobile/screens/model/Media.dart';
 
 class MediaScreen extends StatefulWidget {
@@ -143,8 +144,16 @@ class GridViewUI extends StatelessWidget {
 
 class GridItem extends StatelessWidget {
   final Media media;
+  final int maxNameLength;
+  const GridItem({Key? key, required this.media,  this.maxNameLength = 20}) : super(key: key);
 
-  const GridItem({Key? key, required this.media}) : super(key: key);
+   String getShortenedName(String name) {
+    if (name.length <= maxNameLength) {
+      return name;
+    } else {
+      return name.substring(0, maxNameLength) + '...';
+    }
+  }
 
  String getFileType() {
     // Extract file extension from mediaType
@@ -161,7 +170,6 @@ class GridItem extends StatelessWidget {
       'ppt': 'powerpoint',
       'pptx': 'powerpoint',
       'video': 'video',
-      // Add more file extensions and types as needed
     };
 
     // Return corresponding file type
@@ -169,71 +177,100 @@ class GridItem extends StatelessWidget {
   }
 Future<String> getThumbnailUrl() async {
   String fileType = getFileType();
-  print('File type: $fileType'); // Add this line to check the value of fileType
+  print('File type: $fileType'); 
   if (fileType == 'image') {
     // Await the result of getImageUrl() since it's asynchronous
-    print('Media ID: ${media.mediaId}'); // Add this line to check the media ID
+    print('Media ID: ${media.mediaId}'); 
     return await MediaController().getImageUrl(media.storedAs);
   } else {
     switch (fileType) {
       case 'word':
-        return 'assets/images/word-logo.png'; // Change to the path of your word logo image
+        return 'assets/images/word-logo.png'; 
       case 'pdf':
-        return 'assets/images/pdf-logo.png'; // Change to the path of your pdf logo image
+        return 'assets/images/pdf-logo.png'; 
       case 'excel':
-        return 'assets/images/excel-logo.png'; // Change to the path of your excel logo image
+        return 'assets/images/excel-logo.png'; 
       case 'powerpoint':
-        return 'assets/images/pp-logo.png'; // Change to the path of your powerpoint logo image
+        return 'assets/images/pp-logo.png'; 
       case 'video':
-        return 'assets/images/video-logo.png'; // Change to the path of your video logo image
+        return 'assets/images/video-logo.png'; 
       default:
-        return 'assets/images/default.png'; // Change to the path of your default logo image
+        return 'assets/images/default.png'; 
     }
   }
 }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<String>(
-      future: getThumbnailUrl(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else {
-          String thumbnailUrl = snapshot.data!;
-          return Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.3),
-                  spreadRadius: 2,
-                  blurRadius: 5,
-                  offset: Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Center(
-              child: getFileType() == 'image'
-                  ? Image.network(
-                      "https://magic-sign.cloud/v_ar/web/MSlibrary/${media.storedAs}",
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                    )
-                  : Image.asset(
-                      thumbnailUrl,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                    ),
-            ),
-          );
-        }
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return MediaDetailsDialog(media: media);
+          },
+        );
       },
+      child: FutureBuilder<String>(
+        future: getThumbnailUrl(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            String thumbnailUrl = snapshot.data!;
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.3),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Container(
+                      width: double.infinity,
+                      height: 150, // Adjust the height as needed
+                      child: getFileType() == 'image'
+                          ? Image.network(
+                              "https://magic-sign.cloud/v_ar/web/MSlibrary/${media.storedAs}",
+                              fit: BoxFit.cover,
+                            )
+                          : Image.asset(
+                              thumbnailUrl,
+                              fit: BoxFit.cover,
+                            ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      getShortenedName(media.name), 
+                      textAlign: TextAlign.center,
+                      maxLines: 1, 
+                      overflow: TextOverflow.ellipsis, 
+                      style: TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+        },
+      ),
     );
   }
 }
