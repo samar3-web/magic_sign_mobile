@@ -28,8 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       bool isAuthenticated = await _localAuthentication.authenticate(
         localizedReason: 'Authenticate to login',
-        useErrorDialogs: true,
-        stickyAuth: true,
+        
       );
 
       if (isAuthenticated) {

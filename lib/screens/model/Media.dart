@@ -6,6 +6,7 @@ class Media {
   final String storedAs;
   final String duration;
   final String owner;
+  final String retired;
   Media._({
     required this.mediaId,
     required this.ownerId,
@@ -13,7 +14,8 @@ class Media {
     required this.name,
     required this.storedAs,
     required this.duration,
-    required  this.owner,
+    required this.owner,
+    required this.retired,
   });
 
   factory Media.fromJson(Map<String, dynamic> json) => Media._(
@@ -23,7 +25,7 @@ class Media {
       mediaType: json['mediaType'],
       storedAs: json['storedAs'],
       duration: json['duration'].toString(),
-      owner: json['owner']
+      owner: json['owner'],
+      retired : json['retired'].toString()
       );
-      
 }

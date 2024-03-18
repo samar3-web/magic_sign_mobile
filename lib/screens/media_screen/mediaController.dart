@@ -84,7 +84,7 @@ class MediaController extends GetxController {
     }
   }
 
- Future<String> getImageUrl(String storedAs) async {
+  Future<String> getImageUrl(String storedAs) async {
     String? accessToken = await getAccessToken();
 
     final response = await http.get(
@@ -95,18 +95,67 @@ class MediaController extends GetxController {
     );
 
     print("Response Status Code: ${response.statusCode}");
-
-    // Check if the response status code is 200 and content-type is image/png
-    if (response.statusCode == 200 && response.headers['content-type'] == 'image/png') {
+    if (response.statusCode == 200 &&
+        response.headers['content-type'] == 'image/png') {
       // Convert the response body from bytes to base64 string
       Uint8List bytes = response.bodyBytes;
       String base64String = base64Encode(bytes);
       return base64String;
     } else {
-      // Handle different error scenarios
       throw Exception('Failed to load image URL: ${response.statusCode}');
     }
   }
+/*
+  Future<void> editMedia(int mediaId, String name, String duration, String retired) async {
 
+  final url = Uri.parse('https://magic-sign.cloud/v_ar/web/api/library/$mediaId');
+  
+  final response = await http.put(
+    url,
+    body: {
+      'name': name,
+      'duration': duration.toString(),
+      'retired': retired.toString(),
+     
+    },
+  );
 
+  if (response.statusCode == 200) {
+    // Media item edited successfully
+    print('Media item edited successfully');
+  } else {
+    // Error occurred
+    print('Error editing media item: ${response.statusCode}');
+  }
+}*/
+
+  updateMediaData(
+      int mediaId, String name, String duration, String retired) async {
+    try {
+      Map<String, dynamic> body = {
+        'name': name,
+        'duration': duration.toString(),
+        'retired': retired.toString(),
+      };
+      String? accessToken = await getAccessToken();
+
+      http.Response response = await http.put(
+        Uri.parse('https://magic-sign.cloud/v_ar/web/api/library/$mediaId'),
+        body: body,
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      );
+      print(response.statusCode);
+      print(response.body);
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+      } else {
+        print('response status code not 200');
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
 }

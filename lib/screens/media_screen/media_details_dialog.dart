@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:magic_sign_mobile/screens/media_screen/ModifyDialog.dart';
 import 'package:magic_sign_mobile/screens/model/Media.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:video_player/video_player.dart';
-
 class MediaDetailsDialog extends StatefulWidget {
   final Media media;
 
@@ -53,12 +54,14 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
         }
       });
 
-    } else {
+    
+  } else {
       // Handle the case when the media type is not video
       setState(() {
         _isControllerInitialized = false;
         _playButton = null;
         _pauseButton = null;
+        
       });
     }
     super.initState();
@@ -90,12 +93,22 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
                       child: CircularProgressIndicator(),
                     ),
             ),
+          
           if (_isControllerInitialized == true &&
               widget.media.mediaType == "video")
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [_playButton!, _pauseButton!],
             ),
+            if (widget.media.mediaType.toLowerCase() == 'pdf')
+              Container(
+                width: 300, 
+                height: 250, 
+                child: SfPdfViewer.network(
+                  "https://magic-sign.cloud/v_ar/web/MSlibrary/${widget.media.storedAs}",
+                ),
+              ),
+
           Text('Name: ${widget.media.name}'),
           Text('Type: ${widget.media.mediaType}'),
           Text('Duration: ${widget.media.duration}'),
@@ -105,10 +118,27 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
       actions: [
         TextButton(
           onPressed: () {
-            Navigator.of(context).pop(); // Close the dialog
+            Navigator.of(context).pop(); 
           },
           child: Text('Close'),
         ),
+      ElevatedButton(
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) => ModifyDialog(media: widget.media),
+            );
+          },
+          child: Text('Modifier'),
+        ),
+
+      ElevatedButton(
+      onPressed: () {
+        // Add your delete action logic here
+      },
+      child: Text('Supprimer'),
+    ),
+      
       ],
     );
   }

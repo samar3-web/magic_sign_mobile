@@ -15,6 +15,10 @@ class MediaScreen extends StatefulWidget {
 
 class _MediaScreenState extends State<MediaScreen> {
   final MediaController mediaController = Get.put(MediaController());
+    Future<void> _refreshMedia() async {
+    // Fetch media data when the screen initializes
+    await mediaController.getMedia();
+  }
 
   @override
   void initState() {
@@ -36,7 +40,9 @@ class _MediaScreenState extends State<MediaScreen> {
         backgroundColor: kSecondaryColor,
         child: Icon(Icons.add),
       ),
-      body: Column(
+      body: RefreshIndicator(
+                onRefresh: _refreshMedia,
+child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -113,6 +119,7 @@ class _MediaScreenState extends State<MediaScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }
