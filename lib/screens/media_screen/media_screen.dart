@@ -50,8 +50,10 @@ child: Column(
               children: [
                 Expanded(
                   child: TextField(
-                    //controller: searchController,
+                    style: TextStyle(fontSize: 16.0),
+
                     decoration: InputDecoration(
+                      
                       hintText: 'Search...',
                       hintStyle: TextStyle(color: boxColor),
                       prefixIcon: Icon(Icons.search),
@@ -59,7 +61,7 @@ child: Column(
                     
                     ),
                     onChanged: (value) {
-                     // mediaController.search(value);
+                      mediaController.searchMedia(value);
                     },
                   ),
                 ),
@@ -75,7 +77,7 @@ child: Column(
                   onChanged: (String? newValue) {
                     setState(() {
                       //selectedType = newValue!;
-                      //mediaController.filterByType(selectedType);
+                      mediaController.filterByType(newValue!);
                     });
                   },
                   items: <String>['Image', 'PDF', 'Word', 'Excel', 'PowerPoint', 'Video']
@@ -93,10 +95,10 @@ child: Column(
                   onChanged: (String? newValue) {
                     setState(() {
                       //selectedProperty = newValue!;
-                     // mediaController.filterByProperty(selectedProperty);
+                      mediaController.filterByOwner(newValue!);
                     });
                   },
-                  items: <String>['Property A', 'Property B', 'Property C']
+                  items: <String>['ADMIN', 'SUPERADMIN']
                       .map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
@@ -168,6 +170,7 @@ class GridItem extends StatelessWidget {
 
     // Map file extensions to corresponding types
     Map<String, String> fileTypes = {
+      'jpg' : 'image',
       'image': 'image',
       'pdf': 'pdf',
       'doc': 'word',

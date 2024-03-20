@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:magic_sign_mobile/screens/media_screen/DeleteDialog.dart';
 import 'package:magic_sign_mobile/screens/media_screen/ModifyDialog.dart';
 import 'package:magic_sign_mobile/screens/model/Media.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
@@ -116,28 +117,42 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
         ],
       ),
       actions: [
-        TextButton(
+        
+          ElevatedButton(
+          onPressed: () {
+            
+          },
+          child: Text('Ajouter à la playlist'),
+        ),
+   SingleChildScrollView(
+  scrollDirection: Axis.horizontal,
+  child: Row(
+    children: [
+      ElevatedButton(
+        onPressed: () => showDialog(
+          context: context,
+          builder: (context) => ModifyDialog(media: widget.media),
+        ),
+        child: Text('Modifier'),
+      ),
+      ElevatedButton(
+        onPressed: () => showDialog(
+          context: context,
+          builder: (context) => DeleteDialog(media: widget.media),
+        ),
+        child: Text('Supprimer'),
+      ),
+    ],
+  ),
+),
+
+
+    TextButton(
           onPressed: () {
             Navigator.of(context).pop(); 
           },
           child: Text('Close'),
         ),
-      ElevatedButton(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) => ModifyDialog(media: widget.media),
-            );
-          },
-          child: Text('Modifier'),
-        ),
-
-      ElevatedButton(
-      onPressed: () {
-        // Add your delete action logic here
-      },
-      child: Text('Supprimer'),
-    ),
       
       ],
     );

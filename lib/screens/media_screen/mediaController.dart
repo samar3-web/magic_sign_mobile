@@ -14,6 +14,7 @@ class MediaController extends GetxController {
   var isLoading = false.obs;
   // Define mediaList to store fetched media data
   var mediaList = <Media>[].obs;
+  var originalMediaList = <Media>[].obs;
 
   // Function to retrieve the access token from SharedPreferences
   Future<String?> getAccessToken() async {
@@ -95,8 +96,7 @@ class MediaController extends GetxController {
     );
 
     print("Response Status Code: ${response.statusCode}");
-    if (response.statusCode == 200 &&
-        response.headers['content-type'] == 'image/png') {
+    if (response.statusCode == 200) {
       // Convert the response body from bytes to base64 string
       Uint8List bytes = response.bodyBytes;
       String base64String = base64Encode(bytes);
@@ -105,29 +105,6 @@ class MediaController extends GetxController {
       throw Exception('Failed to load image URL: ${response.statusCode}');
     }
   }
-/*
-  Future<void> editMedia(int mediaId, String name, String duration, String retired) async {
-
-  final url = Uri.parse('https://magic-sign.cloud/v_ar/web/api/library/$mediaId');
-  
-  final response = await http.put(
-    url,
-    body: {
-      'name': name,
-      'duration': duration.toString(),
-      'retired': retired.toString(),
-     
-    },
-  );
-
-  if (response.statusCode == 200) {
-    // Media item edited successfully
-    print('Media item edited successfully');
-  } else {
-    // Error occurred
-    print('Error editing media item: ${response.statusCode}');
-  }
-}*/
 
   updateMediaData(
       int mediaId, String name, String duration, String retired) async {
@@ -157,5 +134,103 @@ class MediaController extends GetxController {
     } catch (e) {
       print(e);
     }
+  }
+
+  deleteMedia(int mediaId) async {
+    try {
+      Map<String, dynamic> body = {'forceDelete': '1'};
+      String? accessToken = await getAccessToken();
+      http.Response response = await http.delete(
+        Uri.parse('https://magic-sign.cloud/v_ar/web/api/library/$mediaId'),
+        body: body,
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      );
+      print(response.statusCode);
+      print(response.body);
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        print('deleted');
+        Get.snackbar('Supression', ' Le média a été supprimé.',
+            backgroundColor: Colors.green);
+      } else {
+        print('response status code not 200');
+      }
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+  //search
+  Future<void> searchMedia(String value) async {
+    try {
+      isLoading(true);
+
+      String? accessToken = await getAccessToken();
+      if (accessToken == null) {
+        Get.snackbar(
+          "Error",
+          "Access token not available. Please log in again.",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      final response = await http.get(
+        Uri.parse('$apiUrl?media=$value'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        var jsonData = (json.decode(response.body) as List)
+            .map((e) => Media.fromJson(e))
+            .toList();
+
+        print(jsonData);
+        mediaList.assignAll(jsonData);
+        originalMediaList.assignAll(jsonData);
+      } else {
+        print('Failed to search media. Status code: ${response.statusCode}');
+        Get.snackbar(
+          "Error",
+          "Failed to search media. Status code: ${response.statusCode}",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    } catch (e) {
+      print('Error searching media: $e');
+      Get.snackbar(
+        "Error",
+        "Error searching media. Please try again later.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  //filter
+
+  void filterByType(String type) {
+    String lowercaseType = type.toLowerCase();
+    var filteredMediaList = originalMediaList
+        .where((media) => media.mediaType.toLowerCase() == lowercaseType)
+        .toList();
+    mediaList.assignAll(filteredMediaList);
+  }
+
+  void filterByOwner(String owner) {
+    String lowercaseOwner = owner.toLowerCase();
+    var filteredMediaList = originalMediaList
+        .where((media) => media.owner.toLowerCase() == lowercaseOwner)
+        .toList();
+    mediaList.assignAll(filteredMediaList);
   }
 }
