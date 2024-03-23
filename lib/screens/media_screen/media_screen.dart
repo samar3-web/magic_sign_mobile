@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
@@ -16,14 +19,12 @@ class MediaScreen extends StatefulWidget {
 class _MediaScreenState extends State<MediaScreen> {
   final MediaController mediaController = Get.put(MediaController());
     Future<void> _refreshMedia() async {
-    // Fetch media data when the screen initializes
     await mediaController.getMedia();
   }
 
   @override
   void initState() {
     super.initState();
-    // Fetch media data when the screen initializes
     mediaController.getMedia();
   }
 
@@ -33,9 +34,13 @@ class _MediaScreenState extends State<MediaScreen> {
       appBar: AppBar(
         title: Text('Media Screen'),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Handle add button tap
+     floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          // Call function to select and upload files
+          List<File> pickedFiles = await _selectFiles();
+          if (pickedFiles.isNotEmpty) {
+            mediaController.uploadFiles(pickedFiles);
+          }
         },
         backgroundColor: kSecondaryColor,
         child: Icon(Icons.add),
@@ -73,10 +78,8 @@ child: Column(
             child: Row(
               children: [
                 DropdownButton<String>(
-                  //value: selectedType,
                   onChanged: (String? newValue) {
                     setState(() {
-                      //selectedType = newValue!;
                       mediaController.filterByType(newValue!);
                     });
                   },
@@ -91,10 +94,8 @@ child: Column(
                 ),
                 SizedBox(width: 10),
                 DropdownButton<String>(
-                  //value: selectedProperty,
                   onChanged: (String? newValue) {
                     setState(() {
-                      //selectedProperty = newValue!;
                       mediaController.filterByOwner(newValue!);
                     });
                   },
@@ -127,6 +128,23 @@ child: Column(
   }
 
 }
+
+Future<List<File>> _selectFiles() async {
+  FilePickerResult? results = await FilePicker.platform.pickFiles(
+    allowMultiple: true,
+    type: FileType.custom,
+    allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+  );
+
+  if (results != null) {
+    return results.files.map((file) => File(file.path!)).toList();
+  } else {
+    return [];
+  }
+}
+
+
+
 
 class GridViewUI extends StatelessWidget {
   final List<Media> mediaList;
@@ -250,7 +268,7 @@ Future<String> getThumbnailUrl() async {
                   Expanded(
                     child: Container(
                       width: double.infinity,
-                      height: 150, // Adjust the height as needed
+                      height: 150, 
                       child: getFileType() == 'image'
                           ? Image.network(
                               "https://magic-sign.cloud/v_ar/web/MSlibrary/${media.storedAs}",
@@ -267,7 +285,7 @@ Future<String> getThumbnailUrl() async {
                     child: Text(
                       getShortenedName(media.name), 
                       textAlign: TextAlign.center,
-                      maxLines: 1, 
+                      maxLines: 2, 
                       overflow: TextOverflow.ellipsis, 
                       style: TextStyle(
                         fontSize: 16.0,
