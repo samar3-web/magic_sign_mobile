@@ -46,8 +46,8 @@ class _MediaScreenState extends State<MediaScreen> {
         child: Icon(Icons.add),
       ),
       body: RefreshIndicator(
-                onRefresh: _refreshMedia,
-child: Column(
+      onRefresh: _refreshMedia,
+      child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
