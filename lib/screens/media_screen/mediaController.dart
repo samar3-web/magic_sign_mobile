@@ -63,6 +63,7 @@ class MediaController extends GetxController {
         });
         // Update mediaList with fetched data
         mediaList.assignAll(jsonData);
+        originalMediaList.assignAll(jsonData);
       } else {
         // Handle error response
         print('Failed to load media. Status code: ${response.statusCode}');
@@ -106,32 +107,34 @@ class MediaController extends GetxController {
       throw Exception('Failed to load image URL: ${response.statusCode}');
     }
   }
-Future<void> uploadFiles(List<File> files) async {
-  try {
-    String? accessToken = await getAccessToken();
-     
-    for (File file in files) {
-      var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
-      
-      // Add file to form data
-      request.files.add(await http.MultipartFile.fromPath('files', file.path));
-      
-      // Set authorization header
-      request.headers['Authorization'] = 'Bearer $accessToken';
-      
-      // Send request
-      var response = await request.send();
-      
-      if (response.statusCode == 200) {
-        print('File uploaded successfully');
-      } else {
-        print('File upload failed');
+
+  Future<void> uploadFiles(List<File> files) async {
+    try {
+      String? accessToken = await getAccessToken();
+
+      for (File file in files) {
+        var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
+
+        // Add file to form data
+        request.files
+            .add(await http.MultipartFile.fromPath('files', file.path));
+
+        // Set authorization header
+        request.headers['Authorization'] = 'Bearer $accessToken';
+
+        // Send request
+        var response = await request.send();
+
+        if (response.statusCode == 200) {
+          print('File uploaded successfully');
+        } else {
+          print('File upload failed');
+        }
       }
+    } catch (e) {
+      print('Error uploading files: $e');
     }
-  } catch (e) {
-    print('Error uploading files: $e');
   }
-}
 
   updateMediaData(
       int mediaId, String name, String duration, String retired) async {
