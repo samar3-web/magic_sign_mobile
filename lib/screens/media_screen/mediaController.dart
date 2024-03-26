@@ -56,7 +56,6 @@ class MediaController extends GetxController {
         var jsonData = (json.decode(response.body) as List)
             .map((e) => Media.fromJson(e))
             .toList();
-        // You can process the jsonData as per your requirement
         // print(jsonData);
         jsonData.forEach((element) {
           print(element.name);
@@ -82,7 +81,6 @@ class MediaController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
-      // Set isLoading to false after request completes (whether success or failure)
       isLoading(false);
     }
   }
