@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/screens/media_screen/mediaController.dart';
 import 'package:magic_sign_mobile/screens/model/Playlist.dart';
 import 'package:magic_sign_mobile/screens/playlist/playlistController.dart';
@@ -17,17 +20,14 @@ class PlaylistDetail extends StatefulWidget {
 class _PlaylistDetail extends State<PlaylistDetail> {
   final MediaController mediaController = Get.put(MediaController());
   final PlaylistController playlistController = Get.put(PlaylistController());
-  late Playlist playlist;
   bool _showScrollIndicator = false;
+late Playlist? playlist;
 
   @override
   void initState() {
     super.initState();
-    
     // Fetch media data for the playlist
     mediaController.getMedia();
-    
-    // Fetch the playlist asynchronously
     _fetchPlaylist();
   }
 
@@ -36,7 +36,9 @@ class _PlaylistDetail extends State<PlaylistDetail> {
     await playlistController.getPlaylist();
     setState(() {
       // Assign the playlist when it's fetched
-      playlist = playlistController.playlistList.first;
+      playlist = playlistController.playlistList.isNotEmpty
+          ? playlistController.playlistList.first
+          : null;
     });
   }
 
@@ -75,37 +77,42 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                       child: CircularProgressIndicator(),
                     )
                   : Align(
-                      alignment: Alignment.topCenter,
+                      alignment: Alignment.bottomRight,
                       child: Column(
                         children: [
-                          SizedBox(height: 20), // Add spacing between eye icon and grid view
+                          SizedBox(height: 8),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              Icon(Icons.visibility, color: Colors.grey), // Eye icon
-                              SizedBox(width: 10), // Add spacing between eye icon and playlist duration
+                              Icon(Icons.visibility, color: Colors.grey),
+                              SizedBox(width: 5),
                               Text(
-                                'Duration : ${formatDuration(playlist.duration)}', // Replace with actual playlist duration
+                                'Duration : ${formatDuration(playlist!.duration)}',
                                 style: TextStyle(color: Colors.grey),
                               ),
                             ],
                           ),
-                          SizedBox(height: 10), // Add spacing between eye icon and grid view
                           SizedBox(
-                            height: MediaQuery.of(context).size.height / 2,
+                              height:
+                                  5), 
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height / 2.5,
                             child: GridView.builder(
                               padding: EdgeInsets.all(16.0),
                               scrollDirection: Axis.horizontal,
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
-                                crossAxisSpacing: 8.0,
-                                mainAxisSpacing: 8.0,
+                                crossAxisSpacing: 6.0,
+                                mainAxisSpacing: 10.0,
+                                childAspectRatio: 1.0,
                               ),
                               itemCount: mediaController.mediaList.length,
                               itemBuilder: (context, index) {
                                 Media media = mediaController.mediaList[index];
                                 return Container(
-                                  width: MediaQuery.of(context).size.width / 3 - 16,
+                                  width: MediaQuery.of(context).size.width / 3 -
+                                      16,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(12.0),
@@ -118,7 +125,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                       ),
                                     ],
                                   ),
-                                  child: Center(
+                                 child: Center(
                                     child: Text(
                                       media.name,
                                       style: TextStyle(color: Colors.black),
@@ -128,6 +135,35 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                               },
                             ),
                           ),
+                          // Add the text timeline here
+                          SizedBox(height: 5),
+                          Text(
+                            'Timeline',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: kSecondaryColor,
+                            ),
+                          ),
+                          SizedBox(height:5),
+                          Row(
+                            children: [
+                          Container(
+                            alignment: Alignment.bottomLeft,
+                          width: 150, 
+                          height: 70, 
+                          decoration: BoxDecoration(
+                            color: kSecondaryColor, 
+                            border: Border.all(
+                              color: kSecondaryColor, 
+                              width: 2, 
+                            ),
+                            borderRadius: BorderRadius.circular(10), 
+                          ),
+                        ),
+                            ],
+                          ),
+
                         ],
                       ),
                     ),

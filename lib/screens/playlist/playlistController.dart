@@ -71,4 +71,42 @@ class PlaylistController extends GetxController {
     } finally {
     }
   }
+
+  Future<void> assignPlaylist(List<int> mediaIds, int playlistId) async {
+    try {
+      String? accessToken = await getAccessToken();
+      if (accessToken == null) {
+        Get.snackbar(
+          "Error",
+          "Access token not available. Please log in again.",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+       Map<String, dynamic> body = {
+      "media": mediaIds,
+     
+    };      
+      final url = Uri.parse('https://magic-sign.cloud/v_ar/web/api/playlist/library/assign/$playlistId?playlistId=$playlistId');
+
+      // Envoyer la requête POST
+      final response = await http.post(
+        url,body: body,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print('Playlist assigned successfully');
+      } else {
+        print('Failed to assign playlist. Status code: ${response.statusCode}');
+        throw Exception('Failed to assign playlist');
+      }
+    } catch (e) {
+      
+      print('Error assigning playlist: $e');
+    }
+  }
 }
