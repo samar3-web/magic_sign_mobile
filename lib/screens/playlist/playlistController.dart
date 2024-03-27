@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class PlaylistController extends GetxController {
-  final String apiUrl = "https://magic-sign.cloud/v_ar/web/api/layout";
+  final String apiUrl = "https://magic-sign.cloud/v_ar/web/api/layout?embed=regions,playlists";
   var playlistList = <Playlist>[].obs;
 
   Future<String?> getAccessToken() async {

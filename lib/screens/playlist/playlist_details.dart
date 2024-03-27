@@ -21,7 +21,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
   final MediaController mediaController = Get.put(MediaController());
   final PlaylistController playlistController = Get.put(PlaylistController());
   bool _showScrollIndicator = false;
-late Playlist? playlist;
+  //late Playlist? playlist;
 
   @override
   void initState() {
@@ -34,12 +34,12 @@ late Playlist? playlist;
   // Method to fetch the playlist asynchronously
   Future<void> _fetchPlaylist() async {
     await playlistController.getPlaylist();
-    setState(() {
+    /*setState(() {
       // Assign the playlist when it's fetched
       playlist = playlistController.playlistList.isNotEmpty
           ? playlistController.playlistList.first
           : null;
-    });
+    });*/
   }
 
   String formatDuration(String durationString) {
@@ -87,7 +87,7 @@ late Playlist? playlist;
                               Icon(Icons.visibility, color: Colors.grey),
                               SizedBox(width: 5),
                               Text(
-                                'Duration : ${formatDuration(playlist!.duration)}',
+                                'Duration : 00:00:10',
                                 style: TextStyle(color: Colors.grey),
                               ),
                             ],
