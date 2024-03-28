@@ -6,20 +6,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class PlaylistController extends GetxController {
-  final String apiUrl = "https://magic-sign.cloud/v_ar/web/api/layout?embed=regions,playlists";
+  final String apiUrl =
+      "https://magic-sign.cloud/v_ar/web/api/layout?embed=regions,playlists";
   var playlistList = <Playlist>[].obs;
 
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('access_token');
     print(
-        'Access Token stored  ***********: $accessToken'); // Print the access token
+        'Access Token stored  *********: $accessToken'); // Print the access token
     return accessToken;
   }
 
   Future<void> getPlaylist() async {
     try {
-
       String? accessToken = await getAccessToken();
       if (accessToken == null) {
         // Handle case when access token is not available
@@ -47,7 +47,7 @@ class PlaylistController extends GetxController {
         // You can process the jsonData as per your requirement
         // print(jsonData);
         jsonData.forEach((element) {
-         print(element.layout);
+          print(element.layout);
         });
         // Update mediaList with fetched data
         playlistList.assignAll(jsonData);
@@ -68,45 +68,43 @@ class PlaylistController extends GetxController {
         "Error fetching playlist. Please try again later.",
         snackPosition: SnackPosition.BOTTOM,
       );
-    } finally {
-    }
+    } finally {}
   }
 
   Future<void> assignPlaylist(List<int> mediaIds, int playlistId) async {
-    try {
-      String? accessToken = await getAccessToken();
-      if (accessToken == null) {
-        Get.snackbar(
-          "Error",
-          "Access token not available. Please log in again.",
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return;
-      }
-       Map<String, dynamic> body = {
-      "media": mediaIds,
-     
-    };      
-      final url = Uri.parse('https://magic-sign.cloud/v_ar/web/api/playlist/library/assign/$playlistId?playlistId=$playlistId');
-
-      // Envoyer la requête POST
-      final response = await http.post(
-        url,body: body,
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': 'Bearer $accessToken',
-        },
+  try {
+    String? accessToken = await getAccessToken();
+    if (accessToken == null) {
+      Get.snackbar(
+        "Error",
+        "Access token not available. Please log in again.",
+        snackPosition: SnackPosition.BOTTOM,
       );
-
-      if (response.statusCode == 200) {
-        print('Playlist assigned successfully');
-      } else {
-        print('Failed to assign playlist. Status code: ${response.statusCode}');
-        throw Exception('Failed to assign playlist');
-      }
-    } catch (e) {
-      
-      print('Error assigning playlist: $e');
+      return;
     }
+
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('https://magic-sign.cloud/v_ar/web/api/playlist/library/assign/$playlistId'),
+    );
+
+    request.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+    request.headers['Authorization'] = 'Bearer $accessToken';
+
+    for (int mediaId in mediaIds) {
+      request.fields['media[]'] = mediaId.toString();
+    }
+
+    final response = await request.send();
+
+    if (response.statusCode == 200) {
+      print('Playlist assigned successfully');
+    } else {
+      print('Failed to assign playlist. Status code: ${response.statusCode}');
+      throw Exception('Failed to assign playlist');
+    }
+  } catch (e) {
+    print('Error assigning playlist: $e');
   }
+}
 }

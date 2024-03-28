@@ -10,9 +10,9 @@ import 'package:magic_sign_mobile/screens/playlist/playlistController.dart';
 import '../model/Media.dart';
 
 class PlaylistDetail extends StatefulWidget {
-  const PlaylistDetail({Key? key}) : super(key: key);
+  const PlaylistDetail({Key? key, required this.playlist}) : super(key: key);
   static const String routeName = 'PlaylistDetail';
-
+  final Playlist playlist;
   @override
   State<PlaylistDetail> createState() => _PlaylistDetail();
 }
@@ -21,7 +21,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
   final MediaController mediaController = Get.put(MediaController());
   final PlaylistController playlistController = Get.put(PlaylistController());
   bool _showScrollIndicator = false;
-  //late Playlist? playlist;
+
 
   @override
   void initState() {
@@ -80,7 +80,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                       alignment: Alignment.bottomRight,
                       child: Column(
                         children: [
-                          SizedBox(height: 8),
+                          SizedBox(height: 5),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
@@ -100,8 +100,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                             child: GridView.builder(
                               padding: EdgeInsets.all(16.0),
                               scrollDirection: Axis.horizontal,
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
                                 crossAxisSpacing: 6.0,
                                 mainAxisSpacing: 10.0,
@@ -110,30 +109,41 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                               itemCount: mediaController.mediaList.length,
                               itemBuilder: (context, index) {
                                 Media media = mediaController.mediaList[index];
-                                return Container(
-                                  width: MediaQuery.of(context).size.width / 3 -
-                                      16,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12.0),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.3),
-                                        spreadRadius: 2,
-                                        blurRadius: 5,
-                                        offset: Offset(0, 3),
+                                return InkWell(
+                                  onTap: () {
+                                    //handle Media Pressed
+                                     print("media pressed");
+                                    print( "playlistId: ");
+                                     print( widget.playlist.regions[0].playlists[0].playlistId);
+                                     print( "media: ");
+                                     print( media.mediaId);
+                                    playlistController.assignPlaylist([media.mediaId],widget.playlist.regions[0].playlists[0].playlistId);
+                                  },
+                                  child: Container(
+                                    width: MediaQuery.of(context).size.width / 3 - 16,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(12.0),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withOpacity(0.3),
+                                          spreadRadius: 2,
+                                          blurRadius: 5,
+                                          offset: Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        media.name,
+                                        style: TextStyle(color: Colors.black),
                                       ),
-                                    ],
-                                  ),
-                                 child: Center(
-                                    child: Text(
-                                      media.name,
-                                      style: TextStyle(color: Colors.black),
                                     ),
                                   ),
                                 );
                               },
-                            ),
+                            )
+
                           ),
                           // Add the text timeline here
                           SizedBox(height: 5),

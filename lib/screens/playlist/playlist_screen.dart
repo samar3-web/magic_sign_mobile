@@ -32,7 +32,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   }
 
   void _navigateToDetailScreen(Playlist playlist) {
-    Get.to(() => PlaylistDetail(), arguments: playlist);
+    Get.to(() => PlaylistDetail(playlist: playlist), arguments: playlist);
   }
 
   @override

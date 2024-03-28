@@ -1,7 +1,7 @@
-
 import 'package:flutter/material.dart';
 import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart';
 import 'package:magic_sign_mobile/screens/media_screen/media_screen.dart';
+import 'package:magic_sign_mobile/screens/model/Playlist.dart';
 import 'package:magic_sign_mobile/screens/my_profile/my_profile.dart';
 import 'package:magic_sign_mobile/screens/planification/planification_screen.dart';
 import 'package:magic_sign_mobile/screens/player/player_screen.dart';
@@ -19,7 +19,8 @@ Map<String, WidgetBuilder> routes = {
   PlaylistScreen.routeName: (context) => const PlaylistScreen(),
   PlayerScreen.routeName:(context) => const PlayerScreen(),
   PlanificationScreen.routeName:(context) => const PlanificationScreen(),
-  PlaylistDetail.routeName:(context)=> const PlaylistDetail(),
+// PlaylistDetail route with arguments
+  PlaylistDetail.routeName: (BuildContext context) => (PlaylistDetail(
+    playlist: ModalRoute.of(context)!.settings.arguments as Playlist,
+  )),
 };
-
-

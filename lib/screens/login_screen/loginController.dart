@@ -44,8 +44,8 @@ class LoginController extends GetxController {
         saveAccessToken(accessToken);
 
         // Affichez un snackbar pour indiquer que la connexion a réussi
-        Get.snackbar('Login Successful', 'Welcome!',
-            backgroundColor: Colors.green);
+        //Get.snackbar('Login Successful', 'Welcome!',
+          //  backgroundColor: Colors.green);
         Get.to(() => HomeScreen());
       } catch (error) {
         print("Parsing Error: $error");
