@@ -107,4 +107,67 @@ class PlaylistController extends GetxController {
     print('Error assigning playlist: $e');
   }
 }
+
+Future<void> getAssignedMedia(int layoutId) async {
+  try {
+    String? accessToken = await getAccessToken();
+    String url = 'https://magic-sign.cloud/v_ar/web/api/layout/status/$layoutId';
+    print('Request URL: $url');
+
+    http.Response response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Bearer $accessToken'
+      },
+    );
+
+    print('Response Status Code: ${response.statusCode}');
+    print('Response Body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      var jsonData = json.decode(response.body);
+
+      List<dynamic> regions = jsonData['regions'];
+      for (var region in regions) {
+        List<dynamic> playlists = region['playlists'];
+        for (var playlist in playlists) {
+          List<dynamic> widgets = playlist['widgets'];
+          for (var widget in widgets) {
+            int widgetId = widget['widgetId'];
+            int playlistId = widget['playlistId'];
+            String type = widget['type'];
+            int duration = widget['duration'];
+            String displayOrder = widget['displayOrder'];
+            // Access other attributes as needed
+            print('Widget ID: $widgetId');
+            print('Playlist ID: $playlistId');
+            print('Type: $type');
+            print('Duration: $duration');
+            print('Display Order: $displayOrder');
+            // Access widget options if needed
+            List<dynamic> widgetOptions = widget['widgetOptions'];
+            for (var option in widgetOptions) {
+              String optionType = option['type'];
+              String optionName = option['option'];
+              String optionValue = option['value'];
+              print('Widget Option Type: $optionType');
+              print('Widget Option Name: $optionName');
+              print('Widget Option Value: $optionValue');
+            }
+            // Access mediaIds if available
+            List<dynamic> mediaIds = widget['mediaIds'];
+            for (var mediaId in mediaIds) {
+              print('Media ID: $mediaId');
+            }
+          }
+        }
+      }
+    } else {
+      print('Response status code not 200');
+    }
+  } catch (e) {
+    print(e);
+  }
+}
+
 }

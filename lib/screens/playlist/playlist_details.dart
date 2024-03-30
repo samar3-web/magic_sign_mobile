@@ -21,6 +21,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
   final MediaController mediaController = Get.put(MediaController());
   final PlaylistController playlistController = Get.put(PlaylistController());
   bool _showScrollIndicator = false;
+  List<String> assignedMediaIds = [];
 
 
   @override
@@ -28,19 +29,9 @@ class _PlaylistDetail extends State<PlaylistDetail> {
     super.initState();
     // Fetch media data for the playlist
     mediaController.getMedia();
-    _fetchPlaylist();
   }
 
-  // Method to fetch the playlist asynchronously
-  Future<void> _fetchPlaylist() async {
-    await playlistController.getPlaylist();
-    /*setState(() {
-      // Assign the playlist when it's fetched
-      playlist = playlistController.playlistList.isNotEmpty
-          ? playlistController.playlistList.first
-          : null;
-    });*/
-  }
+ 
 
   String formatDuration(String durationString) {
     int duration = int.tryParse(durationString) ?? 0;
@@ -87,7 +78,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                               Icon(Icons.visibility, color: Colors.grey),
                               SizedBox(width: 5),
                               Text(
-                                'Duration : 00:00:10',
+                                'Duration :  ${formatDuration(widget.playlist.duration)}',
                                 style: TextStyle(color: Colors.grey),
                               ),
                             ],
@@ -187,9 +178,42 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                   child: Icon(Icons.arrow_forward, color: Colors.grey),
                 ),
               ),
-          ],
+          Positioned(
+            bottom: 10, 
+            left: 0,
+            right: 0,
+            child: Center(
+              child: IntrinsicWidth(
+                child: ElevatedButton(
+                  onPressed: () {
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kSecondaryColor, 
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.save, 
+                        color: Colors.white, 
+                      ),
+                      SizedBox(width: 8), 
+                      Text(
+                        'Enregistrer',
+                        style: TextStyle(
+                          color: Colors.white, 
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
         ),
-      ),
+        )
     );
+
   }
 }

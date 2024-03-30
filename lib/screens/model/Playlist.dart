@@ -60,16 +60,21 @@ class Region {
 class PlaylistInRegion {
   final int playlistId;
   final String name;
+  List<Map<String, dynamic>> widgets; 
 
   PlaylistInRegion({
     required this.playlistId,
     required this.name,
+    required this.widgets
   });
 
-  factory PlaylistInRegion.fromJson(Map<String, dynamic> json) {
-    return PlaylistInRegion(
-      playlistId: json['playlistId'],
-      name: json['name'],
-    );
-  }
+ factory PlaylistInRegion.fromJson(Map<String, dynamic> json) {
+  List<Map<String, dynamic>> parsedWidgets = List<Map<String, dynamic>>.from(json['widgets']);
+  return PlaylistInRegion(
+    playlistId: json['playlistId'],
+    name: json['name'],
+    widgets: parsedWidgets,
+  );
+}
+
 }
