@@ -5,6 +5,9 @@ import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/screens/media_screen/mediaController.dart';
 import 'package:magic_sign_mobile/screens/model/Playlist.dart';
+import 'package:magic_sign_mobile/screens/model/Playlists.dart';
+import 'package:magic_sign_mobile/screens/model/Regions.dart';
+import 'package:magic_sign_mobile/screens/model/Widget.dart';
 import 'package:magic_sign_mobile/screens/playlist/playlistController.dart';
 
 import '../model/Media.dart';
@@ -152,48 +155,71 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                     );
                                   },
                                 )),
-                            SizedBox(height: 5),
-
-                            Container(
-                              height: 200,
-                              width: 300,
-                              child: ListView.builder(
-                                itemCount: playlistController.timelines!.length,
-                                itemBuilder: (c, i) {
-                                  return Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          child: Text('Timeline ${i}', style:
-                                                TextStyle(color: Colors.white)),
-                                          alignment: Alignment.bottomLeft,
-                                          width: 150,
-                                          height: 70,
-                                          decoration: BoxDecoration(
-                                            color: kSecondaryColor,
-                                            border: Border.all(
-                                              color: kSecondaryColor,
-                                              width: 2,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(10),
+                           SizedBox(height: 5),
+                            Row(
+                              
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    height:250,
+                                    width: MediaQuery.of(context).size.width,
+                                    child: ListView.builder(
+                                      itemCount: playlistController.timelines!.length,
+                                      itemBuilder: (c, i) {
+                                        return Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Wrap(
+                                                
+                                                children: [
+                                                Container(
+                                                child: Text('Timeline ${i}', style: TextStyle(color: Colors.white)),
+                                                alignment: Alignment.bottomLeft,
+                                                width: 120,
+                                                height: 50,
+                                                decoration: BoxDecoration(
+                                                  color: kSecondaryColor,
+                                                  border: Border.all(
+                                                    color: kSecondaryColor,
+                                                    width: 2,
+                                                  ),
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                              ),
+                                              SizedBox(width: 5),
+                                              // Parcours des playlists dans chaque timeline
+                                              for (Playlists playlist in playlistController.timelines![i].playlists!)
+                                              for (WidgetData widget in playlist.widgets!)
+                                                Padding(
+                                                  padding: EdgeInsets.symmetric(horizontal: 2.0),
+                                                  child: Text(
+                                                    'Type: ${widget.type}',
+                                                    style: TextStyle(color: Colors.black),
+                                                  ),
+                                                ),
+                                               ],
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                      ],
+                                        );
+                                      },
                                     ),
-                                  );
-                                },
-                              ),
+                                  ),
+                                ),
+                                
+                              ],
                             ),
-                            SizedBox(height: 5),
+
+
+                       
                           ],
                         ),
                       ),
               ),
               if (_showScrollIndicator)
                 Positioned(
-                  bottom: 20.0,
                   left: 0,
                   right: 0,
                   child: Center(

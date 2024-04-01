@@ -146,9 +146,10 @@ class PlaylistController extends GetxController {
         print('playlists');
 
         print(playlist);
+        
         print('widgets');
 
-        print(playlist.widgets![0]);
+        print(playlist.widgets![0].toString());
       } else {
         print('Response status code not 200');
       }
