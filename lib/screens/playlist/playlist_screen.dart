@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/screens/model/Playlist.dart';
+import 'package:magic_sign_mobile/screens/playlist/addPlaylist.dart';
 import 'package:magic_sign_mobile/screens/playlist/playlistController.dart';
 import 'package:magic_sign_mobile/screens/playlist/playlist_details.dart';
 
@@ -19,7 +20,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   @override
   void initState() {
     super.initState();
-    // Call the method to fetch playlist data when the widget is initialized
     playlistController.getPlaylist();
   }
 
@@ -41,8 +41,14 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       appBar: AppBar(
         title: Text('Playlist'),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
+       floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AddLayoutPopup(); 
+            },
+          );
         },
         backgroundColor: kSecondaryColor,
         child: Icon(Icons.add),
@@ -80,7 +86,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                     height: 50,
                     child: CircularProgressIndicator(),
                   ),
-                ) // Show centered loading indicator while data is loading
+                ) 
                     : ListView.builder(
                   itemCount: playlistController.playlistList.length,
                   itemBuilder: (context, index) {
