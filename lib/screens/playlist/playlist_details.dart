@@ -1,12 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/screens/media_screen/mediaController.dart';
 import 'package:magic_sign_mobile/screens/model/Playlist.dart';
 import 'package:magic_sign_mobile/screens/model/Playlists.dart';
-import 'package:magic_sign_mobile/screens/model/Regions.dart';
 import 'package:magic_sign_mobile/screens/model/Widget.dart';
 import 'package:magic_sign_mobile/screens/playlist/playlistController.dart';
 
@@ -24,7 +21,6 @@ class _PlaylistDetail extends State<PlaylistDetail> {
   final MediaController mediaController = Get.put(MediaController());
   final PlaylistController playlistController = Get.put(PlaylistController());
   bool _showScrollIndicator = false;
-  List<String> assignedMediaIds = [];
 
   @override
   void initState() {
@@ -54,22 +50,24 @@ class _PlaylistDetail extends State<PlaylistDetail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Playlist Detail'),
-        ),
-        body: NotificationListener<ScrollNotification>(
-          onNotification: (notification) {
-            if (notification is ScrollUpdateNotification) {
-              setState(() {
-                _showScrollIndicator = true;
-              });
-            } else if (notification is ScrollEndNotification) {
-              setState(() {
-                _showScrollIndicator = false;
-              });
-            }
-            return true;
-          },
+      appBar: AppBar(
+        title: Text('Playlist Detail'),
+      ),
+      body: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification is ScrollUpdateNotification) {
+            setState(() {
+              _showScrollIndicator = true;
+            });
+          } else if (notification is ScrollEndNotification) {
+            setState(() {
+              _showScrollIndicator = false;
+            });
+          }
+          return true;
+        },
+        child: RefreshIndicator(
+          onRefresh: _fetchPlaylist, // Implement the onRefresh callback
           child: Stack(
             children: [
               Obx(
@@ -95,86 +93,71 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                             ),
                             SizedBox(height: 5),
                             SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height / 2.5,
-                                child: GridView.builder(
-                                  padding: EdgeInsets.all(16.0),
-                                  scrollDirection: Axis.horizontal,
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    crossAxisSpacing: 6.0,
-                                    mainAxisSpacing: 10.0,
-                                    childAspectRatio: 1.0,
-                                  ),
-                                  itemCount: mediaController.mediaList.length,
-                                  itemBuilder: (context, index) {
-                                    Media media =
-                                        mediaController.mediaList[index];
-                                    return InkWell(
-                                      onTap: () {
-                                        //handle Media Pressed
-                                        print("media pressed");
-                                        print("playlistId: ");
-                                        print(widget.playlist.regions[0]
-                                            .playlists[0].playlistId);
-                                        print("media: ");
-                                        print(media.mediaId);
-                                        playlistController.assignPlaylist(
-                                            [media.mediaId],
-                                            widget.playlist.regions[0]
-                                                .playlists[0].playlistId);
-                                      },
-                                      child: Container(
-                                        width:
-                                            MediaQuery.of(context).size.width /
-                                                    3 -
-                                                16,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(12.0),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color:
-                                                  Colors.grey.withOpacity(0.3),
-                                              spreadRadius: 2,
-                                              blurRadius: 5,
-                                              offset: Offset(0, 3),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            media.name,
-                                            style:
-                                                TextStyle(color: Colors.black),
+                              height: MediaQuery.of(context).size.height / 2.5,
+                              child: GridView.builder(
+                                padding: EdgeInsets.all(16.0),
+                                scrollDirection: Axis.horizontal,
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  crossAxisSpacing: 6.0,
+                                  mainAxisSpacing: 10.0,
+                                  childAspectRatio: 1.0,
+                                ),
+                                itemCount: mediaController.mediaList.length,
+                                itemBuilder: (context, index) {
+                                  Media media = mediaController.mediaList[index];
+                                  return InkWell(
+                                    onTap: () {
+                                      //handle Media Pressed
+                                      print("media pressed");
+                                      print("playlistId: ");
+                                      print(widget.playlist.regions[0].playlists[0].playlistId);
+                                      print("media: ");
+                                      print(media.mediaId);
+                                      playlistController.assignPlaylist(
+                                          [media.mediaId], widget.playlist.regions[0].playlists[0].playlistId);
+                                    },
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width / 3 - 16,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(12.0),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.3),
+                                            spreadRadius: 2,
+                                            blurRadius: 5,
+                                            offset: Offset(0, 3),
                                           ),
+                                        ],
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          media.name,
+                                          style: TextStyle(color: Colors.black),
                                         ),
                                       ),
-                                    );
-                                  },
-                                )),
-                           SizedBox(height: 5),
-                            Row(
-                              
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    height:250,
-                                    width: MediaQuery.of(context).size.width,
-                                    child: ListView.builder(
-                                      itemCount: playlistController.timelines!.length,
-                                      itemBuilder: (c, i) {
-                                        return Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            Expanded(
+                              child: Container(
+                                height: 250,
+                                width: MediaQuery.of(context).size.width,
+                                child: ListView.builder(
+                                  itemCount: playlistController.timelines!.length,
+                                  itemBuilder: (c, i) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Wrap(
                                             children: [
-                                              Wrap(
-                                                
-                                                children: [
-                                                Container(
+                                              Container(
                                                 child: Text('Timeline ${i}', style: TextStyle(color: Colors.white)),
                                                 alignment: Alignment.bottomLeft,
                                                 width: 120,
@@ -191,29 +174,23 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                               SizedBox(width: 5),
                                               // Parcours des playlists dans chaque timeline
                                               for (Playlists playlist in playlistController.timelines![i].playlists!)
-                                              for (WidgetData widget in playlist.widgets!)
-                                                Padding(
-                                                  padding: EdgeInsets.symmetric(horizontal: 2.0),
-                                                  child: Text(
-                                                    'Type: ${widget.type}',
-                                                    style: TextStyle(color: Colors.black),
+                                                for (WidgetData widget in playlist.widgets!)
+                                                  Padding(
+                                                    padding: EdgeInsets.symmetric(horizontal: 2.0),
+                                                    child: Text(
+                                                      'Type: ${widget.type}',
+                                                      style: TextStyle(color: Colors.black),
+                                                    ),
                                                   ),
-                                                ),
-                                               ],
-                                              ),
                                             ],
                                           ),
-                                        );
-                                      },
-                                    ),
-                                  ),
+                                        ],
+                                      ),
+                                    );
+                                  },
                                 ),
-                                
-                              ],
+                              ),
                             ),
-
-
-                       
                           ],
                         ),
                       ),
@@ -259,6 +236,8 @@ class _PlaylistDetail extends State<PlaylistDetail> {
               ),
             ],
           ),
-        ));
+        ),
+      ),
+    );
   }
 }
