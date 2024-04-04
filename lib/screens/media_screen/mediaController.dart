@@ -261,4 +261,13 @@ class MediaController extends GetxController {
         .toList();
     mediaList.assignAll(filteredMediaList);
   }
+  
+    Media? getMediaById(int mediaId) {
+    for (var media in mediaList) {
+      if (media.mediaId == mediaId) {
+        return media;
+      }
+    }
+    return null;
+  }
 }

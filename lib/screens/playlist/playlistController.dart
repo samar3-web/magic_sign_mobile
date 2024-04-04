@@ -249,4 +249,5 @@ class PlaylistController extends GetxController {
       print('Error widget data: $e');
     }
   }
+
 }

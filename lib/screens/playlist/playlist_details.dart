@@ -106,18 +106,18 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                   //handle Media Pressed
                                   print("media pressed");
                                   print("playlistId: ");
-                                  print(widget.playlist.regions[0]
-                                      .playlists[0].playlistId);
+                                  print(widget.playlist.regions[0].playlists[0]
+                                      .playlistId);
                                   print("media: ");
                                   print(media.mediaId);
+                                  print(media.name);
                                   playlistController.assignPlaylist(
                                       [media.mediaId],
-                                      widget.playlist.regions[0]
-                                          .playlists[0].playlistId);
+                                      widget.playlist.regions[0].playlists[0]
+                                          .playlistId);
                                 },
                                 child: Container(
-                                  width: MediaQuery.of(context).size.width /
-                                          3 -
+                                  width: MediaQuery.of(context).size.width / 3 -
                                       16,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
@@ -179,8 +179,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                           ),
                                           Expanded(
                                             child: SingleChildScrollView(
-                                              scrollDirection:
-                                                  Axis.horizontal,
+                                              scrollDirection: Axis.horizontal,
                                               child: Row(
                                                 children: [
                                                   // Parcours des playlists dans chaque timeline
@@ -190,6 +189,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                                           .playlists!)
                                                     for (WidgetData widget
                                                         in playlist.widgets!)
+
                                                       Padding(
                                                         padding: EdgeInsets
                                                             .symmetric(
@@ -202,17 +202,18 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                                                     .center,
                                                             children: [
                                                               Text(
-                                                                '${widget.type}',
+'${mediaController.getMediaById(int.parse(widget.mediaIds![0]))?.name}',
                                                                 style: TextStyle(
                                                                     color: Colors
                                                                         .white),
                                                                 textAlign:
                                                                     TextAlign
-                                                                        .center, 
+                                                                        .center,
+                                                                        overflow: TextOverflow.ellipsis, // Or TextOverflow.fade, TextOverflow.clip
+  maxLines: 1,
                                                               ),
                                                               SizedBox(
-                                                                  height:
-                                                                      2), 
+                                                                  height: 2),
                                                               Row(
                                                                 mainAxisAlignment:
                                                                     MainAxisAlignment
@@ -220,21 +221,18 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                                                 children: [
                                                                   IconButton(
                                                                     icon: Icon(
-                                                                        Icons.edit),
+                                                                        Icons
+                                                                            .edit),
                                                                     onPressed:
-                                                                        () {
-                                                                    },
+                                                                        () {},
                                                                   ),
                                                                   SizedBox(
-                                                                      width:
-                                                                          5), 
+                                                                      width: 5),
                                                                   IconButton(
-                                                                    icon: Icon(
-                                                                        Icons.delete),
+                                                                    icon: Icon(Icons
+                                                                        .delete),
                                                                     onPressed:
-                                                                        () {
-                                                                      
-                                                                    },
+                                                                        () {},
                                                                   ),
                                                                 ],
                                                               ),
@@ -247,8 +245,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                                           decoration:
                                                               BoxDecoration(
                                                             color: boxColor,
-                                                            border:
-                                                                Border.all(
+                                                            border: Border.all(
                                                               color: boxColor,
                                                               width: 2,
                                                             ),
