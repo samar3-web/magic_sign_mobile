@@ -233,11 +233,13 @@ class PlaylistController extends GetxController {
 
           // Assign the list to the RxList
           playlistRessource.value = playlistResources;
+          print(playlistResources.first);
         } else {
           print('Response is not a list.');
         }
 
         print('get widget data successfully');
+        print(playlistRessource);
       } else {
         print('Failed to widget data. Status code: ${response.statusCode}');
         throw Exception('Failed to widget data');

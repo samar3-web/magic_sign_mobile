@@ -179,93 +179,88 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                           ),
                                           Expanded(
                                             child: SingleChildScrollView(
-                                              scrollDirection: Axis.horizontal,
-                                              child: Obx(() {
-                                                // Accessing playlistRessource from playlistController
-                                                List<PlaylistRessource>
-                                                    playlistResources =
-                                                    playlistController
-                                                        .playlistRessource
-                                                        .toList();
-
-                                                // Iterating over playlistResources to display widgets
-                                                return Row(
-                                                  children: [
-                                                  
-                                        for (PlaylistRessource resource in playlistResources.where((res) =>
-    res.widgetId ==
-    (playlistController.timelines![i].playlists!.isNotEmpty
-        ? playlistController.timelines![i].playlists![0].widgets!.isNotEmpty
-            ? playlistController.timelines![i].playlists![0].widgets![0]
-                .widgetId
-            : null
-        : null)))
-                                                                Padding(
-                                                                  padding: EdgeInsets.symmetric(
-                                                                      horizontal:
-                                                                          1.0),
-                                                                  child:
-                                                                      Container(
-                                                                    alignment:
-                                                                        Alignment
-                                                                            .center,
-                                                                    width: 120,
-                                                                    height: 74,
-                                                                    decoration:
-                                                                        BoxDecoration(
-                                                                      color:
-                                                                          boxColor,
-                                                                      border:
-                                                                          Border.all(
-                                                                        color:
-                                                                            boxColor,
-                                                                        width:
-                                                                            2,
-                                                                      ),
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(
-                                                                              10),
-                                                                    ),
-                                                                    child: Column(
-                                                                      crossAxisAlignment:
-                                                                          CrossAxisAlignment
-                                                                              .center,
-                                                                      children: [
-                                                                        Text(
-                                                                          '${resource.name}',
-                                                                          style: TextStyle(
-                                                                              color: Colors.white),
-                                                                          textAlign:
-                                                                              TextAlign.center,
-                                                                          overflow:
-                                                                              TextOverflow.ellipsis, // Displaying only one line
-                                                                        ),
-                                                                        SizedBox(
-                                                                            height:
-                                                                                2),
-                                                                        Row(
-                                                                          mainAxisAlignment:
-                                                                              MainAxisAlignment.center,
-                                                                          children: [
-                                                                            IconButton(
-                                                                              icon: Icon(Icons.edit),
-                                                                              onPressed: () {},
-                                                                            ),
-                                                                            SizedBox(
-                                                                                width: 5),
-                                                                            IconButton(
-                                                                              icon: Icon(Icons.delete),
-                                                                              onPressed: () {},
-                                                                            ),
-                                                                          ],
-                                                                        ),
-                                                                      ],
-                                                                    ),
+                                              scrollDirection:
+                                                  Axis.horizontal,
+                                              child: Row(
+                                                children: [
+                                                  // Parcours des playlists dans chaque timeline
+                                                  for (Playlists playlist
+                                                      in playlistController
+                                                          .timelines![i]
+                                                          .playlists!)
+                                                    for (WidgetData widget
+                                                        in playlist.widgets!)
+                                                      Padding(
+                                                        padding: EdgeInsets
+                                                            .symmetric(
+                                                                horizontal:
+                                                                    1.0),
+                                                        child: Container(
+                                                          child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .center,
+                                                            children: [
+                                                              Text(
+                                                                '${widget.type}',
+                                                                style: TextStyle(
+                                                                    color: Colors
+                                                                        .white),
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center, 
+                                                              ),
+                                                              SizedBox(
+                                                                  height:
+                                                                      2), 
+                                                              Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .center,
+                                                                children: [
+                                                                  IconButton(
+                                                                    icon: Icon(
+                                                                        Icons.edit),
+                                                                    onPressed:
+                                                                        () {
+                                                                    },
                                                                   ),
-                                                                ),
-                                                  ],
-                                                );
-                                              }),
+                                                                  SizedBox(
+                                                                      width:
+                                                                          5), 
+                                                                  IconButton(
+                                                                    icon: Icon(
+                                                                        Icons.delete),
+                                                                    onPressed:
+                                                                        () {
+                                                                      
+                                                                    },
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          alignment:
+                                                              Alignment.center,
+                                                          width: 120,
+                                                          height: 74,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: boxColor,
+                                                            border:
+                                                                Border.all(
+                                                              color: boxColor,
+                                                              width: 2,
+                                                            ),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ],
