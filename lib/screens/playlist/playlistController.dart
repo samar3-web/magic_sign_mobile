@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:get/get_rx/get_rx.dart';
 import 'package:magic_sign_mobile/screens/model/Playlist.dart';
+import 'package:magic_sign_mobile/screens/model/PlaylistRessource.dart';
 import 'package:magic_sign_mobile/screens/model/Playlists.dart';
 import 'package:magic_sign_mobile/screens/model/Regions.dart';
 import 'package:magic_sign_mobile/screens/model/Timeline.dart';
@@ -16,6 +17,7 @@ class PlaylistController extends GetxController {
   var playlistList = <Playlist>[].obs;
   List<String> assignedMedia = [];
   List<Regions>? timelines = <Regions>[].obs;
+  RxList<PlaylistRessource> playlistRessource = <PlaylistRessource>[].obs;
 
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -146,7 +148,7 @@ class PlaylistController extends GetxController {
         print('playlists');
 
         print(playlist);
-        
+
         print('widgets');
 
         print(playlist.widgets![0].toString());
@@ -209,6 +211,40 @@ class PlaylistController extends GetxController {
     } catch (e) {
       // Handle exceptions
       print('Error get template: $e');
+    }
+  }
+
+  getWidget() async {
+    String? accessToken = await getAccessToken();
+    try {
+      final response = await http.get(
+        Uri.parse('https://magic-sign.cloud/v_ar/web/api/playlist/widget'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        var jsonData = json.decode(response.body);
+
+        if (jsonData is List) {
+          List<PlaylistRessource> playlistResources =
+              jsonData.map((item) => PlaylistRessource.fromJson(item)).toList();
+
+          // Assign the list to the RxList
+          playlistRessource.value = playlistResources;
+        } else {
+          print('Response is not a list.');
+        }
+
+        print('get widget data successfully');
+      } else {
+        print('Failed to widget data. Status code: ${response.statusCode}');
+        throw Exception('Failed to widget data');
+      }
+    } catch (e) {
+      // Handle exceptions
+      print('Error widget data: $e');
     }
   }
 }

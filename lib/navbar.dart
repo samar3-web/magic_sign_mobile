@@ -101,9 +101,9 @@ class NavBar extends StatelessWidget {
 
 final List<Map<String, dynamic>> drawerRoutes = [
   {'name': 'Tableau de bord', 'icon': Icons.dashboard, 'routeName': HomeScreen.routeName},
-  {'name': 'Médiathèque', 'icon': Icons.mediation_sharp, 'routeName': MediaScreen.routeName},
-  {'name': 'Playlists', 'icon': Icons.dashboard, 'routeName': PlaylistScreen.routeName},
-  {'name': 'Afficheur', 'icon': Icons.dashboard, 'routeName': PlayerScreen.routeName},
-  {'name': 'Planification', 'icon': Icons.dashboard, 'routeName': PlanificationScreen.routeName},
+  {'name': 'Médiathèque', 'icon': Icons.ondemand_video, 'routeName': MediaScreen.routeName},
+  {'name': 'Playlists', 'icon': Icons.playlist_play, 'routeName': PlaylistScreen.routeName},
+  {'name': 'Afficheur', 'icon': Icons.tv, 'routeName': PlayerScreen.routeName},
+  {'name': 'Planification', 'icon': Icons.event, 'routeName': PlanificationScreen.routeName},
 
 ];

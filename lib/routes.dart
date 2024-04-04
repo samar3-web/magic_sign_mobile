@@ -7,6 +7,7 @@ import 'package:magic_sign_mobile/screens/planification/planification_screen.dar
 import 'package:magic_sign_mobile/screens/player/player_screen.dart';
 import 'package:magic_sign_mobile/screens/playlist/playlist_details.dart';
 import 'package:magic_sign_mobile/screens/playlist/playlist_screen.dart';
+import 'package:magic_sign_mobile/screens/playlist/previewScreen.dart';
 import 'package:magic_sign_mobile/screens/splash_screen.dart';
 import 'package:magic_sign_mobile/screens/login_screen/login_screen.dart';
 
@@ -23,4 +24,5 @@ Map<String, WidgetBuilder> routes = {
   PlaylistDetail.routeName: (BuildContext context) => (PlaylistDetail(
     playlist: ModalRoute.of(context)!.settings.arguments as Playlist,
   )),
+  PreviewScreen.routeName:(context) => const PreviewScreen(),
 };

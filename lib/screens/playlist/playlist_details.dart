@@ -3,9 +3,11 @@ import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/screens/media_screen/mediaController.dart';
 import 'package:magic_sign_mobile/screens/model/Playlist.dart';
+import 'package:magic_sign_mobile/screens/model/PlaylistRessource.dart';
 import 'package:magic_sign_mobile/screens/model/Playlists.dart';
 import 'package:magic_sign_mobile/screens/model/Widget.dart';
 import 'package:magic_sign_mobile/screens/playlist/playlistController.dart';
+import 'package:magic_sign_mobile/screens/playlist/previewScreen.dart';
 
 import '../model/Media.dart';
 
@@ -27,6 +29,8 @@ class _PlaylistDetail extends State<PlaylistDetail> {
     super.initState();
     // Fetch media data for the playlist
     mediaController.getMedia();
+    playlistController.getWidget();
+
     _fetchPlaylist();
   }
 
@@ -34,6 +38,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
   Future<void> _fetchPlaylist() async {
     try {
       await playlistController.getAssignedMedia(widget.playlist.layoutId);
+      await playlistController.getWidget();
     } catch (e) {
       print('Error fetching assigned media: $e');
     }
@@ -53,277 +58,261 @@ class _PlaylistDetail extends State<PlaylistDetail> {
       appBar: AppBar(
         title: Text('Playlist Detail'),
       ),
-      body: NotificationListener<ScrollNotification>(
-        onNotification: (notification) {
-          if (notification is ScrollUpdateNotification) {
-            setState(() {
-              _showScrollIndicator = true;
-            });
-          } else if (notification is ScrollEndNotification) {
-            setState(() {
-              _showScrollIndicator = false;
-            });
-          }
-          return true;
-        },
-        child: RefreshIndicator(
-          onRefresh: _fetchPlaylist, // Implement the onRefresh callback
-          child: Stack(
-            children: [
-              Obx(
-                () => mediaController.isLoading.value
-                    ? Center(
-                        child: CircularProgressIndicator(),
-                      )
-                    : Align(
-                        alignment: Alignment.bottomRight,
-                        child: Column(
+      body: Stack(
+        children: [
+          Obx(
+            () => mediaController.isLoading.value
+                ? Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : Align(
+                    alignment: Alignment.bottomRight,
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            SizedBox(height: 5),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                Icon(Icons.visibility, color: Colors.grey),
-                                SizedBox(width: 5),
-                                Text(
-                                  'Duration :  ${formatDuration(widget.playlist.duration)}',
-                                  style: TextStyle(color: Colors.grey),
-                                ),
-                              ],
+                            IconButton(
+                              icon: Icon(Icons.visibility),
+                              color: Colors.grey,
+                              onPressed: () {
+                                Get.to(() => PreviewScreen());
+                              },
                             ),
-                            SizedBox(height: 5),
-                            SizedBox(
-                              height: MediaQuery.of(context).size.height / 2.5,
-                              child: GridView.builder(
-                                padding: EdgeInsets.all(16.0),
-                                scrollDirection: Axis.horizontal,
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 6.0,
-                                  mainAxisSpacing: 10.0,
-                                  childAspectRatio: 1.0,
-                                ),
-                                itemCount: mediaController.mediaList.length,
-                                itemBuilder: (context, index) {
-                                  Media media =
-                                      mediaController.mediaList[index];
-                                  return InkWell(
-                                    onTap: () {
-                                      //handle Media Pressed
-                                      print("media pressed");
-                                      print("playlistId: ");
-                                      print(widget.playlist.regions[0]
-                                          .playlists[0].playlistId);
-                                      print("media: ");
-                                      print(media.mediaId);
-                                      playlistController.assignPlaylist(
-                                          [media.mediaId],
-                                          widget.playlist.regions[0]
-                                              .playlists[0].playlistId);
-                                    },
-                                    child: Container(
-                                      width: MediaQuery.of(context).size.width /
-                                              3 -
-                                          16,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius:
-                                            BorderRadius.circular(12.0),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey.withOpacity(0.3),
-                                            spreadRadius: 2,
-                                            blurRadius: 5,
-                                            offset: Offset(0, 3),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          media.name,
-                                          style: TextStyle(color: Colors.black),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Expanded(
-                              child: Container(
-                                height: 250,
-                                width: MediaQuery.of(context).size.width,
-                                child: ListView.builder(
-                                  itemCount:
-                                      playlistController.timelines!.length,
-                                  itemBuilder: (c, i) {
-                                    return Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            crossAxisAlignment: CrossAxisAlignment
-                                                .start, // Align children of Row to the start
-                                            children: [
-                                              Container(
-                                                child: Text('Timeline ${i}',
-                                                    style: TextStyle(
-                                                        color: Colors.white)),
-                                                alignment: Alignment.center,
-                                                width: 120,
-                                                height: 74,
-                                                decoration: BoxDecoration(
-                                                  color: kSecondaryColor,
-                                                  border: Border.all(
-                                                    color: kSecondaryColor,
-                                                    width: 2,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                child: SingleChildScrollView(
-                                                  scrollDirection:
-                                                      Axis.horizontal,
-                                                  child: Row(
-                                                    children: [
-                                                      // Parcours des playlists dans chaque timeline
-                                                      for (Playlists playlist
-                                                          in playlistController
-                                                              .timelines![i]
-                                                              .playlists!)
-                                                        for (WidgetData widget
-                                                            in playlist
-                                                                .widgets!)
-                                                          Padding(
-                                                            padding: EdgeInsets
-                                                                .symmetric(
-                                                                    horizontal:
-                                                                        1.0),
-                                                            child: Container(
-                                                              child: Column(
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .center,
-                                                                children: [
-                                                                  Text(
-                                                                    '${widget.type}',
-                                                                    style: TextStyle(
-                                                                        color: Colors
-                                                                            .white),
-                                                                    textAlign:
-                                                                        TextAlign
-                                                                            .center, // Align text to the center
-                                                                  ),
-                                                                  SizedBox(
-                                                                      height:
-                                                                          2), // Add space between text and buttons
-                                                                  Row(
-                                                                    mainAxisAlignment:
-                                                                        MainAxisAlignment
-                                                                            .center,
-                                                                    children: [
-                                                                      IconButton(
-                                                                        icon: Icon(
-                                                                            Icons.edit),
-                                                                        onPressed:
-                                                                            () {
-                                                                          // Add your edit onPressed logic here
-                                                                        },
-                                                                      ),
-                                                                      SizedBox(
-                                                                          width:
-                                                                              5), // Add space between buttons
-                                                                      IconButton(
-                                                                        icon: Icon(
-                                                                            Icons.delete),
-                                                                        onPressed:
-                                                                            () {
-                                                                          // Add your delete onPressed logic here
-                                                                        },
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              alignment:
-                                                                  Alignment
-                                                                      .center,
-                                                              width: 120,
-                                                              height: 74,
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                color: boxColor,
-                                                                border:
-                                                                    Border.all(
-                                                                  color:
-                                                                      boxColor,
-                                                                  width: 2,
-                                                                ),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            10),
-                                                              ),
-                                                            ),
-                                                          ),
-                                    
-                                                ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
+                            SizedBox(width: 5),
+                            Text(
+                              'Duration :  ${formatDuration(widget.playlist.duration)}',
+                              style: TextStyle(color: Colors.grey),
                             ),
                           ],
                         ),
-                      ),
-              ),
-              Positioned(
-                bottom: 10,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: IntrinsicWidth(
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: kSecondaryColor,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.save,
-                            color: Colors.white,
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height / 2.5,
+                          child: GridView.builder(
+                            padding: EdgeInsets.all(16.0),
+                            scrollDirection: Axis.horizontal,
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 6.0,
+                              mainAxisSpacing: 10.0,
+                              childAspectRatio: 1.0,
+                            ),
+                            itemCount: mediaController.mediaList.length,
+                            itemBuilder: (context, index) {
+                              Media media = mediaController.mediaList[index];
+                              return InkWell(
+                                onTap: () {
+                                  //handle Media Pressed
+                                  print("media pressed");
+                                  print("playlistId: ");
+                                  print(widget.playlist.regions[0]
+                                      .playlists[0].playlistId);
+                                  print("media: ");
+                                  print(media.mediaId);
+                                  playlistController.assignPlaylist(
+                                      [media.mediaId],
+                                      widget.playlist.regions[0]
+                                          .playlists[0].playlistId);
+                                },
+                                child: Container(
+                                  width: MediaQuery.of(context).size.width /
+                                          3 -
+                                      16,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12.0),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.3),
+                                        spreadRadius: 2,
+                                        blurRadius: 5,
+                                        offset: Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      media.name,
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                          SizedBox(width: 8),
-                          Text(
-                            'Enregistrer',
-                            style: TextStyle(
-                              color: Colors.white,
+                        ),
+                        SizedBox(height: 5),
+                        Expanded(
+                          child: Container(
+                            height: 250,
+                            width: MediaQuery.of(context).size.width,
+                            child: ListView.builder(
+                              itemCount: playlistController.timelines!.length,
+                              itemBuilder: (c, i) {
+                                return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            child: Text('Timeline ${i}',
+                                                style: TextStyle(
+                                                    color: Colors.white)),
+                                            alignment: Alignment.center,
+                                            width: 120,
+                                            height: 74,
+                                            decoration: BoxDecoration(
+                                              color: kSecondaryColor,
+                                              border: Border.all(
+                                                color: kSecondaryColor,
+                                                width: 2,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: SingleChildScrollView(
+                                              scrollDirection: Axis.horizontal,
+                                              child: Obx(() {
+                                                // Accessing playlistRessource from playlistController
+                                                List<PlaylistRessource>
+                                                    playlistResources =
+                                                    playlistController
+                                                        .playlistRessource
+                                                        .toList();
+
+                                                // Iterating over playlistResources to display widgets
+                                                return Row(
+                                                  children: [
+                                                  
+                                        for (PlaylistRessource resource in playlistResources.where((res) =>
+    res.widgetId ==
+    (playlistController.timelines![i].playlists!.isNotEmpty
+        ? playlistController.timelines![i].playlists![0].widgets!.isNotEmpty
+            ? playlistController.timelines![i].playlists![0].widgets![0]
+                .widgetId
+            : null
+        : null)))
+                                                                Padding(
+                                                                  padding: EdgeInsets.symmetric(
+                                                                      horizontal:
+                                                                          1.0),
+                                                                  child:
+                                                                      Container(
+                                                                    alignment:
+                                                                        Alignment
+                                                                            .center,
+                                                                    width: 120,
+                                                                    height: 74,
+                                                                    decoration:
+                                                                        BoxDecoration(
+                                                                      color:
+                                                                          boxColor,
+                                                                      border:
+                                                                          Border.all(
+                                                                        color:
+                                                                            boxColor,
+                                                                        width:
+                                                                            2,
+                                                                      ),
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              10),
+                                                                    ),
+                                                                    child: Column(
+                                                                      crossAxisAlignment:
+                                                                          CrossAxisAlignment
+                                                                              .center,
+                                                                      children: [
+                                                                        Text(
+                                                                          '${resource.name}',
+                                                                          style: TextStyle(
+                                                                              color: Colors.white),
+                                                                          textAlign:
+                                                                              TextAlign.center,
+                                                                          overflow:
+                                                                              TextOverflow.ellipsis, // Displaying only one line
+                                                                        ),
+                                                                        SizedBox(
+                                                                            height:
+                                                                                2),
+                                                                        Row(
+                                                                          mainAxisAlignment:
+                                                                              MainAxisAlignment.center,
+                                                                          children: [
+                                                                            IconButton(
+                                                                              icon: Icon(Icons.edit),
+                                                                              onPressed: () {},
+                                                                            ),
+                                                                            SizedBox(
+                                                                                width: 5),
+                                                                            IconButton(
+                                                                              icon: Icon(Icons.delete),
+                                                                              onPressed: () {},
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                  ],
+                                                );
+                                              }),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
+                  ),
+          ),
+          Positioned(
+            bottom: 10,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: IntrinsicWidth(
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kSecondaryColor,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.save,
+                        color: Colors.white,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Enregistrer',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
