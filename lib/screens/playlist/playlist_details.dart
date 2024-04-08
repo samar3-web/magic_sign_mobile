@@ -8,6 +8,7 @@ import 'package:magic_sign_mobile/screens/model/Playlists.dart';
 import 'package:magic_sign_mobile/screens/model/Widget.dart';
 import 'package:magic_sign_mobile/screens/playlist/playlistController.dart';
 import 'package:magic_sign_mobile/screens/playlist/previewScreen.dart';
+import 'package:magic_sign_mobile/screens/playlist/updateWidget.dart';
 
 import '../model/Media.dart';
 
@@ -34,15 +35,41 @@ class _PlaylistDetail extends State<PlaylistDetail> {
     _fetchPlaylist();
   }
 
-  // Method to fetch the playlist asynchronously
-  Future<void> _fetchPlaylist() async {
-    try {
-      await playlistController.getAssignedMedia(widget.playlist.layoutId);
-      await playlistController.getWidget();
-    } catch (e) {
-      print('Error fetching assigned media: $e');
-    }
+ Future<void> _fetchPlaylist() async {
+  try {
+    print('Fetching assigned media...');
+    await playlistController.getAssignedMedia(widget.playlist.layoutId);
+    print('Fetching widgets...');
+    await playlistController.getWidget();
+    print('Data fetched successfully.');
+
+    // Refresh UI
+    setState(() {});
+  } catch (e) {
+    print('Error fetching data: $e');
   }
+}
+
+// Method to update the duration of the playlist
+Future<void> _updatePlaylistDuration() async {
+  try {
+    // Calculate the new duration of the playlist
+    int totalDuration = 0;
+    for (var timeline in playlistController.timelines!) {
+      for (var playlist in timeline.playlists!) {
+        for (var widgetData in playlist.widgets!) {
+            totalDuration += widgetData.duration ?? 0;
+        }
+      }
+    }
+    // Update the duration of the playlist
+    await playlistController.updatePlaylistDuration(widget.playlist.playlistId, totalDuration.toString());
+    // Refresh the UI
+    setState(() {});
+  } catch (e) {
+    print('Error updating playlist duration: $e');
+  }
+}
 
   String formatDuration(String durationString) {
     int duration = int.tryParse(durationString) ?? 0;
@@ -147,26 +174,26 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                           child: Container(
                             height: 250,
                             width: MediaQuery.of(context).size.width,
-                            child: ListView.builder(
-                              itemCount: playlistController.timelines!.length,
-                              itemBuilder: (c, i) {
-                                return Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
+                            child: SingleChildScrollView(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  for (int i = 0;
+                                      i < playlistController.timelines!.length;
+                                      i++)
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
                                           Container(
-                                            child: Text('Timeline ${i}',
+                                            child: Text('Timeline ${i + 1}',
                                                 style: TextStyle(
                                                     color: Colors.white)),
                                             alignment: Alignment.center,
                                             width: 120,
-                                            height: 74,
+                                            height: 40,
                                             decoration: BoxDecoration(
                                               color: kSecondaryColor,
                                               border: Border.all(
@@ -177,95 +204,126 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                                   BorderRadius.circular(10),
                                             ),
                                           ),
-                                          Expanded(
-                                            child: SingleChildScrollView(
-                                              scrollDirection: Axis.horizontal,
-                                              child: Row(
-                                                children: [
-                                                  // Parcours des playlists dans chaque timeline
-                                                  for (Playlists playlist
-                                                      in playlistController
-                                                          .timelines![i]
-                                                          .playlists!)
-                                                    for (WidgetData widget
-                                                        in playlist.widgets!)
-
-                                                      Padding(
-                                                        padding: EdgeInsets
-                                                            .symmetric(
-                                                                horizontal:
-                                                                    1.0),
-                                                        child: Container(
-                                                          child: Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .center,
-                                                            children: [
-                                                              Text(
-'${mediaController.getMediaById(int.parse(widget.mediaIds![0]))?.name}',
+                                          SizedBox(height: 8),
+                                          SingleChildScrollView(
+                                            scrollDirection: Axis.horizontal,
+                                            child: Row(
+                                              children: [
+                                                for (Playlists playlist
+                                                    in playlistController
+                                                        .timelines![i]
+                                                        .playlists!)
+                                                  for (WidgetData widget
+                                                      in playlist.widgets!)
+                                                    Padding(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              horizontal: 1.0),
+                                                      child: Container(
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            Padding(
+                                                              padding: const EdgeInsets.symmetric(
+                                                                  vertical: 1.0),
+                                                              child: Text(
+                                                                '${mediaController.getMediaById(int.parse(widget.mediaIds![0]))?.name}',
                                                                 style: TextStyle(
-                                                                    color: Colors
-                                                                        .white),
+                                                                  color: Colors
+                                                                      .white,
+                                                                ),
                                                                 textAlign:
                                                                     TextAlign
                                                                         .center,
-                                                                        overflow: TextOverflow.ellipsis, // Or TextOverflow.fade, TextOverflow.clip
-  maxLines: 1,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
                                                               ),
-                                                              SizedBox(
-                                                                  height: 2),
-                                                              Row(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .center,
-                                                                children: [
-                                                                  IconButton(
-                                                                    icon: Icon(
-                                                                        Icons
-                                                                            .edit),
-                                                                    onPressed:
-                                                                        () {},
-                                                                  ),
-                                                                  SizedBox(
-                                                                      width: 5),
-                                                                  IconButton(
-                                                                    icon: Icon(Icons
-                                                                        .delete),
-                                                                    onPressed:
-                                                                        () {},
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          alignment:
-                                                              Alignment.center,
-                                                          width: 120,
-                                                          height: 74,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: boxColor,
-                                                            border: Border.all(
-                                                              color: boxColor,
-                                                              width: 2,
                                                             ),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10),
+                                                            Padding(
+                                                              padding: const EdgeInsets.symmetric(
+                                                                  vertical: 1.0),
+                                                              child: Text(
+                                                                '${formatDuration(widget.duration.toString())}',
+                                                                style: TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                ),
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                        
+                                                              ),
+                                                            
+                                                        
+                                                                
+                                                            ),
+                                                            Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                IconButton(
+                                                                  icon: Icon(
+                                                                      Icons.edit),
+                                                                 onPressed: () async {
+                                                                  String? updatedDuration = await showDialog<String>(
+                                                                    context: context,
+                                                                    builder: (BuildContext context) {
+                                                                      return ModifyDialog(
+                                                                        widgetData: widget,
+                                                                      );
+                                                                    },
+                                                                  );
+                                                                  // Update the state with the new duration if it's not null
+                                                                 if (updatedDuration != null) {
+                                                                  setState(() {
+                                                                    widget.duration = int.parse(updatedDuration!) ;
+                                                                  });
+                                                                }
+                                                                },
+
+                                                                ),
+                                                                SizedBox(
+                                                                    width: 5),
+                                                                IconButton(
+                                                                  icon: Icon(Icons
+                                                                      .delete),
+                                                                  onPressed:
+                                                                      () {},
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        alignment:
+                                                            Alignment.center,
+                                                        width: 120,
+                                                        height: 96,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: boxColor,
+                                                          border: Border.all(
+                                                            color: boxColor,
+                                                            width: 2,
                                                           ),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      10),
                                                         ),
                                                       ),
-                                                ],
-                                              ),
+                                                    ),
+                                              ],
                                             ),
                                           ),
                                         ],
                                       ),
-                                    ],
-                                  ),
-                                );
-                              },
+                                    ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -280,7 +338,9 @@ class _PlaylistDetail extends State<PlaylistDetail> {
             child: Center(
               child: IntrinsicWidth(
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    await _updatePlaylistDuration();
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kSecondaryColor,
                   ),

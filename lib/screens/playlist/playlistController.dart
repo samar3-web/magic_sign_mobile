@@ -18,6 +18,8 @@ class PlaylistController extends GetxController {
   List<String> assignedMedia = [];
   List<Regions>? timelines = <Regions>[].obs;
   RxList<PlaylistRessource> playlistRessource = <PlaylistRessource>[].obs;
+  RxInt playlistDuration = 0.obs;
+
 
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -250,4 +252,52 @@ class PlaylistController extends GetxController {
     }
   }
 
+  editWidget(int widgetId, String duration) async {
+    try{
+       Map<String, dynamic> body = {
+        'duration': duration.toString(),
+      };
+    String? accessToken = await getAccessToken();
+    http.Response response = await http.put(
+        Uri.parse('https://magic-sign.cloud/v_ar/web/api/playlist/widget/$widgetId'),
+        body: body,
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      );
+      print(response.statusCode);
+      print(response.body);
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+      } else {
+        print('response status code not 200');
+      }
+    } catch (e) {
+      print(e);
+    }
+    }
+
+     Future<void> updatePlaylistDuration(int layoutId, String newDuration) async {
+    try {
+      String? accessToken = await getAccessToken();
+      http.Response response = await http.put(
+        Uri.parse('https://magic-sign.cloud/v_ar/web/api/layout/$layoutId'),
+        body: {'duration': newDuration},
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      );
+      if (response.statusCode == 200) {
+        print('Playlist duration updated successfully');
+      } else {
+        print('Failed to update playlist duration');
+      }
+    } catch (e) {
+      print('Error updating playlist duration: $e');
+    }
+  }
+
+  
 }

@@ -107,32 +107,30 @@ class MediaController extends GetxController {
   }
 
   Future<void> uploadFiles(List<File> files) async {
-    try {
-      String? accessToken = await getAccessToken();
+  try {
+    String? accessToken = await getAccessToken();
 
-      for (File file in files) {
-        var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
+    for (File file in files) {
+      var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
 
-        // Add file to form data
-        request.files
-            .add(await http.MultipartFile.fromPath('files', file.path));
+      request.files.add(
+        await http.MultipartFile.fromPath('MSlibrary', file.path),
+      );
+      request.headers['Authorization'] = 'Bearer $accessToken';
 
-        // Set authorization header
-        request.headers['Authorization'] = 'Bearer $accessToken';
+      var response = await request.send();
 
-        // Send request
-        var response = await request.send();
-
-        if (response.statusCode == 200) {
-          print('File uploaded successfully');
-        } else {
-          print('File upload failed');
-        }
+      if (response.statusCode == 200) {
+        print('File uploaded successfully');
+      } else {
+        print('File upload failed');
       }
-    } catch (e) {
-      print('Error uploading files: $e');
     }
+  } catch (e) {
+    print('Error uploading files: $e');
   }
+}
+
 
   updateMediaData(
       int mediaId, String name, String duration, String retired) async {
