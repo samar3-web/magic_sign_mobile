@@ -50,10 +50,8 @@ class _PlaylistDetail extends State<PlaylistDetail> {
   }
 }
 
-// Method to update the duration of the playlist
 Future<void> _updatePlaylistDuration() async {
   try {
-    // Calculate the new duration of the playlist
     int totalDuration = 0;
     for (var timeline in playlistController.timelines!) {
       for (var playlist in timeline.playlists!) {
@@ -62,9 +60,9 @@ Future<void> _updatePlaylistDuration() async {
         }
       }
     }
-    // Update the duration of the playlist
-    await playlistController.updatePlaylistDuration(widget.playlist.playlistId, totalDuration.toString());
-    // Refresh the UI
+    playlistController.playlistDuration.value = totalDuration;
+        print('Playlist duration updated: $totalDuration');
+
     setState(() {});
   } catch (e) {
     print('Error updating playlist duration: $e');
@@ -277,7 +275,6 @@ Future<void> _updatePlaylistDuration() async {
                                                                       );
                                                                     },
                                                                   );
-                                                                  // Update the state with the new duration if it's not null
                                                                  if (updatedDuration != null) {
                                                                   setState(() {
                                                                     widget.duration = int.parse(updatedDuration!) ;
@@ -331,7 +328,7 @@ Future<void> _updatePlaylistDuration() async {
                     ),
                   ),
           ),
-          Positioned(
+         Positioned(
             bottom: 10,
             left: 0,
             right: 0,
@@ -361,6 +358,7 @@ Future<void> _updatePlaylistDuration() async {
                     ],
                   ),
                 ),
+
               ),
             ),
           ),
@@ -368,4 +366,6 @@ Future<void> _updatePlaylistDuration() async {
       ),
     );
   }
+
+
 }
