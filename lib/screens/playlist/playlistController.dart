@@ -19,6 +19,8 @@ class PlaylistController extends GetxController {
   List<Regions>? timelines = <Regions>[].obs;
   RxList<PlaylistRessource> playlistRessource = <PlaylistRessource>[].obs;
   RxInt playlistDuration = 0.obs;
+  var isLoading = false.obs;
+  var originalPlaylistList = <Playlist>[].obs;
 
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -326,6 +328,7 @@ class PlaylistController extends GetxController {
       print(e);
     }
   }
+  
   Future<void> deleteLayout(int layoutId) async {
   try {
     String? accessToken = await getAccessToken();
@@ -345,5 +348,56 @@ class PlaylistController extends GetxController {
     print(e);
   }
 }
+ //search
+ 
+  Future<void> searchPlaylist(String value) async {
+    try {
+      isLoading(true);
+
+      String? accessToken = await getAccessToken();
+      if (accessToken == null) {
+        Get.snackbar(
+          "Error",
+          "Access token not available. Please log in again.",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      final response = await http.get(
+        Uri.parse('https://magic-sign.cloud/v_ar/web/api/layout?layout=$value'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        var jsonData = (json.decode(response.body) as List)
+            .map((e) => Playlist.fromJson(e))
+            .toList();
+
+        print(jsonData);
+        playlistList.assignAll(jsonData);
+        originalPlaylistList.assignAll(jsonData);
+      } else {
+        print('Failed to search playlist. Status code: ${response.statusCode}');
+        Get.snackbar(
+          "Error",
+          "Failed to search playlist. Status code: ${response.statusCode}",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    } catch (e) {
+      print('Error searching playlist: $e');
+      Get.snackbar(
+        "Error",
+        "Error searching playlist. Please try again later.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading(false);
+    }
+  }
 
 }

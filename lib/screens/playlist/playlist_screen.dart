@@ -35,26 +35,31 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     Get.to(() => PlaylistDetail(playlist: playlist), arguments: playlist);
   }
 
-    Future<void> _showEditLayoutNameDialog(int layoutId, String currentName) async {
+  Future<void> _showEditLayoutNameDialog(
+      int layoutId, String currentName) async {
     String newName = currentName;
     await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Modifier la mise en page',
-          style: TextStyle(
-            fontSize: 18, 
-            fontWeight: FontWeight.bold, 
-            color: Colors.black, 
-          ),),
+          title: Text(
+            'Modifier la mise en page',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
           content: TextField(
             autofocus: true,
-            decoration: InputDecoration(labelText: 'Nom', labelStyle: TextStyle(color: kTextBlackColor,fontSize: 17.0)),
+            decoration: InputDecoration(
+                labelText: 'Nom',
+                labelStyle: TextStyle(color: kTextBlackColor, fontSize: 17.0)),
             controller: TextEditingController(text: currentName),
-             style: TextStyle(
-                              fontSize: 17.0,
-                              fontWeight: FontWeight.w300,
-                            ),
+            style: TextStyle(
+              fontSize: 17.0,
+              fontWeight: FontWeight.w300,
+            ),
             onChanged: (value) {
               newName = value;
             },
@@ -80,7 +85,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       },
     );
   }
-Future<void> _showConfirmDeleteDialog(int layoutId, String layoutName) async {
+
+  Future<void> _showConfirmDeleteDialog(int layoutId, String layoutName) async {
     bool deleteConfirmed = false;
     await showDialog(
       context: context,
@@ -88,18 +94,18 @@ Future<void> _showConfirmDeleteDialog(int layoutId, String layoutName) async {
         return AlertDialog(
           title: Text('Supprimer "$layoutName"'),
           content: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Êtes-vous sûr de vouloir supprimer cette mise en page ?'),
-            SizedBox(height: 8),
-            Text(
-              'Tous les médias non attribués à une Mise en page comme les textes et les flux RSS seront perdus. La Mise en page sera également supprimée de toutes les planifications.',
-              style: TextStyle(color: Colors.red),
-            ),
-          ],
-        ),          
-        actions: <Widget>[
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Êtes-vous sûr de vouloir supprimer cette mise en page ?'),
+              SizedBox(height: 8),
+              Text(
+                'Tous les médias non attribués à une Mise en page comme les textes et les flux RSS seront perdus. La Mise en page sera également supprimée de toutes les planifications.',
+                style: TextStyle(color: Colors.red),
+              ),
+            ],
+          ),
+          actions: <Widget>[
             TextButton(
               onPressed: () {
                 deleteConfirmed = true;
@@ -125,7 +131,9 @@ Future<void> _showConfirmDeleteDialog(int layoutId, String layoutName) async {
     }
   }
 
-    @override
+
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -143,11 +151,26 @@ Future<void> _showConfirmDeleteDialog(int layoutId, String layoutName) async {
         backgroundColor: kSecondaryColor,
         child: Icon(Icons.add),
       ),
-      body: Center(
-        child: Column(
-          children: [
-            // Your other widgets...
-            Expanded(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              style: TextStyle(fontSize: 16.0),
+              decoration: InputDecoration(
+                hintText: 'Search...',
+                hintStyle: TextStyle(color: boxColor),
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                playlistController.searchPlaylist(value);
+              },
+            ),
+          ),
+          Expanded(
+            child: Center(
               child: Obx(
                 () => RefreshIndicator(
                   onRefresh: playlistController.getPlaylist,
@@ -162,7 +185,8 @@ Future<void> _showConfirmDeleteDialog(int layoutId, String layoutName) async {
                       : ListView.builder(
                           itemCount: playlistController.playlistList.length,
                           itemBuilder: (context, index) {
-                            Playlist playlist = playlistController.playlistList[index];
+                            Playlist playlist =
+                                playlistController.playlistList[index];
                             Color statusColor = playlist.status == '3'
                                 ? Colors.green
                                 : playlist.status == '2'
@@ -172,7 +196,8 @@ Future<void> _showConfirmDeleteDialog(int layoutId, String layoutName) async {
                             return GestureDetector(
                               onTap: () => _navigateToDetailScreen(playlist),
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8.0, horizontal: 16.0),
                                 child: Container(
                                   decoration: BoxDecoration(
                                     color: Colors.white,
@@ -188,28 +213,37 @@ Future<void> _showConfirmDeleteDialog(int layoutId, String layoutName) async {
                                   ),
                                   child: ListTile(
                                     title: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           'Layout: ${playlist.layout}',
-                                          style: Theme.of(context).textTheme.bodyText2,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyText2,
                                         ),
                                         SizedBox(height: 4),
                                         Text(
                                           'Duration: ${formatDuration(playlist.duration)}',
-                                          style: Theme.of(context).textTheme.bodyText2,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyText2,
                                         ),
                                         SizedBox(height: 4),
                                         Text(
                                           'Owner: ${playlist.owner}',
-                                          style: Theme.of(context).textTheme.bodyText2,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyText2,
                                         ),
                                         SizedBox(height: 4),
                                         Row(
                                           children: [
                                             Text(
                                               'Status : ',
-                                              style: Theme.of(context).textTheme.bodyText2,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyText2,
                                             ),
                                             SizedBox(width: 4),
                                             Container(
@@ -225,22 +259,27 @@ Future<void> _showConfirmDeleteDialog(int layoutId, String layoutName) async {
                                       ],
                                     ),
                                     trailing: PopupMenuButton<String>(
-                                      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                      itemBuilder: (BuildContext context) =>
+                                          <PopupMenuEntry<String>>[
                                         const PopupMenuItem<String>(
                                           value: 'Option 1',
-                                          child: Text('éditer'),
+                                          child: Text('Option 1'),
                                         ),
                                         const PopupMenuItem<String>(
                                           value: 'Option 2',
-                                          child: Text('supprimer'),
+                                          child: Text('Option 2'),
                                         ),
                                         // Add more PopupMenuItems if needed
                                       ],
                                       onSelected: (String value) {
                                         if (value == 'Option 1') {
-                                           _showEditLayoutNameDialog(playlist.layoutId, playlist.layout);
+                                          _showEditLayoutNameDialog(
+                                              playlist.layoutId,
+                                              playlist.layout);
                                         } else if (value == 'Option 2') {
-                                          _showConfirmDeleteDialog(playlist.layoutId, playlist.layout);
+                                          _showConfirmDeleteDialog(
+                                              playlist.layoutId,
+                                              playlist.layout);
                                         }
                                       },
                                       child: Icon(Icons.arrow_drop_down),
@@ -254,8 +293,8 @@ Future<void> _showConfirmDeleteDialog(int layoutId, String layoutName) async {
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
