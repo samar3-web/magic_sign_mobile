@@ -281,6 +281,50 @@ class PlaylistController extends GetxController {
     }
   }
 
+Future<void> deleteWidget(int widgetId) async {
+  try {
+    String? accessToken = await getAccessToken();
+    if (accessToken == null) {
+      Get.snackbar(
+        "Error",
+        "Access token not available. Please log in again.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    final response = await http.delete(
+      Uri.parse('https://magic-sign.cloud/v_ar/web/api/playlist/widget/$widgetId'),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    );
+
+    if (response.statusCode == 200) {
+        Get.snackbar(
+        "Succès",
+        "widget suprrimé avec succès",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } else {
+      print('Failed to delete widget. Status code: ${response.statusCode}');
+      Get.snackbar(
+        "Error",
+        "Failed to delete widget. Status code: ${response.statusCode}",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  } catch (e) {
+    print('Error deleting widget: $e');
+    Get.snackbar(
+      "Error",
+      "Error deleting widget. Please try again later.",
+      snackPosition: SnackPosition.BOTTOM,
+    );
+  }
+}
+
   Future<void> updatePlaylistDuration(int layoutId, String newDuration) async {
     try {
       String? accessToken = await getAccessToken();

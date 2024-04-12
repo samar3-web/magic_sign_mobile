@@ -76,6 +76,42 @@ Future<void> _updatePlaylistDuration() async {
     int seconds = duration % 60;
     return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
+Future<void> _showConfirmDeleteWidgetDialog(int widgetId) async {
+  bool deleteConfirmed = false;
+  await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Delete Widget'),
+        content: Text('Are you sure you want to delete this widget?'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              deleteConfirmed = true;
+              Navigator.of(context).pop();
+            },
+            child: Text('Yes'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('No'),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (deleteConfirmed) {
+    playlistController.deleteWidget(widgetId).then((_) {
+    setState(() {
+    playlistController.getAssignedMedia(widget.playlist.layoutId);  
+        });
+ 
+ });
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -289,7 +325,10 @@ Future<void> _updatePlaylistDuration() async {
                                                                   icon: Icon(Icons
                                                                       .delete),
                                                                   onPressed:
-                                                                      () {},
+                                                                      () {
+                                                                      _showConfirmDeleteWidgetDialog(widget.widgetId!);
+
+                                                                      },
                                                                 ),
                                                               ],
                                                             ),
