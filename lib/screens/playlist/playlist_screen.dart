@@ -35,7 +35,97 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     Get.to(() => PlaylistDetail(playlist: playlist), arguments: playlist);
   }
 
-  @override
+    Future<void> _showEditLayoutNameDialog(int layoutId, String currentName) async {
+    String newName = currentName;
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Modifier la mise en page',
+          style: TextStyle(
+            fontSize: 18, 
+            fontWeight: FontWeight.bold, 
+            color: Colors.black, 
+          ),),
+          content: TextField(
+            autofocus: true,
+            decoration: InputDecoration(labelText: 'Nom', labelStyle: TextStyle(color: kTextBlackColor,fontSize: 17.0)),
+            controller: TextEditingController(text: currentName),
+             style: TextStyle(
+                              fontSize: 17.0,
+                              fontWeight: FontWeight.w300,
+                            ),
+            onChanged: (value) {
+              newName = value;
+            },
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                playlistController.editLayout(layoutId, newName).then((_) {
+                  playlistController.getPlaylist();
+                });
+                Navigator.of(context).pop();
+              },
+              child: Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+Future<void> _showConfirmDeleteDialog(int layoutId, String layoutName) async {
+    bool deleteConfirmed = false;
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Supprimer "$layoutName"'),
+          content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Êtes-vous sûr de vouloir supprimer cette mise en page ?'),
+            SizedBox(height: 8),
+            Text(
+              'Tous les médias non attribués à une Mise en page comme les textes et les flux RSS seront perdus. La Mise en page sera également supprimée de toutes les planifications.',
+              style: TextStyle(color: Colors.red),
+            ),
+          ],
+        ),          
+        actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                deleteConfirmed = true;
+                Navigator.of(context).pop();
+              },
+              child: Text('Oui'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Non'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (deleteConfirmed) {
+      playlistController.deleteLayout(layoutId).then((_) {
+        playlistController.getPlaylist();
+      });
+    }
+  }
+
+    @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -56,27 +146,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       body: Center(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      style: TextStyle(fontSize: 16.0),
-                      decoration: InputDecoration(
-                        hintText: 'Search...',
-                        hintStyle: TextStyle(color: boxColor),
-                        prefixIcon: Icon(Icons.search),
-                        border: OutlineInputBorder(),
-                      ),
-                      onChanged: (value) {
-                        //mediaController.searchMedia(value);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // Your other widgets...
             Expanded(
               child: Obx(
                 () => RefreshIndicator(
@@ -154,7 +224,27 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                         ),
                                       ],
                                     ),
-                                    trailing: Icon(Icons.arrow_drop_down),
+                                    trailing: PopupMenuButton<String>(
+                                      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                        const PopupMenuItem<String>(
+                                          value: 'Option 1',
+                                          child: Text('éditer'),
+                                        ),
+                                        const PopupMenuItem<String>(
+                                          value: 'Option 2',
+                                          child: Text('supprimer'),
+                                        ),
+                                        // Add more PopupMenuItems if needed
+                                      ],
+                                      onSelected: (String value) {
+                                        if (value == 'Option 1') {
+                                           _showEditLayoutNameDialog(playlist.layoutId, playlist.layout);
+                                        } else if (value == 'Option 2') {
+                                          _showConfirmDeleteDialog(playlist.layoutId, playlist.layout);
+                                        }
+                                      },
+                                      child: Icon(Icons.arrow_drop_down),
+                                    ),
                                   ),
                                 ),
                               ),

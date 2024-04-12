@@ -20,7 +20,6 @@ class PlaylistController extends GetxController {
   RxList<PlaylistRessource> playlistRessource = <PlaylistRessource>[].obs;
   RxInt playlistDuration = 0.obs;
 
-
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('access_token');
@@ -29,61 +28,59 @@ class PlaylistController extends GetxController {
     return accessToken;
   }
 
-Future<void> getPlaylist() async {
-  try {
-    String? accessToken = await getAccessToken();
-    print('Access Token: $accessToken'); 
-    if (accessToken == null) {
-      // Handle case when access token is not available
-      Get.snackbar(
-        "Error",
-        "Access token not available. Please log in again.",
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
-
-    final response = await http.get(
-      Uri.parse(apiUrl),
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    print('Response Status Code: ${response.statusCode}'); 
-    print('Response Body: ${response.body}'); 
-
-    if (response.statusCode == 200) {
-      // Handle successful response
-      var jsonData = json.decode(response.body) as List?;
-      if (jsonData != null) {
-        var playlists = jsonData.map((e) => Playlist.fromJson(e)).toList();
-        playlistList.assignAll(playlists);
-      } else {
-        print('Response body is null or not a list');
+  Future<void> getPlaylist() async {
+    try {
+      String? accessToken = await getAccessToken();
+      print('Access Token: $accessToken');
+      if (accessToken == null) {
+        // Handle case when access token is not available
+        Get.snackbar(
+          "Error",
+          "Access token not available. Please log in again.",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
       }
-    } else {
-      // Handle error response
-      print('Failed to load playlist. Status code: ${response.statusCode}');
+
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        // Handle successful response
+        var jsonData = json.decode(response.body) as List?;
+        if (jsonData != null) {
+          var playlists = jsonData.map((e) => Playlist.fromJson(e)).toList();
+          playlistList.assignAll(playlists);
+        } else {
+          print('Response body is null or not a list');
+        }
+      } else {
+        // Handle error response
+        print('Failed to load playlist. Status code: ${response.statusCode}');
+        Get.snackbar(
+          "Error",
+          "Failed to load playlist. Status code: ${response.statusCode}",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    } catch (e) {
+      // Handle exceptions
+      print('Error fetching playlist: $e');
       Get.snackbar(
         "Error",
-        "Failed to load playlist. Status code: ${response.statusCode}",
+        "Error fetching playlist. Please try again later.",
         snackPosition: SnackPosition.BOTTOM,
       );
     }
-  } catch (e) {
-    // Handle exceptions
-    print('Error fetching playlist: $e');
-    Get.snackbar(
-      "Error",
-      "Error fetching playlist. Please try again later.",
-      snackPosition: SnackPosition.BOTTOM,
-    );
   }
- 
-}
-
 
   Future<void> assignPlaylist(List<int> mediaIds, int playlistId) async {
     try {
@@ -256,13 +253,14 @@ Future<void> getPlaylist() async {
   }
 
   editWidget(int widgetId, String duration) async {
-    try{
-       Map<String, dynamic> body = {
+    try {
+      Map<String, dynamic> body = {
         'duration': duration.toString(),
       };
-    String? accessToken = await getAccessToken();
-    http.Response response = await http.put(
-        Uri.parse('https://magic-sign.cloud/v_ar/web/api/playlist/widget/$widgetId'),
+      String? accessToken = await getAccessToken();
+      http.Response response = await http.put(
+        Uri.parse(
+            'https://magic-sign.cloud/v_ar/web/api/playlist/widget/$widgetId'),
         body: body,
         headers: {
           'Authorization': 'Bearer $accessToken',
@@ -279,9 +277,9 @@ Future<void> getPlaylist() async {
     } catch (e) {
       print(e);
     }
-    }
+  }
 
-     Future<void> updatePlaylistDuration(int layoutId, String newDuration) async {
+  Future<void> updatePlaylistDuration(int layoutId, String newDuration) async {
     try {
       String? accessToken = await getAccessToken();
       http.Response response = await http.put(
@@ -302,5 +300,50 @@ Future<void> getPlaylist() async {
     }
   }
 
-  
+  editLayout(int layoutId, String name) async {
+    try {
+      Map<String, dynamic> body = {
+        'name': name,
+      };
+
+      String? accessToken = await getAccessToken();
+      http.Response response = await http.put(
+        Uri.parse('https://magic-sign.cloud/v_ar/web/api/layout/$layoutId'),
+        body: body,
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      );
+      print(response.statusCode);
+      print(response.body);
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+      } else {
+        print('response status code not 200');
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+  Future<void> deleteLayout(int layoutId) async {
+  try {
+    String? accessToken = await getAccessToken();
+    http.Response response = await http.delete(
+      Uri.parse('https://magic-sign.cloud/v_ar/web/api/layout/$layoutId'),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+    print(response.statusCode);
+    if (response.statusCode == 204) {
+      print('Layout deleted successfully');
+    } else {
+      print('Failed to delete layout');
+    }
+  } catch (e) {
+    print(e);
+  }
+}
+
 }
