@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/screens/drawer_item.dart';
 import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart';
+import 'package:magic_sign_mobile/screens/login_screen/loginController.dart';
 import 'package:magic_sign_mobile/screens/media_screen/media_screen.dart';
 import 'package:magic_sign_mobile/screens/my_profile/my_profile.dart';
 import 'package:magic_sign_mobile/screens/planification/planification_screen.dart';
@@ -9,7 +10,9 @@ import 'package:magic_sign_mobile/screens/player/player_screen.dart';
 import 'package:magic_sign_mobile/screens/playlist/playlist_screen.dart';
 
 class NavBar extends StatelessWidget {
-  const NavBar({Key? key}) : super(key: key);
+   NavBar({Key? key}) : super(key: key);
+
+  final LoginController _loginController = LoginController(); // Instantiate the login controller
 
   @override
   Widget build(BuildContext context) {
@@ -71,11 +74,11 @@ class NavBar extends StatelessWidget {
 
                     const Divider(),
 
-                    //LOGOUT (Placeholder)
+                    //LOGOUT
                     DrawerItem(
                       name: 'Se déconnecter',
                       icon: Icons.logout,
-                      onPressed: () => onItemPressed(context, index: -1), // Placeholder index for Logout
+                      onPressed: () => _loginController.logout(), // Call the logout function
                     ),
                   ],
                 ),
@@ -105,5 +108,4 @@ final List<Map<String, dynamic>> drawerRoutes = [
   {'name': 'Playlists', 'icon': Icons.playlist_play, 'routeName': PlaylistScreen.routeName},
   {'name': 'Afficheur', 'icon': Icons.tv, 'routeName': PlayerScreen.routeName},
   {'name': 'Planification', 'icon': Icons.event, 'routeName': PlanificationScreen.routeName},
-
 ];

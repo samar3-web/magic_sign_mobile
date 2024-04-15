@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart';
+import 'package:magic_sign_mobile/screens/login_screen/login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginController extends GetxController {
@@ -15,11 +16,9 @@ class LoginController extends GetxController {
       "username": username.text,
       "password": password.text,
       "grant_type": "client_credentials",
-      // for super admin "client_id": "xpFXul0aZEVcNbXZaMfMZS6XcUivtI5xhFFyBaps",
       "client_id": "RfLCI42cY8mkBlU8pYeYH7WB6Jb0BUddPKBlq0Wk",
       " client_secret": "rsfhZasvCPk6ObQ7g5WykvOhYyELqEFHEm7MznJ4BsFMJXmquCgmt5nimwPk5tY8GXnosgd9pJ2Awbwk4GcmDhGlCgKXzc5mIbGsbVZ115Z5D7P24mUn5kOQCNupAd373B4bmB5lOhE9zqklQQO9gv1tXnJGru8KZlFwdjP47JVAXirzhSClXSlERlyO72FwjWLP7EBEa4PK2eRGHTrCmjxXEbwVKJ4H9ydSIhtdDV6D7m38EWAeYQRXjDBmFH"
-      // for super admin "client_secret":
-          //"6KtHovsZM52sW9dvYKhYTHXhTyCbEXWpyST5niIvtLKBQw8tiYai1xrCtGdimzTjIe7nUMVtPgY5KiK3WipDTDOxZl0De8AhOwzZI5bhFsEEwuQklXbU2xHH3lbiCdQiEFniqN2p0f2HCpOtzifABrJvgPsXNP12WrVuybdGv4Pj6IpcJflrrQ4spOwiwDOHr3boiQkA2tTthyV7yTjl8qctb4zNPnU7NHnMnuCYguE6hLATxIbvCY4Pz3yP0J"
+      
     };
     var response = await http.post(Uri.parse(url), body: body, headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -69,6 +68,11 @@ class LoginController extends GetxController {
   }
 
   
-
+ logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('access_token');
+    print('Access Token Removed');
+    Get.offAll(() => LoginScreen());
+  }
 
 }
