@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:magic_sign_mobile/screens/media_screen/DeleteDialog.dart';
 import 'package:magic_sign_mobile/screens/media_screen/ModifyDialog.dart';
-import 'package:magic_sign_mobile/screens/model/Media.dart';
+import 'package:magic_sign_mobile/model/Media.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:video_player/video_player.dart';
 class MediaDetailsDialog extends StatefulWidget {

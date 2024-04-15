@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
-import 'package:magic_sign_mobile/screens/media_screen/mediaController.dart';
-import 'package:magic_sign_mobile/screens/model/Playlist.dart';
-import 'package:magic_sign_mobile/screens/model/PlaylistRessource.dart';
-import 'package:magic_sign_mobile/screens/model/Playlists.dart';
-import 'package:magic_sign_mobile/screens/model/Widget.dart';
-import 'package:magic_sign_mobile/screens/playlist/playlistController.dart';
+import 'package:magic_sign_mobile/controller/mediaController.dart';
+import 'package:magic_sign_mobile/model/Playlist.dart';
+import 'package:magic_sign_mobile/model/PlaylistRessource.dart';
+import 'package:magic_sign_mobile/model/Playlists.dart';
+import 'package:magic_sign_mobile/model/Widget.dart';
+import 'package:magic_sign_mobile/controller/playlistController.dart';
 import 'package:magic_sign_mobile/screens/playlist/previewScreen.dart';
 import 'package:magic_sign_mobile/screens/playlist/updateWidget.dart';
 
-import '../model/Media.dart';
+import '../../model/Media.dart';
 
 class PlaylistDetail extends StatefulWidget {
   const PlaylistDetail({Key? key, required this.playlist}) : super(key: key);
@@ -204,165 +204,148 @@ Future<void> _showConfirmDeleteWidgetDialog(int widgetId) async {
                           ),
                         ),
                         SizedBox(height: 5),
-                        Expanded(
-                          child: Container(
-                            height: 250,
-                            width: MediaQuery.of(context).size.width,
-                            child: SingleChildScrollView(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  for (int i = 0;
-                                      i < playlistController.timelines!.length;
-                                      i++)
+                       Expanded(
+  child: Container(
+    height: 250,
+    width: MediaQuery.of(context).size.width,
+    child: SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (int i = 0; i < playlistController.timelines!.length; i++)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    child: Text('Timeline ${i + 1}',
+                        style: TextStyle(color: Colors.white)),
+                    alignment: Alignment.center,
+                    width: 120,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: kSecondaryColor,
+                      border: Border.all(
+                        color: kSecondaryColor,
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        for (Playlists playlist
+                            in playlistController.timelines![i].playlists!)
+                          for (WidgetData widget in playlist.widgets!)
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 1.0),
+                              child: Container(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    // Condition pour afficher le contenu en fonction du type
+                                    if (widget.mediaIds!.isNotEmpty) 
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 1.0),
+                                        child: Text(
+                                          '${mediaController.getMediaById(int.parse(widget.mediaIds![0]))?.name}',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      )
+                                    else
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 1.0),
+                                        child: Text(
+                                          widget.type!,
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
                                     Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            child: Text('Timeline ${i + 1}',
-                                                style: TextStyle(
-                                                    color: Colors.white)),
-                                            alignment: Alignment.center,
-                                            width: 120,
-                                            height: 40,
-                                            decoration: BoxDecoration(
-                                              color: kSecondaryColor,
-                                              border: Border.all(
-                                                color: kSecondaryColor,
-                                                width: 2,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                          ),
-                                          SizedBox(height: 8),
-                                          SingleChildScrollView(
-                                            scrollDirection: Axis.horizontal,
-                                            child: Row(
-                                              children: [
-                                                for (Playlists playlist
-                                                    in playlistController
-                                                        .timelines![i]
-                                                        .playlists!)
-                                                  for (WidgetData widget
-                                                      in playlist.widgets!)
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                              horizontal: 1.0),
-                                                      child: Container(
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Padding(
-                                                              padding: const EdgeInsets.symmetric(
-                                                                  vertical: 1.0),
-                                                              child: Text(
-                                                                '${mediaController.getMediaById(int.parse(widget.mediaIds![0]))?.name}',
-                                                                style: TextStyle(
-                                                                  color: Colors
-                                                                      .white,
-                                                                ),
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                              ),
-                                                            ),
-                                                            Padding(
-                                                              padding: const EdgeInsets.symmetric(
-                                                                  vertical: 1.0),
-                                                              child: Text(
-                                                                '${formatDuration(widget.duration.toString())}',
-                                                                style: TextStyle(
-                                                                  color: Colors
-                                                                      .white,
-                                                                ),
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                                        
-                                                              ),
-                                                            
-                                                        
-                                                                
-                                                            ),
-                                                            Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .center,
-                                                              children: [
-                                                                IconButton(
-                                                                  icon: Icon(
-                                                                      Icons.edit),
-                                                                 onPressed: () async {
-                                                                  String? updatedDuration = await showDialog<String>(
-                                                                    context: context,
-                                                                    builder: (BuildContext context) {
-                                                                      return ModifyDialog(
-                                                                        widgetData: widget,
-                                                                      );
-                                                                    },
-                                                                  );
-                                                                 if (updatedDuration != null) {
-                                                                  setState(() {
-                                                                    widget.duration = int.parse(updatedDuration!) ;
-                                                                  });
-                                                                }
-                                                                },
-
-                                                                ),
-                                                                SizedBox(
-                                                                    width: 5),
-                                                                IconButton(
-                                                                  icon: Icon(Icons
-                                                                      .delete),
-                                                                  onPressed:
-                                                                      () {
-                                                                      _showConfirmDeleteWidgetDialog(widget.widgetId!);
-
-                                                                      },
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        alignment:
-                                                            Alignment.center,
-                                                        width: 120,
-                                                        height: 96,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: boxColor,
-                                                          border: Border.all(
-                                                            color: boxColor,
-                                                            width: 2,
-                                                          ),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      10),
-                                                        ),
-                                                      ),
-                                                    ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 1.0),
+                                      child: Text(
+                                        '${formatDuration(widget.duration.toString())}',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                        textAlign: TextAlign.center,
                                       ),
                                     ),
-                                ],
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(Icons.edit),
+                                          onPressed: () async {
+                                            String? updatedDuration =
+                                                await showDialog<String>(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return ModifyDialog(
+                                                  widgetData: widget,
+                                                );
+                                              },
+                                            );
+                                            if (updatedDuration != null) {
+                                              setState(() {
+                                                widget.duration =
+                                                    int.parse(updatedDuration!);
+                                              });
+                                            }
+                                          },
+                                        ),
+                                        SizedBox(width: 5),
+                                        IconButton(
+                                          icon: Icon(Icons.delete),
+                                          onPressed: () {
+                                            _showConfirmDeleteWidgetDialog(
+                                                widget.widgetId!);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                alignment: Alignment.center,
+                                width: 120,
+                                height: 96,
+                                decoration: BoxDecoration(
+                                  color: boxColor,
+                                  border: Border.all(
+                                    color: boxColor,
+                                    width: 2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    ),
+  ),
+),
+
                       ],
                     ),
                   ),

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
-import 'package:magic_sign_mobile/screens/model/Playlist.dart';
+import 'package:magic_sign_mobile/model/Playlist.dart';
 import 'package:magic_sign_mobile/screens/playlist/addPlaylist.dart';
-import 'package:magic_sign_mobile/screens/playlist/playlistController.dart';
+import 'package:magic_sign_mobile/controller/playlistController.dart';
 import 'package:magic_sign_mobile/screens/playlist/playlist_details.dart';
 
 class PlaylistScreen extends StatefulWidget {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:magic_sign_mobile/constants.dart';
-import 'package:magic_sign_mobile/screens/playlist/playlistController.dart';
+import 'package:magic_sign_mobile/controller/playlistController.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AddLayoutPopup extends StatefulWidget {

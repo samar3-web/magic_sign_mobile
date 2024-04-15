@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart';
-import 'package:magic_sign_mobile/screens/login_screen/loginController.dart';
+import 'package:magic_sign_mobile/controller/loginController.dart';
 
 late bool _passwordVisible;
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:magic_sign_mobile/constants.dart';
-import 'package:magic_sign_mobile/navbar.dart';
+import 'package:magic_sign_mobile/widgets/navbar.dart';
 import 'package:magic_sign_mobile/screens/my_profile/my_profile.dart';
 
 class HomeScreen extends StatelessWidget {

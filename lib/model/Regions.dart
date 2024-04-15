@@ -1,6 +1,6 @@
-import 'package:magic_sign_mobile/screens/model/Playlist.dart';
-import 'package:magic_sign_mobile/screens/model/Playlists.dart';
-import 'package:magic_sign_mobile/screens/model/Timeline.dart';
+import 'package:magic_sign_mobile/model/Playlist.dart';
+import 'package:magic_sign_mobile/model/Playlists.dart';
+import 'package:magic_sign_mobile/model/Timeline.dart';
 
 class Regions {
   int? regionId;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:magic_sign_mobile/screens/media_screen/mediaController.dart';
-import 'package:magic_sign_mobile/screens/model/Media.dart';
+import 'package:magic_sign_mobile/controller/mediaController.dart';
+import 'package:magic_sign_mobile/model/Media.dart';
 
 class DeleteDialog extends StatefulWidget {
   final Media media;

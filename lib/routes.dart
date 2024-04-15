@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart';
 import 'package:magic_sign_mobile/screens/media_screen/media_screen.dart';
-import 'package:magic_sign_mobile/screens/model/Playlist.dart';
+import 'package:magic_sign_mobile/model/Playlist.dart';
 import 'package:magic_sign_mobile/screens/my_profile/my_profile.dart';
 import 'package:magic_sign_mobile/screens/planification/planification_screen.dart';
 import 'package:magic_sign_mobile/screens/player/player_screen.dart';

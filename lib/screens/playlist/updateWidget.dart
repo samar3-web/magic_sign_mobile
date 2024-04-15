@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:magic_sign_mobile/constants.dart';
-import 'package:magic_sign_mobile/screens/model/Widget.dart';
-import 'package:magic_sign_mobile/screens/playlist/playlistController.dart';
+import 'package:magic_sign_mobile/model/Widget.dart';
+import 'package:magic_sign_mobile/controller/playlistController.dart';
 
 class ModifyDialog extends StatefulWidget {
   final WidgetData widgetData;

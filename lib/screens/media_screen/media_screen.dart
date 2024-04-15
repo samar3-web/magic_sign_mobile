@@ -4,9 +4,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
-import 'package:magic_sign_mobile/screens/media_screen/mediaController.dart';
+import 'package:magic_sign_mobile/controller/mediaController.dart';
 import 'package:magic_sign_mobile/screens/media_screen/media_details_dialog.dart';
-import 'package:magic_sign_mobile/screens/model/Media.dart';
+import 'package:magic_sign_mobile/model/Media.dart';
 
 class MediaScreen extends StatefulWidget {
   const MediaScreen({Key? key}) : super(key: key);

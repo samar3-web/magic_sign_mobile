@@ -1,4 +1,4 @@
-import 'package:magic_sign_mobile/screens/model/Regions.dart';
+import 'package:magic_sign_mobile/model/Regions.dart';
 
 class Timeline {
   int? layoutId;

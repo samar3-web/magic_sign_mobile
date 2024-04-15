@@ -3,11 +3,11 @@ import 'dart:developer';
 
 import 'package:get/get.dart';
 import 'package:get/get_rx/get_rx.dart';
-import 'package:magic_sign_mobile/screens/model/Playlist.dart';
-import 'package:magic_sign_mobile/screens/model/PlaylistRessource.dart';
-import 'package:magic_sign_mobile/screens/model/Playlists.dart';
-import 'package:magic_sign_mobile/screens/model/Regions.dart';
-import 'package:magic_sign_mobile/screens/model/Timeline.dart';
+import 'package:magic_sign_mobile/model/Playlist.dart';
+import 'package:magic_sign_mobile/model/PlaylistRessource.dart';
+import 'package:magic_sign_mobile/model/Playlists.dart';
+import 'package:magic_sign_mobile/model/Regions.dart';
+import 'package:magic_sign_mobile/model/Timeline.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 

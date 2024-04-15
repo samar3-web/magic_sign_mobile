@@ -1,4 +1,4 @@
-import 'package:magic_sign_mobile/screens/model/Widget.dart';
+import 'package:magic_sign_mobile/model/Widget.dart';
 
 class Playlists {
   int? playlistId;
