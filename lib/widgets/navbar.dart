@@ -106,6 +106,6 @@ final List<Map<String, dynamic>> drawerRoutes = [
   {'name': 'Tableau de bord', 'icon': Icons.dashboard, 'routeName': HomeScreen.routeName},
   {'name': 'Médiathèque', 'icon': Icons.ondemand_video, 'routeName': MediaScreen.routeName},
   {'name': 'Playlists', 'icon': Icons.playlist_play, 'routeName': PlaylistScreen.routeName},
-  {'name': 'Afficheur', 'icon': Icons.tv, 'routeName': PlayerScreen.routeName},
+  {'name': 'Afficheurs', 'icon': Icons.tv, 'routeName': PlayerScreen.routeName},
   {'name': 'Planification', 'icon': Icons.event, 'routeName': PlanificationScreen.routeName},
 ];

@@ -29,9 +29,7 @@ class MediaController extends GetxController {
   // Function to fetch media using the access token for authorization
   Future<void> getMedia() async {
     try {
-      // Set isLoading to true before making the request
       isLoading(true);
-
       String? accessToken = await getAccessToken();
       if (accessToken == null) {
         // Handle case when access token is not available
