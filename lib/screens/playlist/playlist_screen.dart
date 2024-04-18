@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
+import 'package:magic_sign_mobile/controller/playerController.dart';
 import 'package:magic_sign_mobile/model/Playlist.dart';
 import 'package:magic_sign_mobile/screens/playlist/addPlaylist.dart';
 import 'package:magic_sign_mobile/controller/playlistController.dart';
@@ -16,7 +17,13 @@ class PlaylistScreen extends StatefulWidget {
 
 class _PlaylistScreenState extends State<PlaylistScreen> {
   final PlaylistController playlistController = Get.put(PlaylistController());
-
+  final PlayerController playerController = Get.put(PlayerController());
+  int? selectedLayoutId;
+  List<Map<String, dynamic>> displayGroups = [
+    {'id': 1, 'name': 'Display Group 1'},
+    {'id': 2, 'name': 'Display Group 2'},
+    // Ajoutez d'autres groupes d'affichage si nécessaire
+  ];
   @override
   void initState() {
     super.initState();
@@ -131,7 +138,83 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     }
   }
 
+  Future<void> _showScheduleDialog(int campaignId) async {
+    List<dynamic> displayGroupIds = await playerController
+        .fetchData(); 
 
+    List<int> selectedDisplayGroupIds = []; 
+    TextEditingController fromDtController = TextEditingController();
+    TextEditingController toDtController = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Planifier un événement'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final groupId in displayGroupIds)
+                  CheckboxListTile(
+                    title: Text('Display Group ${groupId['name']}'),
+                    value: selectedDisplayGroupIds.contains(groupId['id']),
+                    onChanged: (value) {
+                      setState(() {
+                        if (value!) {
+                          selectedDisplayGroupIds.add(groupId['id']);
+                        } else {
+                          selectedDisplayGroupIds.remove(groupId['id']);
+                        }
+                      });
+                    },
+                  ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextField(
+              controller: fromDtController,
+              decoration: InputDecoration(
+                  labelText: 'Date de début (YYYY-MM-DD HH:MM:SS)'),
+            ),
+            TextField(
+              controller: toDtController,
+              decoration: InputDecoration(
+                  labelText: 'Date de fin (YYYY-MM-DD HH:MM:SS)'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () {
+                String fromDt = fromDtController.text;
+                String toDt = toDtController.text;
+
+                if (selectedDisplayGroupIds.isNotEmpty) {
+                  playlistController
+                      .scheduleEvent(
+                          campaignId, selectedDisplayGroupIds, fromDt, toDt)
+                      .then((_) {
+                    Navigator.of(context).pop();
+                  }).catchError((error) {
+                    print(
+                        'Erreur lors de la planification de l\'événement: $error');
+                  });
+                } else {
+                  print(
+                      'Veuillez sélectionner au moins un groupe d\'affichage.');
+                }
+              },
+              child: Text('Planifier'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -263,13 +346,16 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                           <PopupMenuEntry<String>>[
                                         const PopupMenuItem<String>(
                                           value: 'Option 1',
-                                          child: Text('Option 1'),
+                                          child: Text('Editer'),
                                         ),
                                         const PopupMenuItem<String>(
                                           value: 'Option 2',
-                                          child: Text('Option 2'),
+                                          child: Text('Supprimer'),
                                         ),
-                                        // Add more PopupMenuItems if needed
+                                        const PopupMenuItem<String>(
+                                          value: 'Option 3',
+                                          child: Text('Planifier maintenant'),
+                                        ),
                                       ],
                                       onSelected: (String value) {
                                         if (value == 'Option 1') {
@@ -280,6 +366,10 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                           _showConfirmDeleteDialog(
                                               playlist.layoutId,
                                               playlist.layout);
+                                        } else if (value == 'Option 3') {
+                                          selectedLayoutId = playlist.layoutId;
+                                          _showScheduleDialog(
+                                              selectedLayoutId!);
                                         }
                                       },
                                       child: Icon(Icons.arrow_drop_down),

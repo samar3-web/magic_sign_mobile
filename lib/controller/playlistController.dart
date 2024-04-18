@@ -281,49 +281,50 @@ class PlaylistController extends GetxController {
     }
   }
 
-Future<void> deleteWidget(int widgetId) async {
-  try {
-    String? accessToken = await getAccessToken();
-    if (accessToken == null) {
-      Get.snackbar(
-        "Error",
-        "Access token not available. Please log in again.",
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
-
-    final response = await http.delete(
-      Uri.parse('https://magic-sign.cloud/v_ar/web/api/playlist/widget/$widgetId'),
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    );
-
-    if (response.statusCode == 200) {
+  Future<void> deleteWidget(int widgetId) async {
+    try {
+      String? accessToken = await getAccessToken();
+      if (accessToken == null) {
         Get.snackbar(
-        "Succès",
-        "widget suprrimé avec succès",
-        snackPosition: SnackPosition.BOTTOM,
+          "Error",
+          "Access token not available. Please log in again.",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      final response = await http.delete(
+        Uri.parse(
+            'https://magic-sign.cloud/v_ar/web/api/playlist/widget/$widgetId'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
       );
-    } else {
-      print('Failed to delete widget. Status code: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        Get.snackbar(
+          "Succès",
+          "widget suprrimé avec succès",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      } else {
+        print('Failed to delete widget. Status code: ${response.statusCode}');
+        Get.snackbar(
+          "Error",
+          "Failed to delete widget. Status code: ${response.statusCode}",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    } catch (e) {
+      print('Error deleting widget: $e');
       Get.snackbar(
         "Error",
-        "Failed to delete widget. Status code: ${response.statusCode}",
+        "Error deleting widget. Please try again later.",
         snackPosition: SnackPosition.BOTTOM,
       );
     }
-  } catch (e) {
-    print('Error deleting widget: $e');
-    Get.snackbar(
-      "Error",
-      "Error deleting widget. Please try again later.",
-      snackPosition: SnackPosition.BOTTOM,
-    );
   }
-}
 
   Future<void> updatePlaylistDuration(int layoutId, String newDuration) async {
     try {
@@ -372,28 +373,28 @@ Future<void> deleteWidget(int widgetId) async {
       print(e);
     }
   }
-  
+
   Future<void> deleteLayout(int layoutId) async {
-  try {
-    String? accessToken = await getAccessToken();
-    http.Response response = await http.delete(
-      Uri.parse('https://magic-sign.cloud/v_ar/web/api/layout/$layoutId'),
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-      },
-    );
-    print(response.statusCode);
-    if (response.statusCode == 204) {
-      print('Layout deleted successfully');
-    } else {
-      print('Failed to delete layout');
+    try {
+      String? accessToken = await getAccessToken();
+      http.Response response = await http.delete(
+        Uri.parse('https://magic-sign.cloud/v_ar/web/api/layout/$layoutId'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+      print(response.statusCode);
+      if (response.statusCode == 204) {
+        print('Layout deleted successfully');
+      } else {
+        print('Failed to delete layout');
+      }
+    } catch (e) {
+      print(e);
     }
-  } catch (e) {
-    print(e);
   }
-}
- //search
- 
+  //search
+
   Future<void> searchPlaylist(String value) async {
     try {
       isLoading(true);
@@ -444,4 +445,38 @@ Future<void> deleteWidget(int widgetId) async {
     }
   }
 
+  Future<void> scheduleEvent(int campaignId, List<int> displayGroupIds,
+      String fromDt, String toDt) async {
+    try {
+      String? accessToken = await getAccessToken();
+
+      var body = {
+        'eventTypeId': "1",
+        'campaignId': campaignId.toString(),
+        'displayGroupIds[]': displayGroupIds[0].toString(),
+        'fromDt': fromDt.toString() + "",
+        'toDt': toDt.toString() + "",
+      };
+      print('Request Body');
+      print(body);
+//print(jsonEncode(body));
+      http.Response response = await http.post(
+        Uri.parse('https://magic-sign.cloud/v_ar/web/api/schedule'),
+        body: body,
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      );
+      print(response.body);
+
+      if (response.statusCode == 201) {
+        print(response.body);
+      } else {
+        print('Erreur: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Erreur: $error');
+    }
+  }
 }

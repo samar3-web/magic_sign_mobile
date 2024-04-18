@@ -22,6 +22,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
   void initState() {
     super.initState();
     playerController.fetchData();
+    print('Player List Length: ${playerController.playerList.length}');
+
   }
 
   Future<void> _refreshList() async {

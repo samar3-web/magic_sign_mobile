@@ -16,21 +16,20 @@ class PlayerController extends GetxController {
     return accessToken;
   }
 
-  fetchData() async {
+  Future<List<dynamic>> fetchData() async {
     String apiUrl = 'https://magic-sign.cloud/v_ar/web/api/display-ms';
 
     try {
       String? accessToken = await getAccessToken();
       if (accessToken == null) {
-        // Handle case when access token is not available
         Get.snackbar(
           "Error",
           "Access token not available. Please log in again.",
           snackPosition: SnackPosition.BOTTOM,
         );
-        return;
+        return []; 
       }
-      
+
       http.Response response = await http.get(
         Uri.parse(apiUrl),
         headers: {
@@ -41,16 +40,35 @@ class PlayerController extends GetxController {
       print('Response Status Code: ${response.statusCode}');
       print('Response Body: ${response.body}');
       if (response.statusCode == 200) {
-        var jsonData = (json.decode(response.body) as List).map((e) => Player.fromJson(e)).toList();
-        
-          playerList.assignAll(jsonData);
-          
-        
+        var jsonData = json.decode(response.body) as List<dynamic>;
+
+        // Mapper les données pour récupérer les displayGroupId
+        List<dynamic> displayGroupIds = [];
+        jsonData.forEach((display) {
+          int? displayGroupId = display['displayGroupId'];
+          String? name = display['display'];
+
+          if (displayGroupId != null && name != null) {
+            Map<String, dynamic> newDisplay = {
+              'id': displayGroupId,
+              'name': name
+            };
+            displayGroupIds.add(newDisplay);
+          }
+        });
+      print('Json Data: $jsonData');
+          var jsonDataa = (json.decode(response.body) as List).map((e) => Player.fromJson(e)).toList();
+
+          playerList.assignAll(jsonDataa);
+
+        return displayGroupIds;
       } else {
         print('Erreur: ${response.statusCode}');
+        return []; 
       }
     } catch (e) {
       print('Erreur: $e');
+      return []; 
     }
   }
 }
