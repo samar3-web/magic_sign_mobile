@@ -19,11 +19,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   final PlaylistController playlistController = Get.put(PlaylistController());
   final PlayerController playerController = Get.put(PlayerController());
   int? selectedLayoutId;
-  List<Map<String, dynamic>> displayGroups = [
-    {'id': 1, 'name': 'Display Group 1'},
-    {'id': 2, 'name': 'Display Group 2'},
-    // Ajoutez d'autres groupes d'affichage si nécessaire
-  ];
+  bool _isChecked = false;
+
   @override
   void initState() {
     super.initState();
@@ -139,10 +136,9 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   }
 
   Future<void> _showScheduleDialog(int campaignId) async {
-    List<dynamic> displayGroupIds = await playerController
-        .fetchData(); 
+    List<dynamic> displayGroupIds = await playerController.fetchData();
 
-    List<int> selectedDisplayGroupIds = []; 
+    List<int> selectedDisplayGroupIds = [];
     TextEditingController fromDtController = TextEditingController();
     TextEditingController toDtController = TextEditingController();
     await showDialog(
@@ -150,37 +146,79 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Planifier un événement'),
+          backgroundColor: Colors.white,
           content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (final groupId in displayGroupIds)
-                  CheckboxListTile(
-                    title: Text('Display Group ${groupId['name']}'),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+                color: Color(0xFFFFFFFFF),
+              ),
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: displayGroupIds.map((groupId) {
+                  return CheckboxListTile(
+                    title: Text(
+                      'Afficheur ${groupId['name']}',
+                      style: TextStyle(
+                        fontSize: 14,
+                      ),
+                    ),
                     value: selectedDisplayGroupIds.contains(groupId['id']),
-                    onChanged: (value) {
+                     autofocus: false,
+                        activeColor: Colors.green,
+                        checkColor: Colors.white,
+                        selected: selectedDisplayGroupIds.contains(groupId['id']),
+                      
+                    onChanged: (bool? value) {
                       setState(() {
+                        
                         if (value!) {
                           selectedDisplayGroupIds.add(groupId['id']);
+
                         } else {
                           selectedDisplayGroupIds.remove(groupId['id']);
                         }
+                                                                          _isChecked = value;
+
                       });
                     },
-                  ),
-              ],
+                    controlAffinity: ListTileControlAffinity.leading,
+                  );
+                }).toList(),
+              ),
             ),
           ),
           actions: <Widget>[
             TextField(
               controller: fromDtController,
+                       style: TextStyle(
+                              fontSize: 17.0,
+                              fontWeight: FontWeight.w300,
+                            ),
               decoration: InputDecoration(
-                  labelText: 'Date de début (YYYY-MM-DD HH:MM:SS)'),
+                  labelText: 'Date de début (YYYY-MM-DD HH:MM:SS)',
+                  labelStyle:
+                      TextStyle(color: kTextBlackColor, fontSize: 12.0)),
             ),
             TextField(
               controller: toDtController,
+                       style: TextStyle(
+                              fontSize: 17.0,
+                              fontWeight: FontWeight.w300,
+                            ),
               decoration: InputDecoration(
-                  labelText: 'Date de fin (YYYY-MM-DD HH:MM:SS)'),
+                  labelText: 'Date de fin (YYYY-MM-DD HH:MM:SS)',
+                  labelStyle:
+                      TextStyle(color: kTextBlackColor, fontSize: 12.0)),
             ),
             TextButton(
               onPressed: () {
