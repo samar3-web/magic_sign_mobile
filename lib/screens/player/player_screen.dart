@@ -22,8 +22,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
   void initState() {
     super.initState();
     playerController.fetchData();
+    playerController.fetchDisplayGroup();
     print('Player List Length: ${playerController.playerList.length}');
-
   }
 
   Future<void> _refreshList() async {
@@ -52,7 +52,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
               bool isLoggedIn = player.loggedIn == 1;
               String formattedLastAccessed = player.lastAccessed != null
                   ? DateFormat('yyyy-MM-dd HH:mm').format(
-                      DateTime.fromMillisecondsSinceEpoch(player.lastAccessed! * 1000))
+                      DateTime.fromMillisecondsSinceEpoch(
+                          player.lastAccessed! * 1000))
                   : 'Never accessed';
               if (player.licensed == 0) {
                 // If not licensed, return an empty container to remove it from the list
@@ -66,7 +67,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   borderRadius: BorderRadius.circular(10.0),
                 ),
                 child: ListTile(
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   title: Row(
                     children: [
                       Text(
@@ -77,7 +79,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
                           fontSize: 16.0,
                         ),
                       ),
-                      SizedBox(width: 10,),
+                      SizedBox(
+                        width: 10,
+                      ),
                       CircleAvatar(
                         radius: 6.0,
                         backgroundColor: isLoggedIn ? Colors.green : Colors.red,
@@ -106,11 +110,14 @@ class _PlayerScreenState extends State<PlayerScreen> {
                             ),
                           ),
                           SizedBox(width: 8.0),
-                          
-                         SizedBox(width: 8.0),
+                          SizedBox(width: 8.0),
                           Icon(
-                            player.licensed == 1 ? Icons.check_circle : Icons.cancel,
-                            color: player.licensed == 1 ? Colors.green : Colors.red,
+                            player.licensed == 1
+                                ? Icons.check_circle
+                                : Icons.cancel,
+                            color: player.licensed == 1
+                                ? Colors.green
+                                : Colors.red,
                           ),
                         ],
                       ),
