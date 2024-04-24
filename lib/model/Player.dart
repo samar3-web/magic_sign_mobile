@@ -16,7 +16,7 @@ class Player {
 
   Player.fromJson(Map<String, dynamic> json) {
     displayId = json['displayId'];
-    display = json['display'];
+    display = json['display'] as String?;
     clientAddress = json['clientAddress'];
     lastAccessed = json['lastAccessed'];
     loggedIn = json['loggedIn'];

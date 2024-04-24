@@ -9,11 +9,12 @@ import 'package:http/http.dart' as http;
 class PlayerController extends GetxController {
   var playerList = <Player>[].obs;
   var displayGroupList = <DisplayGroup>[].obs;
+  
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('access_token');
     print(
-        'Access Token stored  ***********: $accessToken'); // Print the access token
+        'Access Token stored  ***********: $accessToken'); 
     return accessToken;
   }
 
@@ -76,7 +77,7 @@ class PlayerController extends GetxController {
 Future<List<DisplayGroup>> fetchDisplayGroup() async {
     String apiUrl = 'https://magic-sign.cloud/v_ar/web/api/displaygroup';
 
-    try {
+  
       String? accessToken = await getAccessToken();
       if (accessToken == null) {
         Get.snackbar(
@@ -86,7 +87,7 @@ Future<List<DisplayGroup>> fetchDisplayGroup() async {
         );
         return []; 
       }
-
+  try {
       http.Response response = await http.get(
         Uri.parse(apiUrl),
         headers: {
@@ -95,11 +96,11 @@ Future<List<DisplayGroup>> fetchDisplayGroup() async {
         },
       );
       print('Response Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
+      print('Response Bodyyyyyyyyyyyyyyyyyyyyyyyy: ${response.body}');
       if (response.statusCode == 200) {
-        var jsonData = json.decode(response.body) as List<dynamic>;
+        var jsonData = json.decode(response.body) as List;
 
-        List<DisplayGroup> displayGroups = [];
+        List<DisplayGroup> displayGroups = jsonData.map((data) => DisplayGroup.fromJson(data)).toList();
         jsonData.forEach((display) {
           int? displayGroupId = display['id'];
           String? name = display['name'];
@@ -118,12 +119,61 @@ Future<List<DisplayGroup>> fetchDisplayGroup() async {
         displayGroupList.assignAll(displayGroups);
         return displayGroups;
       } else {
-        print('Error: ${response.statusCode}');
+        print('Errorrr: ${response.statusCode}');
         return []; 
       }
     } catch (e) {
-      print('Error: $e');
+      print('Errorrrr: $e');
       return []; 
     }
   }
+  Future<List<Player>> fetchPlayers() async {
+  String apiUrl = 'https://magic-sign.cloud/v_ar/web/api/display-ms';
+
+  try {
+    String? accessToken = await getAccessToken();
+    if (accessToken == null) {
+      Get.snackbar(
+        "Error",
+        "Access token not available. Please log in again.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return []; 
+    }
+
+    http.Response response = await http.get(
+      Uri.parse(apiUrl),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    print('Response Status Code: ${response.statusCode}');
+    print('Response Body: ${response.body}');
+    
+    if (response.statusCode == 200) {
+      var jsonData = json.decode(response.body) as List;
+      
+      List<Player> players = jsonData.map((data) => Player.fromJson(data)).toList();
+       jsonData.forEach((player) {
+          int? playerId = player['id'];
+          String? name = player['display'];
+        });
+      playerList.assignAll(players);
+      print('Players: $players');
+
+      return players;
+
+
+    } else {
+      print('Error: ${response.statusCode}');
+      return []; 
+    }
+  } catch (e) {
+    print('Error: $e');
+    return []; 
+  }
+}
+
 }

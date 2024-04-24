@@ -187,7 +187,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                         } else {
                           selectedDisplayGroupIds.remove(groupId['id']);
                         }
-                                                                          _isChecked = value;
+                                      _isChecked = value;
+print('After update: $selectedDisplayGroupIds');
 
                       });
                     },
@@ -236,6 +237,9 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                       .scheduleEvent(
                           campaignId, selectedDisplayGroupIds, fromDt, toDt)
                       .then((_) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Event scheduled successfully')),
+                    );
                     Navigator.of(context).pop();
                   }).catchError((error) {
                     print(
