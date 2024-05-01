@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/controller/planificationController.dart';
@@ -188,6 +188,5 @@ class AppointmentDataSource extends CalendarDataSource {
   void clear() {
     appointments.clear();
   }
-
-  // Add more methods as needed to manipulate the appointments data
+    // Add more methods as needed to manipulate the appointments data
 }

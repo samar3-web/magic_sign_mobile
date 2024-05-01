@@ -17,13 +17,13 @@ class PlanificationController extends GetxController {
   String? accessToken = await getAccessToken();
   print('Access Token: $accessToken');
   if (accessToken == null) {
-    // Handle case when access token is not available
+    
     Get.snackbar(
       "Error",
       "Access token not available. Please log in again.",
       snackPosition: SnackPosition.BOTTOM,
     );
-    return []; // Return an empty list as a fallback
+    return []; 
   }
 
   final displayGroupIdsQuery = displayGroupIds.map((id) => 'displayGroupId[]=$id').join('&');
@@ -40,13 +40,10 @@ class PlanificationController extends GetxController {
     if (response.statusCode == 200) {
       final dynamic responseData = json.decode(response.body);
       if (responseData is List<dynamic>) {
-        // If the response data is already a list, return it
         return responseData;
       } else if (responseData is Map<String, dynamic> && responseData.containsKey('events')) {
-        // If the response data is an object containing an 'events' field, return the value of that field
         return responseData['events'];
       } else {
-        // If the response data has an unexpected format, throw an exception
         throw Exception('Unexpected response format');
       }
     } else {
