@@ -16,7 +16,7 @@ class PlaylistController extends GetxController {
       "https://magic-sign.cloud/v_ar/web/api/layout?embed=regions,playlists";
   var playlistList = <Playlist>[].obs;
   List<String> assignedMedia = [];
-  List<Regions>? timelines = <Regions>[].obs;
+  RxList<Timeline> timelines = <Timeline>[].obs;
   RxList<PlaylistRessource> playlistRessource = <PlaylistRessource>[].obs;
   RxInt playlistDuration = 0.obs;
   var isLoading = false.obs;
@@ -123,10 +123,11 @@ class PlaylistController extends GetxController {
   }
 
   Future<void> getAssignedMedia(int layoutId) async {
+     this.timelines.clear();
     try {
       String? accessToken = await getAccessToken();
       String url =
-          'https://magic-sign.cloud/v_ar/web/api/layout/status/$layoutId';
+          'https://magic-sign.cloud/v_ar/web/api/objects_timeline.php?layoutId=$layoutId';
       print('Request URL: $url');
 
       http.Response response = await http.get(
@@ -138,30 +139,30 @@ class PlaylistController extends GetxController {
       print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
-        var jsonData = json.decode(response.body);
-        Timeline timeline = Timeline.fromJson(jsonData);
-        print('timeline');
-        print(timeline.regions.toString());
-        timelines = timeline.regions;
-        Regions regions = timeline.regions![0];
-        print('regions');
+        Map<String, dynamic> jsonData = json.decode(response.body);
+              List<Timeline> fetchedTimelines = []; // Use a temporary list to store fetched timelines
 
-        print(regions.playlists);
+        jsonData.forEach((key, value) {
+          int timelineId =
+              key != null ? int.tryParse(key.toString()) ?? -1 : -1;
+          Timeline timeline = Timeline.fromJson(timelineId, value);
+        fetchedTimelines.add(timeline);
+          
+          print(
+              'Timeline ID: ${timeline.timelineId} has ${timeline.mediaList.length} media items');
+        });
+                  print(timelines.length);
+this.timelines.assignAll(fetchedTimelines); // Properly update the RxList
+      print("Updated timelines, new count: ${this.timelines.length}");
+                  
 
-        Playlists playlist = regions.playlists![0];
-        print('playlists');
-
-        print(playlist);
-
-        print('widgets');
-
-        print(playlist.widgets![0].toString());
       } else {
         print('Response status code not 200');
       }
     } catch (e) {
-      print(e);
+      print('Error: $e');
     }
+   
   }
 
   addLayout({

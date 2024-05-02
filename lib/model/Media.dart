@@ -18,14 +18,20 @@ class Media {
     required this.retired,
   });
 
-  factory Media.fromJson(Map<String, dynamic> json) => Media._(
-      mediaId: json['mediaId'],
-      ownerId: json['ownerId'],
-      name: json['name'],
-      mediaType: json['mediaType'],
-      storedAs: json['storedAs'],
-      duration: json['duration'].toString(),
-      owner: json['owner'],
-      retired : json['retired'].toString()
-      );
+    factory Media.fromJson(Map<String, dynamic> json) {
+    // Using int.tryParse to convert string to int safely and providing a fallback value (-1)
+    int parsedMediaId = int.tryParse(json['mediaId'].toString()) ?? -1;
+    int parsedOwnerId = int.tryParse(json['ownerId'].toString()) ?? -1;
+
+    return Media._(
+      mediaId: parsedMediaId,
+      ownerId: parsedOwnerId,
+      name: json['name'] ?? 'Unknown', // Providing a default value if null
+      mediaType: json['mediaType'] ?? 'Unknown Type', // Default if null
+      storedAs: json['storedAs'] ?? 'Not Available', // Default if null
+      duration: json['duration']?.toString() ?? '0', // Default to '0' if null
+      owner: json['owner'] ?? 'No Owner', // Default if null
+      retired: json['retired']?.toString() ?? 'false', // Default to 'false' if null
+    );
+  }
 }

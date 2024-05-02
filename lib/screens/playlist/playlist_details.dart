@@ -32,6 +32,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
     // Fetch media data for the playlist
     mediaController.getMedia();
     playlistController.getWidget();
+    playlistController.getAssignedMedia(559); // Assuming 559 is a valid layoutId
 
     _fetchPlaylist();
   }
@@ -51,7 +52,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
     }
   }
 
-  Future<void> _updatePlaylistDuration() async {
+ /* Future<void> _updatePlaylistDuration() async {
     try {
       int totalDuration = 0;
       for (var timeline in playlistController.timelines!) {
@@ -69,7 +70,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
       print('Error updating playlist duration: $e');
     }
   }
-
+*/
   String formatDuration(String durationString) {
     int duration = int.tryParse(durationString) ?? 0;
     int hours = duration ~/ 3600;
@@ -218,7 +219,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   for (int i = 0;
-                                      i < playlistController.timelines!.length;
+                                      i < playlistController.timelines.length;
                                       i++)
                                     Padding(
                                       padding: const EdgeInsets.all(8.0),
@@ -244,7 +245,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                             ),
                                           ),
                                           SizedBox(height: 8),
-                                          SingleChildScrollView(
+                                          /*SingleChildScrollView(
                                             scrollDirection: Axis.horizontal,
                                             child: Row(
                                               children: [
@@ -397,7 +398,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                                     ),
                                               ],
                                             ),
-                                          ),
+                                          ),*/
                                         ],
                                       ),
                                     ),
@@ -418,7 +419,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
               child: IntrinsicWidth(
                 child: ElevatedButton(
                   onPressed: () async {
-                    await _updatePlaylistDuration();
+                   // await _updatePlaylistDuration();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: kSecondaryColor,
