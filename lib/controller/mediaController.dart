@@ -105,30 +105,30 @@ class MediaController extends GetxController {
   }
 
   Future<void> uploadFiles(List<File> files) async {
-  try {
-    String? accessToken = await getAccessToken();
+    try {
+      String? accessToken = await getAccessToken();
 
-    for (File file in files) {
-      var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
+      for (File file in files) {
+        var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
 
-      request.files.add(
-        await http.MultipartFile.fromPath('MSlibrary', file.path),
-      );
-      request.headers['Authorization'] = 'Bearer $accessToken';
+        request.files.add(
+          await http.MultipartFile.fromPath('files', file.path),
+        );
+        request.headers['Authorization'] = 'Bearer $accessToken';
 
-      var response = await request.send();
+        var response = await request.send();
 
-      if (response.statusCode == 200) {
-        print('File uploaded successfully');
-      } else {
-        print('File upload failed');
+        print(response);
+        if (response.statusCode == 200) {
+          print('File uploaded successfully');
+        } else {
+          print('File upload failed');
+        }
       }
+    } catch (e) {
+      print('Error uploading files: $e');
     }
-  } catch (e) {
-    print('Error uploading files: $e');
   }
-}
-
 
   updateMediaData(
       int mediaId, String name, String duration, String retired) async {
@@ -257,8 +257,8 @@ class MediaController extends GetxController {
         .toList();
     mediaList.assignAll(filteredMediaList);
   }
-  
-    Media? getMediaById(int mediaId) {
+
+  Media? getMediaById(int mediaId) {
     for (var media in mediaList) {
       if (media.mediaId == mediaId) {
         return media;
