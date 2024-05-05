@@ -84,7 +84,7 @@ class PlaylistController extends GetxController {
     }
   }
 
-  Future<void> assignPlaylist(List<int> mediaIds, int playlistId) async {
+  Future<void> assignPlaylist(List<int> mediaIds, int playlistId,{Function? onSuccess, Function? onError}) async {
     try {
       String? accessToken = await getAccessToken();
       if (accessToken == null) {
@@ -113,12 +113,17 @@ class PlaylistController extends GetxController {
 
       if (response.statusCode == 200) {
         print('Playlist assigned successfully');
+        onSuccess?.call();
+
       } else {
         print('Failed to assign playlist. Status code: ${response.statusCode}');
+        onError?.call();
         throw Exception('Failed to assign playlist');
       }
     } catch (e) {
       print('Error assigning playlist: $e');
+          onError?.call();
+
     }
   }
 
@@ -152,7 +157,7 @@ class PlaylistController extends GetxController {
               'Timeline ID: ${timeline.timelineId} has ${timeline.mediaList.length} media items');
         });
                   print(timelines.length);
-this.timelines.assignAll(fetchedTimelines); // Properly update the RxList
+                  this.timelines.assignAll(fetchedTimelines); 
       print("Updated timelines, new count: ${this.timelines.length}");
                   
 
