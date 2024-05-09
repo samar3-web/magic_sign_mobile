@@ -8,6 +8,7 @@ import 'package:magic_sign_mobile/model/PlaylistRessource.dart';
 import 'package:magic_sign_mobile/model/Playlists.dart';
 import 'package:magic_sign_mobile/model/Regions.dart';
 import 'package:magic_sign_mobile/model/Timeline.dart';
+import 'package:magic_sign_mobile/model/Zone.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -145,7 +146,7 @@ class PlaylistController extends GetxController {
 
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonData = json.decode(response.body);
-              List<Timeline> fetchedTimelines = []; // Use a temporary list to store fetched timelines
+              List<Timeline> fetchedTimelines = []; 
 
         jsonData.forEach((key, value) {
           int timelineId =
@@ -169,6 +170,23 @@ class PlaylistController extends GetxController {
     }
    
   }
+  
+  Future<Map<String, List<Zone>>> fetchZones(int layoutId) async {
+  var url = Uri.parse('https://magic-sign.cloud/v_ar/web/api/dimensions_timeline.php?layoutId=$layoutId');
+  var response = await http.get(url);
+
+  if (response.statusCode == 200) {
+    Map<String, dynamic> jsonResponse = json.decode(response.body);
+    Map<String, List<Zone>> zones = {};
+    jsonResponse.forEach((key, value) {
+      List<Zone> zoneList = (value as List).map((item) => Zone.fromJson(item)).toList();
+      zones[key] = zoneList;
+    });
+    return zones;
+  } else {
+    throw Exception('Failed to load zone dimensions');
+  }
+}
 
   addLayout({
     required String name,

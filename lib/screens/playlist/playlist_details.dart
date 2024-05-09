@@ -112,9 +112,10 @@ class _PlaylistDetail extends State<PlaylistDetail> {
     }
   }
 
-  void _navigateToDetailScreen(Timeline timeline) {
-    Get.to(() => PreviewScreen(timeline: timeline), arguments: timeline);
-  }
+ void _navigateToDetailScreen(int layoutId) {
+  Get.to(() => PreviewScreen(layoutId: layoutId));
+}
+
 void _assignMediaToPlaylist(Media media, int timelineId) {
   playlistController.assignPlaylist(
     [media.mediaId],
@@ -139,7 +140,7 @@ Future<void> _showPlaylistSelectionDialog(Media media) async {
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text('Select a Playlist', style: TextStyle(fontSize: 20)),
+        title: Text('Select a Timeline', style: TextStyle(fontSize: 20)),
         content: Container(
           width: double.maxFinite,
           child: ListView.builder(
@@ -241,7 +242,7 @@ void _showErrorDialog() {
                               icon: Icon(Icons.visibility),
                               color: Colors.grey,
                               onPressed: () {
-                                //_navigateToDetailScreen(timeline!);
+                                _navigateToDetailScreen(widget.playlist.layoutId);
                               },
                             ),
                             SizedBox(width: 5),

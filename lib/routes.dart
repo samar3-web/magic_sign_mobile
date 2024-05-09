@@ -19,13 +19,13 @@ Map<String, WidgetBuilder> routes = {
   MyProfile.routeName: (context) => const MyProfile(),
   MediaScreen.routeName: (context) => const MediaScreen(),
   PlaylistScreen.routeName: (context) => const PlaylistScreen(),
-  PlayerScreen.routeName:(context) => const PlayerScreen(),
-  PlanificationScreen.routeName:(context) => const PlanificationScreen(),
+  PlayerScreen.routeName: (context) => const PlayerScreen(),
+  PlanificationScreen.routeName: (context) => const PlanificationScreen(),
 // PlaylistDetail route with arguments
   PlaylistDetail.routeName: (BuildContext context) => (PlaylistDetail(
-    playlist: ModalRoute.of(context)!.settings.arguments as Playlist,
-  )),
-  PreviewScreen.routeName:(BuildContext context) => (PreviewScreen(
-    timeline: ModalRoute.of(context)!.settings.arguments as Timeline,
-    )),
+        playlist: ModalRoute.of(context)!.settings.arguments as Playlist,
+      )),
+  PreviewScreen.routeName: (BuildContext context) => (PlaylistDetail(
+        playlist: ModalRoute.of(context)!.settings.arguments as Playlist,
+      )),
 };
