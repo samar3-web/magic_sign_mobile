@@ -39,7 +39,7 @@ class _MediaScreenState extends State<MediaScreen> {
           // Call function to select and upload files
           List<File> pickedFiles = await _selectFiles();
           if (pickedFiles.isNotEmpty) {
-            mediaController.uploadFiles(pickedFiles);
+            mediaController.uploadFiles(context, pickedFiles);
           }
         },
         backgroundColor: kSecondaryColor,

@@ -198,7 +198,8 @@ class PlaylistController extends GetxController {
         Uri.parse('https://magic-sign.cloud/v_ar/web/api/layout'),
         body: {
           'name': name,
-          if (description != null) 'description': description,
+          if (description != null) 
+          'description': description,
         },
         headers: {
           'Authorization': 'Bearer $accessToken',

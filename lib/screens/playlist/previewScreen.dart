@@ -50,8 +50,8 @@ class _PreviewScreenState extends State<PreviewScreen> {
                         width: double.parse(zone.width.toString()),
                         height: double.parse(zone.height.toString()),
                         decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.3),
-                          border: Border.all(color: Colors.black, width: 2),
+                          color: Colors.black,
+                          border: Border.all(color: Colors.red, width: 2),
                         ),
                         child: Center(
                           child: Text(
@@ -78,7 +78,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
  double calculLeft(double left) {
     switch (left) {
       case > 1440:
-        return Get.width * 0.75; // Left
+        return Get.width * 0.75; 
       case > 960:
         return Get.width * 0.5;
       case > 480:

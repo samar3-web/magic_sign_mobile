@@ -46,6 +46,7 @@ class MediaController extends GetxController {
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache' 
         },
       );
 
@@ -61,6 +62,8 @@ class MediaController extends GetxController {
         // Update mediaList with fetched data
         mediaList.assignAll(jsonData);
         originalMediaList.assignAll(jsonData);
+        print("Media fetched and lists updated.");
+
       } else {
         // Handle error response
         print('Failed to load media. Status code: ${response.statusCode}');
@@ -104,7 +107,7 @@ class MediaController extends GetxController {
     }
   }
 
-  Future<void> uploadFiles(List<File> files) async {
+  Future<void> uploadFiles(BuildContext context, List<File> files) async {
     try {
       String? accessToken = await getAccessToken();
 
@@ -121,14 +124,48 @@ class MediaController extends GetxController {
         print(response);
         if (response.statusCode == 200) {
           print('File uploaded successfully');
+          ScaffoldMessenger.of(context ).showSnackBar(
+          SnackBar(content: Text('File uploaded successfully'),
+          backgroundColor: Colors.green,),
+        );
+         await Future.delayed(Duration(seconds: 5));
+        await getMedia();
         } else {
           print('File upload failed');
+           ScaffoldMessenger.of(context ).showSnackBar(
+          SnackBar(
+            content: Text('File upload failed'),
+            backgroundColor: Colors.red, 
+          )
+        );
         }
       }
     } catch (e) {
       print('Error uploading files: $e');
+       ScaffoldMessenger.of(context ).showSnackBar(
+          SnackBar(
+            content: Text('File upload failed'),
+            backgroundColor: Colors.red, 
+          )
+        );
     }
   }
+  Future<void> waitForMediaUpdate(String expectedFile) async {
+  int attempts = 0;
+  bool found = false;
+  while (!found && attempts < 10) { 
+    await Future.delayed(Duration(seconds: 5)); 
+    await getMedia();
+    found = mediaList.any((media) => media.name == expectedFile);
+    attempts++;
+  }
+  if (found) {
+    print("New media found!");
+  } else {
+    print("Failed to find new media after uploading.");
+  }
+}
+
 
   updateMediaData(
       int mediaId, String name, String duration, String retired) async {

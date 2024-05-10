@@ -16,7 +16,7 @@ import '../../model/Media.dart';
 class PlaylistDetail extends StatefulWidget {
   const PlaylistDetail({Key? key, required this.playlist}) : super(key: key);
   static const String routeName = 'PlaylistDetail';
-  final Playlist playlist;
+  final Playlist? playlist;
   @override
   State<PlaylistDetail> createState() => _PlaylistDetail();
 }
@@ -37,7 +37,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
   Future<void> _fetchPlaylist() async {
     try {
       print('Fetching assigned media...');
-      await playlistController.getAssignedMedia(widget.playlist.layoutId);
+      await playlistController.getAssignedMedia(widget.playlist!.layoutId);
       print('Fetching widgets...');
       await playlistController.getWidget();
       print('Data fetched successfully.');
@@ -106,7 +106,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
     if (deleteConfirmed) {
       playlistController.deleteWidget(widgetId).then((_) {
         setState(() {
-          playlistController.getAssignedMedia(widget.playlist.layoutId);
+          playlistController.getAssignedMedia(widget.playlist!.layoutId);
         });
       });
     }
@@ -129,7 +129,7 @@ void _assignMediaToPlaylist(Media media, int timelineId) {
 }
 
 void _refreshAssignedMedia() {
-  playlistController.getAssignedMedia(widget.playlist.layoutId).then((_) {
+  playlistController.getAssignedMedia(widget.playlist!.layoutId).then((_) {
     setState(() {});
   }).catchError((error) {
     print('Error refreshing assigned media: $error');
@@ -222,7 +222,7 @@ void _showErrorDialog() {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Playlist Detail'),
+        title: Text(widget.playlist!.layout),
       ),
       body: Stack(
         children: [
@@ -242,12 +242,12 @@ void _showErrorDialog() {
                               icon: Icon(Icons.visibility),
                               color: Colors.grey,
                               onPressed: () {
-                                _navigateToDetailScreen(widget.playlist.layoutId);
+                                _navigateToDetailScreen(widget.playlist!.layoutId);
                               },
                             ),
                             SizedBox(width: 5),
                             Text(
-                              'Duration :  ${formatDuration(widget.playlist.duration)}',
+                              'Duration :  ${formatDuration(widget.playlist!.duration)}',
                               style: TextStyle(color: Colors.grey),
                             ),
                           ],
