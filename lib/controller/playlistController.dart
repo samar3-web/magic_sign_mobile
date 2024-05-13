@@ -9,6 +9,7 @@ import 'package:magic_sign_mobile/model/Playlists.dart';
 import 'package:magic_sign_mobile/model/Regions.dart';
 import 'package:magic_sign_mobile/model/Timeline.dart';
 import 'package:magic_sign_mobile/model/Zone.dart';
+import 'package:magic_sign_mobile/screens/playlist/playlist_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -85,7 +86,8 @@ class PlaylistController extends GetxController {
     }
   }
 
-  Future<void> assignPlaylist(List<int> mediaIds, int playlistId,{Function? onSuccess, Function? onError}) async {
+  Future<void> assignPlaylist(List<int> mediaIds, int playlistId,
+      {Function? onSuccess, Function? onError}) async {
     try {
       String? accessToken = await getAccessToken();
       if (accessToken == null) {
@@ -115,7 +117,6 @@ class PlaylistController extends GetxController {
       if (response.statusCode == 200) {
         print('Playlist assigned successfully');
         onSuccess?.call();
-
       } else {
         print('Failed to assign playlist. Status code: ${response.statusCode}');
         onError?.call();
@@ -123,13 +124,12 @@ class PlaylistController extends GetxController {
       }
     } catch (e) {
       print('Error assigning playlist: $e');
-          onError?.call();
-
+      onError?.call();
     }
   }
 
   Future<void> getAssignedMedia(int layoutId) async {
-     this.timelines.clear();
+    this.timelines.clear();
     try {
       String? accessToken = await getAccessToken();
       String url =
@@ -146,47 +146,46 @@ class PlaylistController extends GetxController {
 
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonData = json.decode(response.body);
-              List<Timeline> fetchedTimelines = []; 
+        List<Timeline> fetchedTimelines = [];
 
         jsonData.forEach((key, value) {
           int timelineId =
               key != null ? int.tryParse(key.toString()) ?? -1 : -1;
           Timeline timeline = Timeline.fromJson(timelineId, value);
-        fetchedTimelines.add(timeline);
-          
+          fetchedTimelines.add(timeline);
+
           print(
               'Timeline ID: ${timeline.timelineId} has ${timeline.mediaList.length} media items');
         });
-                  print(timelines.length);
-                  this.timelines.assignAll(fetchedTimelines); 
-      print("Updated timelines, new count: ${this.timelines.length}");
-                  
-
+        print(timelines.length);
+        this.timelines.assignAll(fetchedTimelines);
+        print("Updated timelines, new count: ${this.timelines.length}");
       } else {
         print('Response status code not 200');
       }
     } catch (e) {
       print('Error: $e');
     }
-   
   }
-  
-  Future<Map<String, List<Zone>>> fetchZones(int layoutId) async {
-  var url = Uri.parse('https://magic-sign.cloud/v_ar/web/api/dimensions_timeline.php?layoutId=$layoutId');
-  var response = await http.get(url);
 
-  if (response.statusCode == 200) {
-    Map<String, dynamic> jsonResponse = json.decode(response.body);
-    Map<String, List<Zone>> zones = {};
-    jsonResponse.forEach((key, value) {
-      List<Zone> zoneList = (value as List).map((item) => Zone.fromJson(item)).toList();
-      zones[key] = zoneList;
-    });
-    return zones;
-  } else {
-    throw Exception('Failed to load zone dimensions');
+  Future<Map<String, List<Zone>>> fetchZones(int layoutId) async {
+    var url = Uri.parse(
+        'https://magic-sign.cloud/v_ar/web/api/dimensions_timeline.php?layoutId=$layoutId');
+    var response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> jsonResponse = json.decode(response.body);
+      Map<String, List<Zone>> zones = {};
+      jsonResponse.forEach((key, value) {
+        List<Zone> zoneList =
+            (value as List).map((item) => Zone.fromJson(item)).toList();
+        zones[key] = zoneList;
+      });
+      return zones;
+    } else {
+      throw Exception('Failed to load zone dimensions');
+    }
   }
-}
 
   addLayout({
     required String name,
@@ -198,8 +197,7 @@ class PlaylistController extends GetxController {
         Uri.parse('https://magic-sign.cloud/v_ar/web/api/layout'),
         body: {
           'name': name,
-          if (description != null) 
-          'description': description,
+          if (description != null) 'description': description,
         },
         headers: {
           'Authorization': 'Bearer $accessToken',
@@ -209,7 +207,11 @@ class PlaylistController extends GetxController {
 
       if (response.statusCode == 201) {
         // Layout added successfully
+
         print('Layout added successfully');
+        Get.to(PlaylistDetail(
+            playlist:
+                Playlist.fromJson(jsonDecode(response.body))));
       } else {
         // Handle error response
         print('Failed to add layout. Status code: ${response.statusCode}');

@@ -8,6 +8,7 @@ import 'package:magic_sign_mobile/model/Playlists.dart';
 import 'package:magic_sign_mobile/model/Timeline.dart';
 import 'package:magic_sign_mobile/model/Widget.dart';
 import 'package:magic_sign_mobile/controller/playlistController.dart';
+import 'package:magic_sign_mobile/screens/media_screen/media_screen.dart';
 import 'package:magic_sign_mobile/screens/playlist/previewScreen.dart';
 import 'package:magic_sign_mobile/screens/playlist/updateWidget.dart';
 
@@ -26,6 +27,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
   final PlaylistController playlistController = Get.put(PlaylistController());
   bool _showScrollIndicator = false;
   Timeline? timeline;
+  Media? media;
   @override
   void initState() {
     super.initState();
@@ -112,112 +114,164 @@ class _PlaylistDetail extends State<PlaylistDetail> {
     }
   }
 
- void _navigateToDetailScreen(int layoutId) {
-  Get.to(() => PreviewScreen(layoutId: layoutId));
-}
+  void _navigateToDetailScreen(int layoutId) {
+    Get.to(() => PreviewScreen(layoutId: layoutId));
+  }
 
-void _assignMediaToPlaylist(Media media, int timelineId) {
-  playlistController.assignPlaylist(
-    [media.mediaId],
-    timelineId,
-    onSuccess: () {
-      _showSuccessDialog();
-      _refreshAssignedMedia();
-    },
-    onError: () => _showErrorDialog(),
-  );
-}
+  void _assignMediaToPlaylist(Media media, int timelineId) {
+    playlistController.assignPlaylist(
+      [media.mediaId],
+      timelineId,
+      onSuccess: () {
+        _showSuccessDialog();
+        _refreshAssignedMedia();
+      },
+      onError: () => _showErrorDialog(),
+    );
+  }
 
-void _refreshAssignedMedia() {
-  playlistController.getAssignedMedia(widget.playlist!.layoutId).then((_) {
-    setState(() {});
-  }).catchError((error) {
-    print('Error refreshing assigned media: $error');
-  });
-}
-Future<void> _showPlaylistSelectionDialog(Media media) async {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Select a Timeline', style: TextStyle(fontSize: 20)),
-        content: Container(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: playlistController.timelines.length,
-            itemBuilder: (BuildContext context, int index) {
-              Timeline timeline = playlistController.timelines[index];
-              return Card(
-                color: kSecondaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10), 
-                  
-                ),
-                
-                child: ListTile(
-                  title: TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      _assignMediaToPlaylist(media, timeline.timelineId); 
-                    },
-                    child: Text('Timeline ${index + 1}', style: TextStyle(color: Colors.white)),
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero, 
-                      alignment: Alignment.centerLeft,
-                    ),
+  void _refreshAssignedMedia() {
+    playlistController.getAssignedMedia(widget.playlist!.layoutId).then((_) {
+      setState(() {});
+    }).catchError((error) {
+      print('Error refreshing assigned media: $error');
+    });
+  }
+
+  Future<void> _showPlaylistSelectionDialog(Media media) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Select a Timeline', style: TextStyle(fontSize: 20)),
+          content: Container(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: playlistController.timelines.length,
+              itemBuilder: (BuildContext context, int index) {
+                Timeline timeline = playlistController.timelines[index];
+                return Card(
+                  color: kSecondaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  trailing: Icon(Icons.arrow_forward_ios,color: Colors.white,),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    _assignMediaToPlaylist(media, timeline.timelineId);
-                  },
-                ),
-                margin: EdgeInsets.symmetric(vertical: 4, horizontal: 0), 
-                elevation: 4,
-              );
-            },
+                  child: ListTile(
+                    title: TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        _assignMediaToPlaylist(media, timeline.timelineId);
+                      },
+                      child: Text('Timeline ${index + 1}',
+                          style: TextStyle(color: Colors.white)),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        alignment: Alignment.centerLeft,
+                      ),
+                    ),
+                    trailing: Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.white,
+                    ),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      _assignMediaToPlaylist(media, timeline.timelineId);
+                    },
+                  ),
+                  margin: EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+                  elevation: 4,
+                );
+              },
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
 
   void _showSuccessDialog() {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text('Success'),
-      content: Text('The media has been successfully assigned.'),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text('OK'),
-        ),
-      ],
-    ),
-  );
-}
-void _showErrorDialog() {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text('Error'),
-      content: Text('Failed to assign media to playlist.'),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text('OK'),
-        ),
-      ],
-    ),
-  );
-}
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Success'),
+        content: Text('The media has been successfully assigned.'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Error'),
+        content: Text('Failed to assign media to playlist.'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String getFileType() {
+    // Extract file extension from mediaType
+    String? mediaType = media?.mediaType.toLowerCase();
+
+    // Map file extensions to corresponding types
+    Map<String, String> fileTypes = {
+      'jpg': 'image',
+      'image': 'image',
+      'pdf': 'pdf',
+      'doc': 'word',
+      'docx': 'word',
+      'xls': 'excel',
+      'xlsx': 'excel',
+      'ppt': 'powerpoint',
+      'pptx': 'powerpoint',
+      'video': 'video',
+    };
+
+    // Return corresponding file type
+    return fileTypes.containsKey(mediaType) ? fileTypes[mediaType]! : 'other';
+  }
+
+  Future<String> getThumbnailUrl() async {
+    String fileType = getFileType();
+    print('File type: $fileType');
+    if (fileType == 'image') {
+      // Await the result of getImageUrl() since it's asynchronous
+      print('Media ID: ${media!.mediaId}');
+      return await MediaController().getImageUrl(media!.storedAs);
+    } else {
+      switch (fileType) {
+        case 'word':
+          return 'assets/images/word-logo.png';
+        case 'pdf':
+          return 'assets/images/pdf-logo.png';
+        case 'excel':
+          return 'assets/images/excel-logo.png';
+        case 'powerpoint':
+          return 'assets/images/pp-logo.png';
+        case 'video':
+          return 'assets/images/video-logo.png';
+        default:
+          return 'assets/images/default.png';
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -242,7 +296,8 @@ void _showErrorDialog() {
                               icon: Icon(Icons.visibility),
                               color: Colors.grey,
                               onPressed: () {
-                                _navigateToDetailScreen(widget.playlist!.layoutId);
+                                _navigateToDetailScreen(
+                                    widget.playlist!.layoutId);
                               },
                             ),
                             SizedBox(width: 5),
@@ -265,37 +320,10 @@ void _showErrorDialog() {
                               childAspectRatio: 1.0,
                             ),
                             itemCount: mediaController.mediaList.length,
-                            itemBuilder: (context, index) {
-                              Media media = mediaController.mediaList[index];
-                              return InkWell(
-                                onTap: () {
-                                  _showPlaylistSelectionDialog(media);
-                                },
-                                child: Container(
-                                  width: MediaQuery.of(context).size.width / 3 -
-                                      16,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12.0),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.3),
-                                        spreadRadius: 2,
-                                        blurRadius: 5,
-                                        offset: Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      media.name,
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                           itemBuilder: (BuildContext context, int index) {
+                            return GridItem(media: mediaController.mediaList[index]);
+                          },
+                                              ),
                         ),
                         SizedBox(height: 5),
                         Expanded(

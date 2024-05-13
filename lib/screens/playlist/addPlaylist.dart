@@ -100,7 +100,6 @@ class _AddLayoutPopupState extends State<AddLayoutPopup> {
             SizedBox(height: 8.0),
             Text('choisir un modèle'),
             SizedBox(height: 8.0),
-
             GridView.builder(
               shrinkWrap: true,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -151,7 +150,10 @@ class _AddLayoutPopupState extends State<AddLayoutPopup> {
               description: description,
             );
             Navigator.of(context).pop();
+          
+  
           },
+                      
           style: ElevatedButton.styleFrom(
             backgroundColor: kSecondaryColor,
           ),
