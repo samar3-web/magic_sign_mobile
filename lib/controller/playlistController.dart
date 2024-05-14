@@ -479,6 +479,9 @@ class PlaylistController extends GetxController {
 
       var body = {
         'eventTypeId': "1",
+        'isPriority':"0",
+        'displayOrder':"0",
+        'syncTimezone':"1",
         'campaignId': campaignId.toString(),
         'displayGroupIds[]': displayGroupIds[0].toString(),
         'fromDt': fromDt.toString() + "",

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/controller/playerController.dart';
 import 'package:magic_sign_mobile/model/Playlist.dart';
+import 'package:magic_sign_mobile/screens/planification/ScheduleEventScreen.dart';
 import 'package:magic_sign_mobile/screens/playlist/addPlaylist.dart';
 import 'package:magic_sign_mobile/controller/playlistController.dart';
 import 'package:magic_sign_mobile/screens/playlist/playlist_details.dart';
@@ -135,129 +136,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     }
   }
 
-  Future<void> _showScheduleDialog(int campaignId) async {
-    List<dynamic> displayGroupIds = await playerController.fetchData();
-
-    List<int> selectedDisplayGroupIds = [];
-    TextEditingController fromDtController = TextEditingController();
-    TextEditingController toDtController = TextEditingController();
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Planifier un événement'),
-          backgroundColor: Colors.white,
-          content: SingleChildScrollView(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: Offset(0, 3),
-                  ),
-                ],
-                color: Color(0xFFFFFFFFF),
-              ),
-              padding: EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: displayGroupIds.map((groupId) {
-                  return CheckboxListTile(
-                    title: Text(
-                      'Afficheur ${groupId['name']}',
-                      style: TextStyle(
-                        fontSize: 14,
-                      ),
-                    ),
-                    value: selectedDisplayGroupIds.contains(groupId['id']),
-                     autofocus: false,
-                        activeColor: Colors.green,
-                        checkColor: Colors.white,
-                        selected: selectedDisplayGroupIds.contains(groupId['id']),
-                      
-                    onChanged: (bool? value) {
-                      setState(() {
-                        
-                        if (value!) {
-                          selectedDisplayGroupIds.add(groupId['id']);
-
-                        } else {
-                          selectedDisplayGroupIds.remove(groupId['id']);
-                        }
-                                      _isChecked = value;
-print('After update: $selectedDisplayGroupIds');
-
-                      });
-                    },
-                    controlAffinity: ListTileControlAffinity.leading,
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-          actions: <Widget>[
-            TextField(
-              controller: fromDtController,
-                       style: TextStyle(
-                              fontSize: 17.0,
-                              fontWeight: FontWeight.w300,
-                            ),
-              decoration: InputDecoration(
-                  labelText: 'Date de début (YYYY-MM-DD HH:MM:SS)',
-                  labelStyle:
-                      TextStyle(color: kTextBlackColor, fontSize: 12.0)),
-            ),
-            TextField(
-              controller: toDtController,
-                       style: TextStyle(
-                              fontSize: 17.0,
-                              fontWeight: FontWeight.w300,
-                            ),
-              decoration: InputDecoration(
-                  labelText: 'Date de fin (YYYY-MM-DD HH:MM:SS)',
-                  labelStyle:
-                      TextStyle(color: kTextBlackColor, fontSize: 12.0)),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Annuler'),
-            ),
-            TextButton(
-              onPressed: () {
-                String fromDt = fromDtController.text;
-                String toDt = toDtController.text;
-
-                if (selectedDisplayGroupIds.isNotEmpty) {
-                  playlistController
-                      .scheduleEvent(
-                          campaignId, selectedDisplayGroupIds, fromDt, toDt)
-                      .then((_) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Event scheduled successfully')),
-                    );
-                    Navigator.of(context).pop();
-                  }).catchError((error) {
-                    print(
-                        'Erreur lors de la planification de l\'événement: $error');
-                  });
-                } else {
-                  print(
-                      'Veuillez sélectionner au moins un groupe d\'affichage.');
-                }
-              },
-              child: Text('Planifier'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -316,7 +194,7 @@ print('After update: $selectedDisplayGroupIds');
                                 ? Colors.green
                                 : playlist.status == '2'
                                     ? Colors.orange
-                                    : Colors.transparent;
+                                    : Colors.orange;
 
                             return GestureDetector(
                               onTap: () => _navigateToDetailScreen(playlist),
@@ -409,9 +287,16 @@ print('After update: $selectedDisplayGroupIds');
                                               playlist.layoutId,
                                               playlist.layout);
                                         } else if (value == 'Option 3') {
-                                          selectedLayoutId = playlist.layoutId;
-                                          _showScheduleDialog(
-                                              selectedLayoutId!);
+                                          selectedLayoutId =
+                                              playlist.campaignId;
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return ScheduleEventScreen(
+                                                  campaignId:
+                                                      selectedLayoutId!);
+                                            },
+                                          );
                                         }
                                       },
                                       child: Icon(Icons.arrow_drop_down),

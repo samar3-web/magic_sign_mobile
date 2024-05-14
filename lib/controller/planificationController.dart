@@ -1,9 +1,16 @@
 import 'package:get/get.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:magic_sign_mobile/screens/planification/planification_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PlanificationController extends GetxController {
+    late AppointmentDataSource appointmentsDataSource;
+
+     PlanificationController() {
+    appointmentsDataSource = AppointmentDataSource([]);
+  }
+
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('access_token');

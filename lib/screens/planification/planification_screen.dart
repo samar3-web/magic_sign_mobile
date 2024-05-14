@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/controller/planificationController.dart';
 import 'package:magic_sign_mobile/controller/playerController.dart';
@@ -28,34 +29,31 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
   }
 
   void fetchData() async {
-    try {
-      List<Player> players = await playerController.fetchPlayers();
-      List<DisplayGroup> displayGroups =
-          await playerController.fetchDisplayGroup();
+  try {
+    // Récupérer les événements depuis le contrôleur
+    List<dynamic> events = await planificationController.fetchScheduleEvents([3], '2024-04-19 00:15:00');
 
-      List<String> playerDisplayNames =
-          players.map((player) => player.display!).toList();
-      List<String> groupDisplayNames =
-          displayGroups.map((group) => group.displayGroup!).toList();
+    // Convertir les événements en format utilisable pour le calendrier
+    List<Appointment> appointments = events.map((event) {
+      return Appointment(
+        startTime: DateTime.parse(event['start_time']),
+        endTime: DateTime.parse(event['end_time']),
+        subject: event['subject'],
+        color: Colors.blue, // Couleur de l'événement (peut être personnalisée)
+      );
+    }).toList();
 
-      setState(() {
-        _displayItems = [
-          'Groupes',
-          ...groupDisplayNames,
-          'Afficheurs',
-          ...playerDisplayNames
-        ];
-      });
+    // Mettre à jour la source de données du calendrier avec les nouveaux événements
+    setState(() {
+      planificationController.appointmentsDataSource = AppointmentDataSource(appointments);
+    });
 
-      List<dynamic> events = await planificationController
-          .fetchScheduleEvents([3], '2024-04-19 00:15:00');
-      planificationController.fetchScheduleEvent();
-      print('Fetched events: $events');
-      print('Number of events: ${events.length}');
-    } catch (e) {
-      print('Error fetching data: $e');
-    }
+    print('Fetched events: $events');
+    print('Number of events: ${events.length}');
+  } catch (e) {
+    print('Error fetching data: $e');
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -118,13 +116,14 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
                 children: [
                   SfCalendar(
                     view: CalendarView.month,
-                    dataSource: AppointmentDataSource([]),
+                    dataSource: planificationController.appointmentsDataSource,
                     firstDayOfWeek: 1,
                     todayHighlightColor: kSecondaryColor,
                     selectionDecoration: BoxDecoration(
                       color: Colors.transparent,
                       border: Border.all(color: kSecondaryColor),
-                      borderRadius: const BorderRadius.all(Radius.circular(4)),
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(4)),
                       shape: BoxShape.rectangle,
                     ),
                     showNavigationArrow: false,
@@ -141,8 +140,8 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
                 itemCount: 7,
                 itemBuilder: (context, index) {
                   return ListTile(
-                      // Title could be customized if needed
-                      );
+                    // Title could be customized if needed
+                  );
                 },
               ),
             ),
@@ -150,30 +149,6 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
         ],
       ),
     );
-  }
-
-  // Define a method to create the list of appointments
-  List<Appointment> _getAppointments() {
-    List<Appointment> appointments = <Appointment>[];
-
-    // Add sample appointments for demonstration
-    appointments.add(Appointment(
-      startTime: DateTime.now().subtract(Duration(days: 1)),
-      endTime:
-          DateTime.now().subtract(Duration(days: 1)).add(Duration(hours: 1)),
-      subject: 'Sample Event 1',
-      color: Colors.blue, // You can customize the color of the event
-    ));
-    appointments.add(Appointment(
-      startTime: DateTime.now(),
-      endTime: DateTime.now().add(Duration(hours: 2)),
-      subject: 'Sample Event 2',
-      color: Colors.green, // You can customize the color of the event
-    ));
-    // Add more appointments as needed...
-
-    // Return the list of appointments
-    return appointments;
   }
 }
 
