@@ -7,6 +7,7 @@ import 'package:magic_sign_mobile/controller/playerController.dart';
 import 'package:magic_sign_mobile/model/DisplayGroup.dart';
 import 'package:magic_sign_mobile/model/Player.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
+import 'dart:convert';
 
 class PlanificationScreen extends StatefulWidget {
   const PlanificationScreen({Key? key}) : super(key: key);
@@ -22,38 +23,60 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
 
   List<String> _displayItems = [];
   String? _selectedDisplay;
+  DateTime? _selectedDate;
+  List<dynamic> _selectedEvents = [];
   @override
   void initState() {
     super.initState();
     fetchData();
+    planificationController.fetchScheduleEvent();
+    planificationController.getPlaylist();
   }
 
   void fetchData() async {
-  try {
-    // Récupérer les événements depuis le contrôleur
-    List<dynamic> events = await planificationController.fetchScheduleEvents([3], '2024-04-19 00:15:00');
+    try {
+      List<Map<String, dynamic>> events =
+          await planificationController.fetchScheduleEvents();
 
-    // Convertir les événements en format utilisable pour le calendrier
-    List<Appointment> appointments = events.map((event) {
-      return Appointment(
-        startTime: DateTime.parse(event['start_time']),
-        endTime: DateTime.parse(event['end_time']),
-        subject: event['subject'],
-        color: Colors.blue, // Couleur de l'événement (peut être personnalisée)
-      );
-    }).toList();
+      List<Player> players = await playerController.fetchPlayers();
 
-    // Mettre à jour la source de données du calendrier avec les nouveaux événements
-    setState(() {
-      planificationController.appointmentsDataSource = AppointmentDataSource(appointments);
-    });
+      List<DisplayGroup> displayGroups =
+          await playerController.fetchDisplayGroup();
+      List<String> playerDisplayNames =
+          players.map((player) => player.display!).toList();
+      List<String> groupDisplayNames =
+          displayGroups.map((group) => group.displayGroup!).toList();
+      events.forEach((event) {
+        print('Event: $event');
+      });
 
-    print('Fetched events: $events');
-    print('Number of events: ${events.length}');
-  } catch (e) {
-    print('Error fetching data: $e');
+      // Convert events to appointments
+      List<Appointment> appointments = events.map((event) {
+        return Appointment(
+          startTime: event['start_time'],
+          endTime: event['end_time'],
+          subject: 'Event ${event['CampaignID']}',
+          color: kSecondaryColor,
+        );
+      }).toList();
+
+      setState(() {
+        _displayItems = [
+          'Groupes',
+          ...groupDisplayNames,
+          'Afficheurs',
+          ...playerDisplayNames
+        ];
+        planificationController.appointmentsDataSource =
+            AppointmentDataSource(appointments);
+      });
+
+      print('Fetched events: $events');
+      print('Number of events: ${events.length}');
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +132,7 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
             ),
           ),
           Expanded(
-            flex: 4,
+            flex: 8,
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -122,25 +145,45 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
                     selectionDecoration: BoxDecoration(
                       color: Colors.transparent,
                       border: Border.all(color: kSecondaryColor),
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(4)),
+                      borderRadius: const BorderRadius.all(Radius.circular(4)),
                       shape: BoxShape.rectangle,
                     ),
                     showNavigationArrow: false,
+                    onTap: (CalendarTapDetails details) {
+                      setState(() {
+                        _selectedDate = details.date;
+                        _selectedEvents = planificationController
+                            .appointmentsDataSource.appointments
+                            .where((appointment) =>
+                                appointment.startTime!.day ==
+                                _selectedDate!.day)
+                            .toList();
+                      });
+                    },
                   ),
                 ],
               ),
             ),
           ),
           Expanded(
-            flex: 4,
+            flex: 7,
             child: SizedBox(
               height: double.infinity,
               child: ListView.builder(
-                itemCount: 7,
+                itemCount: _selectedEvents.length,
                 itemBuilder: (context, index) {
+                  var event = _selectedEvents[index];
+                  int playlistId =
+                      int.tryParse(event.subject.split(' ').last) ?? 0;
+                  String playlistName =
+                      planificationController.getPlaylistName(playlistId);
+
+                  print('Subject: ${_selectedEvents[index].subject}');
+                  print('Selected Events: $_selectedEvents');
+                  print('Playlist Name: $playlistName');
                   return ListTile(
-                    // Title could be customized if needed
+                    title: Text(
+                        'Event ${_selectedEvents[index].subject} - Playlist: $playlistName'),
                   );
                 },
               ),
@@ -153,25 +196,20 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
 }
 
 class AppointmentDataSource extends CalendarDataSource {
-  // Define a constructor to initialize the appointments list
   AppointmentDataSource(List<Appointment> appointments) {
     this.appointments = appointments;
   }
 
-  // Override the appointments getter to return the list of appointments
   @override
   List get appointments => super.appointments!;
 
-  // Override the add method to add new appointments to the list
   @override
   void add(Appointment appointment) {
     appointments.add(appointment);
   }
 
-  // Override the clear method to remove all appointments from the list
   @override
   void clear() {
     appointments.clear();
   }
-  // Add more methods as needed to manipulate the appointments data
 }

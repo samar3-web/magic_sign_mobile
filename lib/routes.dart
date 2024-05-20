@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:magic_sign_mobile/model/Player.dart';
 import 'package:magic_sign_mobile/model/Timeline.dart';
 import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart';
 import 'package:magic_sign_mobile/screens/media_screen/media_screen.dart';
@@ -19,10 +20,11 @@ Map<String, WidgetBuilder> routes = {
   MyProfile.routeName: (context) => const MyProfile(),
   MediaScreen.routeName: (context) => const MediaScreen(),
   PlaylistScreen.routeName: (context) => const PlaylistScreen(),
-  PlayerScreen.routeName: (context) => const PlayerScreen(),
+ 
   PlanificationScreen.routeName: (context) => const PlanificationScreen(),
-// PlaylistDetail route with arguments
-  PlaylistDetail.routeName: (BuildContext context) => (PlaylistDetail(
+    PlayerScreen.routeName: (context) => const PlayerScreen(),
+
+    PlaylistDetail.routeName: (BuildContext context) => (PlaylistDetail(
         playlist: ModalRoute.of(context)!.settings.arguments as Playlist,
       )),
   PreviewScreen.routeName: (BuildContext context) => (PlaylistDetail(

@@ -23,6 +23,7 @@ class PlaylistController extends GetxController {
   RxInt playlistDuration = 0.obs;
   var isLoading = false.obs;
   var originalPlaylistList = <Playlist>[].obs;
+  var selectedPlaylist = ''.obs;
 
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -210,8 +211,7 @@ class PlaylistController extends GetxController {
 
         print('Layout added successfully');
         Get.to(PlaylistDetail(
-            playlist:
-                Playlist.fromJson(jsonDecode(response.body))));
+            playlist: Playlist.fromJson(jsonDecode(response.body))));
       } else {
         // Handle error response
         print('Failed to add layout. Status code: ${response.statusCode}');
@@ -479,9 +479,9 @@ class PlaylistController extends GetxController {
 
       var body = {
         'eventTypeId': "1",
-        'isPriority':"0",
-        'displayOrder':"0",
-        'syncTimezone':"1",
+        'isPriority': "0",
+        'displayOrder': "0",
+        'syncTimezone': "1",
         'campaignId': campaignId.toString(),
         'displayGroupIds[]': displayGroupIds[0].toString(),
         'fromDt': fromDt.toString() + "",
