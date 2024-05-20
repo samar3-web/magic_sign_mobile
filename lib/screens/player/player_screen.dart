@@ -91,18 +91,14 @@ class _PlayerScreenState extends State<PlayerScreen> {
           playlists.map((playlist) => playlist.layout).toList();
       print("Playlist names extracted: $playlistNames");
 
-      // Get the selected playlist
       String? selectedPlaylistName = playlistController.selectedPlaylist.value;
 
-      // Définir la playlist par défaut
       String? defaultPlaylistName = player.defaultLayout;
       print("Default playlist: $defaultPlaylistName");
 
-      // Vérifiez que la valeur par défaut est dans la liste des noms de playlists
       bool isDefaultPlaylistInList =
           playlistNames.contains(defaultPlaylistName);
       if (!isDefaultPlaylistInList && defaultPlaylistName != null) {
-        // Si la playlist par défaut n'est pas dans la liste, ajoutez-la manuellement
         playlistNames.add(defaultPlaylistName);
       }
 
@@ -133,7 +129,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     await playerController.setDefaultLayout(
                         player.displayId!, selectedPlaylist.layoutId);
 
-                    // Update the selected playlist
                     playlistController.selectedPlaylist.value = newValue;
 
                     Navigator.of(context).pop();
