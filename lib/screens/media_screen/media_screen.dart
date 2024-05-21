@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image_builder/cached_network_image_builder.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -17,15 +18,31 @@ class MediaScreen extends StatefulWidget {
 }
 
 class _MediaScreenState extends State<MediaScreen> {
-  final MediaController mediaController = Get.put(MediaController());
-    Future<void> _refreshMedia() async {
+  late MediaController mediaController = Get.put(MediaController());
+  final ScrollController _scrollController = ScrollController();
+
+  Future<void> _refreshMedia() async {
     await mediaController.getMedia();
   }
 
   @override
   void initState() {
     super.initState();
+    mediaController = Get.put(MediaController());
     mediaController.getMedia();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent &&
+          !mediaController.isLoading.value) {
+        mediaController.loadMoreMedia();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -34,7 +51,7 @@ class _MediaScreenState extends State<MediaScreen> {
       appBar: AppBar(
         title: Text('Media Screen'),
       ),
-     floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton(
         onPressed: () async {
           // Call function to select and upload files
           List<File> pickedFiles = await _selectFiles();
@@ -46,87 +63,117 @@ class _MediaScreenState extends State<MediaScreen> {
         child: Icon(Icons.add),
       ),
       body: RefreshIndicator(
-      onRefresh: _refreshMedia,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-             child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    style: TextStyle(fontSize: 16.0),
-
-                    decoration: InputDecoration(
-                      
-                      hintText: 'Search...',
-                      hintStyle: TextStyle(color: boxColor),
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(),
-                    
+        onRefresh: _refreshMedia,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      style: TextStyle(fontSize: 16.0),
+                      decoration: InputDecoration(
+                        hintText: 'Search...',
+                        hintStyle: TextStyle(color: boxColor),
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (value) {
+                        mediaController.searchMedia(value);
+                      },
                     ),
-                    onChanged: (value) {
-                      mediaController.searchMedia(value);
-                    },
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Row(
-              children: [
-                DropdownButton<String>(
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      mediaController.filterByType(newValue!);
-                    });
-                  },
-                  items: <String>['Image', 'PDF', 'Word', 'Excel', 'PowerPoint', 'Video']
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  hint: Text('Filter by type'),
-                ),
-                SizedBox(width: 10),
-                DropdownButton<String>(
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      mediaController.filterByOwner(newValue!);
-                    });
-                  },
-                  items: <String>['ADMIN', 'SUPERADMIN']
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  hint: Text('Filter by owner'),
-                ),
-              ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Row(
+                children: [
+                  DropdownButton<String>(
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        mediaController.filterByType(newValue!);
+                      });
+                    },
+                    items: <String>[
+                      'Image',
+                      'PDF',
+                      'Word',
+                      'Excel',
+                      'PowerPoint',
+                      'Video'
+                    ].map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    hint: Text('Filter by type'),
+                  ),
+                  SizedBox(width: 10),
+                  DropdownButton<String>(
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        mediaController.filterByOwner(newValue!);
+                      });
+                    },
+                    items: <String>['ADMIN', 'SUPERADMIN']
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    hint: Text('Filter by owner'),
+                  ),
+                ],
+              ),
             ),
-          ),
-          
-          Expanded(
-            child: Obx(
-              () => mediaController.isLoading.value
-                  ? Center(
+            Expanded(
+              child: Obx(
+                () {
+                  if (mediaController.isLoading.value &&
+                      mediaController.mediaList.isEmpty) {
+                    return Center(
                       child: CircularProgressIndicator(),
-                    )
-                  : GridViewUI(mediaList: mediaController.mediaList),
+                    );
+                  } else {
+                    return NotificationListener<ScrollNotification>(
+                      onNotification: (ScrollNotification scrollInfo) {
+                        if (scrollInfo.metrics.pixels ==
+                                scrollInfo.metrics.maxScrollExtent &&
+                            !mediaController.isLoading.value) {
+                          mediaController.loadMoreMedia();
+                        }
+                        return false;
+                      },
+                      child: GridView.builder(
+                        controller: _scrollController,
+                        padding: EdgeInsets.all(16.0),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16.0,
+                          mainAxisSpacing: 16.0,
+                          childAspectRatio: 1.0,
+                        ),
+                        itemCount: mediaController.mediaList.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return GridItem(
+                              media: mediaController.mediaList[index]);
+                        },
+                      ),
+                    );
+                  }
+                },
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
-
 }
 
 Future<List<File>> _selectFiles() async {
@@ -143,17 +190,16 @@ Future<List<File>> _selectFiles() async {
   }
 }
 
-
-
-
 class GridViewUI extends StatelessWidget {
   final List<Media> mediaList;
+  final ScrollController controller;
 
-  GridViewUI({required this.mediaList});
+  GridViewUI({required this.mediaList, required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
+      controller: controller,
       padding: EdgeInsets.all(16.0),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
@@ -172,9 +218,10 @@ class GridViewUI extends StatelessWidget {
 class GridItem extends StatelessWidget {
   final Media media;
   final int maxNameLength;
-  const GridItem({Key? key, required this.media,  this.maxNameLength = 20}) : super(key: key);
+  const GridItem({Key? key, required this.media, this.maxNameLength = 20})
+      : super(key: key);
 
-   String getShortenedName(String name) {
+  String getShortenedName(String name) {
     if (name.length <= maxNameLength) {
       return name;
     } else {
@@ -182,51 +229,52 @@ class GridItem extends StatelessWidget {
     }
   }
 
- String getFileType() {
-    // Extract file extension from mediaType
+  String getFileType() {
     String mediaType = media.mediaType.toLowerCase();
 
-    // Map file extensions to corresponding types
     Map<String, String> fileTypes = {
-      'jpg' : 'image',
+      'jpg': 'image',
       'image': 'image',
       'pdf': 'pdf',
       'doc': 'word',
       'docx': 'word',
-      'xls': 'excel',
       'xlsx': 'excel',
       'ppt': 'powerpoint',
       'pptx': 'powerpoint',
       'video': 'video',
     };
 
-    // Return corresponding file type
     return fileTypes.containsKey(mediaType) ? fileTypes[mediaType]! : 'other';
   }
-Future<String> getThumbnailUrl() async {
-  String fileType = getFileType();
-  print('File type: $fileType'); 
-  if (fileType == 'image') {
-    // Await the result of getImageUrl() since it's asynchronous
-    print('Media ID: ${media.mediaId}'); 
-    return await MediaController().getImageUrl(media.storedAs);
-  } else {
-    switch (fileType) {
-      case 'word':
-        return 'assets/images/word-logo.png'; 
-      case 'pdf':
-        return 'assets/images/pdf-logo.png'; 
-      case 'excel':
-        return 'assets/images/excel-logo.png'; 
-      case 'powerpoint':
-        return 'assets/images/pp-logo.png'; 
-      case 'video':
-        return 'assets/images/video-logo.png'; 
-      default:
-        return 'assets/images/default.png'; 
+
+  Future<String> getThumbnailUrl() async {
+    String fileType = getFileType();
+    print('File type: $fileType');
+    try {
+      if (fileType == 'image') {
+        print('Media ID: ${media.mediaId}');
+        return await MediaController().getImageUrl(media.storedAs);
+      } else {
+        switch (fileType) {
+          case 'word':
+            return 'assets/images/word-logo.png';
+          case 'pdf':
+            return 'assets/images/pdf-logo.png';
+          case 'excel':
+            return 'assets/images/excel-logo.png';
+          case 'powerpoint':
+            return 'assets/images/pp-logo.png';
+          case 'video':
+            return 'assets/images/video-logo.png';
+          default:
+            return 'assets/images/default.png';
+        }
+      }
+    } catch (e) {
+      print('Error loading image: $e');
+      return 'assets/images/default.png';
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -243,7 +291,7 @@ Future<String> getThumbnailUrl() async {
         future: getThumbnailUrl(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return Container();
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
@@ -268,11 +316,14 @@ Future<String> getThumbnailUrl() async {
                   Expanded(
                     child: Container(
                       width: double.infinity,
-                      height: 150, 
+                      height: 150,
                       child: getFileType() == 'image'
-                          ? Image.network(
-                              "https://magic-sign.cloud/v_ar/web/MSlibrary/${media.storedAs}",
-                              fit: BoxFit.cover,
+                          ? CachedNetworkImageBuilder(
+                              url:
+                                  "https://magic-sign.cloud/v_ar/web/MSlibrary/${media.storedAs}",
+                              builder: (image) {
+                                return Center(child: Image.file(image));
+                              },
                             )
                           : Image.asset(
                               thumbnailUrl,
@@ -283,10 +334,10 @@ Future<String> getThumbnailUrl() async {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      getShortenedName(media.name), 
+                      getShortenedName(media.name),
                       textAlign: TextAlign.center,
-                      maxLines: 2, 
-                      overflow: TextOverflow.ellipsis, 
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 16.0,
                         fontWeight: FontWeight.bold,

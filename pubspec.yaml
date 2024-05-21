@@ -28,6 +28,8 @@ dependencies:
   flutter_file_view: ^2.2.1
   file_picker: ^8.0.0+1
   syncfusion_flutter_calendar: ^25.1.38
+  lazy_loading_list: ^1.0.1
+  cached_network_image_builder: ^0.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

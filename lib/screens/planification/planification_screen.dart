@@ -208,7 +208,7 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
                         SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            '[${DateFormat('HH:mm').format(_selectedEvents[index].startTime!)} - ${DateFormat('HH:mm').format(_selectedEvents[index].endTime!)}] $playlistName planifié sur $playerName ',
+                            '[${DateFormat('HH:mm').format(_selectedEvents[index].startTime!.add(Duration(hours: 1)))} - ${DateFormat('HH:mm').format(_selectedEvents[index].endTime!)}] $playlistName planifié sur $playerName ',
                             style: TextStyle(
                               fontWeight: FontWeight.normal,
                               color: kSecondaryColor,

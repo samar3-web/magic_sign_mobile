@@ -9,25 +9,30 @@ import 'package:magic_sign_mobile/model/Media.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MediaController extends GetxController {
-  final String apiUrl = "https://magic-sign.cloud/v_ar/web/api/library";
+  final String apiUrl =
+      "https://magic-sign.cloud/v_ar/web/api/library";
 
-  // Define isLoading property to handle loading state
   var isLoading = false.obs;
-  // Define mediaList to store fetched media data
   var mediaList = <Media>[].obs;
   var originalMediaList = <Media>[].obs;
+  var currentPage = 0.obs;
+  final int pageSize = 20;
 
-  // Function to retrieve the access token from SharedPreferences
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('access_token');
     print(
-        'Access Token stored  ***********: $accessToken'); // Print the access token
+        'Access Token stored  ***********: $accessToken'); 
     return accessToken;
   }
 
-  // Function to fetch media using the access token for authorization
-  Future<void> getMedia() async {
+   @override
+  void onInit() {
+    super.onInit();
+    getMedia();
+  }
+
+  Future<void> getMedia({int start = 0, int length = 20}) async {
     try {
       isLoading(true);
       String? accessToken = await getAccessToken();
@@ -42,11 +47,11 @@ class MediaController extends GetxController {
       }
 
       final response = await http.get(
-        Uri.parse(apiUrl),
+        Uri.parse('$apiUrl?start=$start&length=$length'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache' 
+          'Cache-Control': 'no-cache',
         },
       );
 
@@ -55,15 +60,18 @@ class MediaController extends GetxController {
         var jsonData = (json.decode(response.body) as List)
             .map((e) => Media.fromJson(e))
             .toList();
-        // print(jsonData);
-        jsonData.forEach((element) {
-          print(element.name);
-        });
-        // Update mediaList with fetched data
-        mediaList.assignAll(jsonData);
-        originalMediaList.assignAll(jsonData);
-        print("Media fetched and lists updated.");
 
+        if (start == 0) {
+          // Première page
+          mediaList.assignAll(jsonData);
+          originalMediaList.assignAll(jsonData);
+        } else {
+          // Ajouter à la liste existante pour lazy loading
+          mediaList.addAll(jsonData);
+          originalMediaList.addAll(jsonData);
+        }
+
+        print("Media fetched and lists updated.");
       } else {
         // Handle error response
         print('Failed to load media. Status code: ${response.statusCode}');
@@ -85,6 +93,14 @@ class MediaController extends GetxController {
       isLoading(false);
     }
   }
+
+  void loadMoreMedia() {
+    if (!isLoading.value) {
+      currentPage.value += 1;
+      getMedia(start: currentPage.value * pageSize, length: pageSize);
+    }
+  }
+
 
   Future<String> getImageUrl(String storedAs) async {
     String? accessToken = await getAccessToken();
@@ -124,48 +140,46 @@ class MediaController extends GetxController {
         print(response);
         if (response.statusCode == 200) {
           print('File uploaded successfully');
-          ScaffoldMessenger.of(context ).showSnackBar(
-          SnackBar(content: Text('File uploaded successfully'),
-          backgroundColor: Colors.green,),
-        );
-         await Future.delayed(Duration(seconds: 5));
-        await getMedia();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('File uploaded successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          await Future.delayed(Duration(seconds: 5));
+          await getMedia();
         } else {
           print('File upload failed');
-           ScaffoldMessenger.of(context ).showSnackBar(
-          SnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('File upload failed'),
-            backgroundColor: Colors.red, 
-          )
-        );
+            backgroundColor: Colors.red,
+          ));
         }
       }
     } catch (e) {
       print('Error uploading files: $e');
-       ScaffoldMessenger.of(context ).showSnackBar(
-          SnackBar(
-            content: Text('File upload failed'),
-            backgroundColor: Colors.red, 
-          )
-        );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('File upload failed'),
+        backgroundColor: Colors.red,
+      ));
     }
   }
-  Future<void> waitForMediaUpdate(String expectedFile) async {
-  int attempts = 0;
-  bool found = false;
-  while (!found && attempts < 10) { 
-    await Future.delayed(Duration(seconds: 5)); 
-    await getMedia();
-    found = mediaList.any((media) => media.name == expectedFile);
-    attempts++;
-  }
-  if (found) {
-    print("New media found!");
-  } else {
-    print("Failed to find new media after uploading.");
-  }
-}
 
+  Future<void> waitForMediaUpdate(String expectedFile) async {
+    int attempts = 0;
+    bool found = false;
+    while (!found && attempts < 10) {
+      await Future.delayed(Duration(seconds: 5));
+      await getMedia();
+      found = mediaList.any((media) => media.name == expectedFile);
+      attempts++;
+    }
+    if (found) {
+      print("New media found!");
+    } else {
+      print("Failed to find new media after uploading.");
+    }
+  }
 
   updateMediaData(
       int mediaId, String name, String duration, String retired) async {

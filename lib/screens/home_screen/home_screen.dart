@@ -29,8 +29,7 @@ class HomeScreen extends StatelessWidget {
           Container(
             margin: EdgeInsets.only(top: 10.0),
             width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height / 4.5,
-            padding: EdgeInsets.all(kDefaultPadding),
+            height: MediaQuery.of(context).size.height / 6,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -76,7 +75,7 @@ class HomeScreen extends StatelessWidget {
                 SizedBox(
                   height: kDefaultPadding,
                 ),
-               /* Row(
+                /* Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     InkWell(

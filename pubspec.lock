@@ -57,6 +57,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
+  cached_network_image_builder:
+    dependency: "direct main"
+    description:
+      name: cached_network_image_builder
+      sha256: "25d5cc37344b5dc542c0ee3dda0b10cfa29e0fa411096c8f62db3402c3d8dbbb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.0"
   characters:
     dependency: transitive
     description:
@@ -360,6 +368,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.8.1"
+  lazy_loading_list:
+    dependency: "direct main"
+    description:
+      name: lazy_loading_list
+      sha256: a9bb5598ec57fd831309ea20cb0bcc234de099945a8045aab42d84c591b6f10d
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   leak_tracker:
     dependency: transitive
     description:
