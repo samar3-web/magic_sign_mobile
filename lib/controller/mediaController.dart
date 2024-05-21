@@ -9,8 +9,7 @@ import 'package:magic_sign_mobile/model/Media.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MediaController extends GetxController {
-  final String apiUrl =
-      "https://magic-sign.cloud/v_ar/web/api/library";
+  final String apiUrl = "https://magic-sign.cloud/v_ar/web/api/library";
 
   var isLoading = false.obs;
   var mediaList = <Media>[].obs;
@@ -21,12 +20,11 @@ class MediaController extends GetxController {
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('access_token');
-    print(
-        'Access Token stored  ***********: $accessToken'); 
+    print('Access Token stored  ***********: $accessToken');
     return accessToken;
   }
 
-   @override
+  @override
   void onInit() {
     super.onInit();
     getMedia();
@@ -37,7 +35,6 @@ class MediaController extends GetxController {
       isLoading(true);
       String? accessToken = await getAccessToken();
       if (accessToken == null) {
-        // Handle case when access token is not available
         Get.snackbar(
           "Error",
           "Access token not available. Please log in again.",
@@ -56,24 +53,21 @@ class MediaController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        // Handle successful response
         var jsonData = (json.decode(response.body) as List)
             .map((e) => Media.fromJson(e))
             .toList();
+        jsonData.sort((a, b) => b.createdDt.compareTo(a.createdDt));
 
         if (start == 0) {
-          // Première page
           mediaList.assignAll(jsonData);
           originalMediaList.assignAll(jsonData);
         } else {
-          // Ajouter à la liste existante pour lazy loading
           mediaList.addAll(jsonData);
           originalMediaList.addAll(jsonData);
         }
 
         print("Media fetched and lists updated.");
       } else {
-        // Handle error response
         print('Failed to load media. Status code: ${response.statusCode}');
         Get.snackbar(
           "Error",
@@ -82,7 +76,6 @@ class MediaController extends GetxController {
         );
       }
     } catch (e) {
-      // Handle exceptions
       print('Error fetching media: $e');
       Get.snackbar(
         "Error",
@@ -100,7 +93,6 @@ class MediaController extends GetxController {
       getMedia(start: currentPage.value * pageSize, length: pageSize);
     }
   }
-
 
   Future<String> getImageUrl(String storedAs) async {
     String? accessToken = await getAccessToken();
@@ -124,10 +116,21 @@ class MediaController extends GetxController {
   }
 
   Future<void> uploadFiles(BuildContext context, List<File> files) async {
+    const int maxFileSize = 100 * 1024 * 1024;
     try {
       String? accessToken = await getAccessToken();
 
       for (File file in files) {
+        if (await file.length() > maxFileSize) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('File ${file.path} exceeds 100 MB size limit.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          continue;
+        }
+
         var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
 
         request.files.add(
@@ -136,8 +139,6 @@ class MediaController extends GetxController {
         request.headers['Authorization'] = 'Bearer $accessToken';
 
         var response = await request.send();
-
-        print(response);
         if (response.statusCode == 200) {
           print('File uploaded successfully');
           ScaffoldMessenger.of(context).showSnackBar(
@@ -162,22 +163,6 @@ class MediaController extends GetxController {
         content: Text('File upload failed'),
         backgroundColor: Colors.red,
       ));
-    }
-  }
-
-  Future<void> waitForMediaUpdate(String expectedFile) async {
-    int attempts = 0;
-    bool found = false;
-    while (!found && attempts < 10) {
-      await Future.delayed(Duration(seconds: 5));
-      await getMedia();
-      found = mediaList.any((media) => media.name == expectedFile);
-      attempts++;
-    }
-    if (found) {
-      print("New media found!");
-    } else {
-      print("Failed to find new media after uploading.");
     }
   }
 
