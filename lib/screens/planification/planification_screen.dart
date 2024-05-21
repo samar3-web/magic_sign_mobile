@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/controller/planificationController.dart';
 import 'package:magic_sign_mobile/controller/playerController.dart';
@@ -25,6 +26,7 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
   String? _selectedDisplay;
   DateTime? _selectedDate;
   List<dynamic> _selectedEvents = [];
+
   @override
   void initState() {
     super.initState();
@@ -46,17 +48,18 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
           players.map((player) => player.display!).toList();
       List<String> groupDisplayNames =
           displayGroups.map((group) => group.displayGroup!).toList();
+
       events.forEach((event) {
         print('Event: $event');
       });
 
-      // Convert events to appointments
       List<Appointment> appointments = events.map((event) {
         return Appointment(
           startTime: event['start_time'],
           endTime: event['end_time'],
           subject: 'Event ${event['CampaignID']}',
           color: kSecondaryColor,
+          notes: event['DisplayGroupID'],
         );
       }).toList();
 
@@ -76,6 +79,14 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
     } catch (e) {
       print('Error fetching data: $e');
     }
+  }
+
+  String? getPlayerName(int displayGroupId) {
+    var player = playerController.playerList.firstWhere(
+        (player) => player.displayGroupId == displayGroupId,
+        orElse: () => Player(displayGroupId: 0, display: 'Unknown'));
+    print(player.display);
+    return player.display;
   }
 
   @override
@@ -177,13 +188,36 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
                       int.tryParse(event.subject.split(' ').last) ?? 0;
                   String playlistName =
                       planificationController.getPlaylistName(playlistId);
+                  int displayGroupId = int.tryParse(event.notes ?? '') ?? 0;
 
-                  print('Subject: ${_selectedEvents[index].subject}');
-                  print('Selected Events: $_selectedEvents');
-                  print('Playlist Name: $playlistName');
+                  String? playerName = getPlayerName(displayGroupId);
+
+                  print('playlist id $playlistId');
+                  print('Player id $displayGroupId');
+                  print('Player name $playerName');
+
                   return ListTile(
-                    title: Text(
-                        'Event ${_selectedEvents[index].subject} - Playlist: $playlistName'),
+                    title: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.display_settings_outlined,
+                          color: kSecondaryColor,
+                          size: 24.0,
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '[${DateFormat('HH:mm').format(_selectedEvents[index].startTime!)} - ${DateFormat('HH:mm').format(_selectedEvents[index].endTime!)}] $playlistName planifié sur $playerName ',
+                            style: TextStyle(
+                              fontWeight: FontWeight.normal,
+                              color: kSecondaryColor,
+                              fontSize: 18.0,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),

@@ -6,6 +6,7 @@ class Player {
   int? loggedIn;
   int? licensed;
   String? defaultLayout;
+  int? displayGroupId;
   Player({
     this.displayId,
     this.display,
@@ -14,6 +15,7 @@ class Player {
     this.loggedIn,
     this.licensed,
     this.defaultLayout,
+   this.displayGroupId,
   });
 
   Player.fromJson(Map<String, dynamic> json) {
@@ -24,5 +26,6 @@ class Player {
     loggedIn = json['loggedIn'];
     licensed = json['licensed'];
     defaultLayout = json['defaultLayout'];
+    displayGroupId = json['displayGroupId'];
   }
 }

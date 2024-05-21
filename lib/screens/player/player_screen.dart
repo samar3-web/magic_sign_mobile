@@ -96,9 +96,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
       String? defaultPlaylistName = player.defaultLayout;
       print("Default playlist: $defaultPlaylistName");
 
-      bool isDefaultPlaylistInList =
-          playlistNames.contains(defaultPlaylistName);
-      if (!isDefaultPlaylistInList && defaultPlaylistName != null) {
+      if (defaultPlaylistName != null &&
+          !playlistNames.contains(defaultPlaylistName)) {
         playlistNames.add(defaultPlaylistName);
       }
 
@@ -108,7 +107,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
           return AlertDialog(
             title: Text('Select Playlist'),
             content: DropdownButtonFormField<String>(
-              value: selectedPlaylistName ?? defaultPlaylistName,
+              value: defaultPlaylistName,
               hint: Text('Select a playlist'),
               onChanged: (String? newValue) async {
                 if (newValue != null) {
@@ -128,8 +127,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     );
                     await playerController.setDefaultLayout(
                         player.displayId!, selectedPlaylist.layoutId);
-
                     playlistController.selectedPlaylist.value = newValue;
+
+                    setState(() {});
 
                     Navigator.of(context).pop();
                   } catch (e) {
