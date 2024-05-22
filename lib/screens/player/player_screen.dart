@@ -22,16 +22,41 @@ class _PlayerScreenState extends State<PlayerScreen> {
   bool _isRefreshing = false;
   bool _showOnlyLicensed = false;
   bool _isFabVisible = true;
+  final ScrollController _scrollController = ScrollController();
   List<Playlist> playlists = [];
+  double _lastScrollOffset = 0.0;
 
   @override
   void initState() {
     super.initState();
     playerController.fetchData();
     playerController.fetchDisplayGroup();
+    _scrollController.addListener(_scrollListener);
+
     print('Player List Length: ${playerController.playerList.length}');
   }
-
+  void _scrollListener() {
+    if (_scrollController.position.atEdge) {
+      if (_scrollController.position.pixels == 0) {
+        setState(() {
+          _isFabVisible = true;
+        });
+      } else {
+        setState(() {
+          _isFabVisible = false;
+        });
+      }
+    } else {
+      setState(() {
+        _isFabVisible = true;
+      });
+    }
+  }
+ @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
   Future<void> _refreshList() async {
     setState(() {
       _isRefreshing = true;
@@ -196,23 +221,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
           ),
           Expanded(
             child: NotificationListener<ScrollNotification>(
-              onNotification: (scrollNotification) {
-                if (scrollNotification is ScrollStartNotification) {
-                  setState(() {
-                    _isFabVisible = false;
-                  });
-                } else if (scrollNotification is ScrollEndNotification ||
-                    scrollNotification is ScrollUpdateNotification) {
-                  setState(() {
-                    _isFabVisible = true;
-                  });
-                }
-                return true;
-              },
               child: RefreshIndicator(
                 onRefresh: _refreshList,
                 child: Obx(
                   () => ListView.builder(
+                    controller: _scrollController,
                     itemCount: playerController.playerList.length,
                     itemBuilder: (context, index) {
                       Player player = playerController.playerList[index];
@@ -317,9 +330,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                               if (value == 'Option 1') {
                                 _showAuthorizationDialog(player);
                               } else if (value == 'Option 2') {
-                                // Handle the modify logic here
                               } else if (value == 'Option 3') {
-                                // Handle the delete logic here
                               } else if (value == 'Option 4') {
                                 _showPlaylistPopup(player, playlists);
                               }
@@ -336,13 +347,13 @@ class _PlayerScreenState extends State<PlayerScreen> {
           ),
         ],
       ),
-      floatingActionButton: _isRefreshing || !_isFabVisible
-          ? null
-          : FloatingActionButton(
+      floatingActionButton: _isFabVisible
+          ? FloatingActionButton(
               onPressed: _refreshList,
               child: Icon(Icons.refresh),
               backgroundColor: kSecondaryColor,
-            ),
+            )
+          : null, 
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
