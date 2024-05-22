@@ -35,6 +35,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
     print('Player List Length: ${playerController.playerList.length}');
   }
+
   void _scrollListener() {
     if (_scrollController.position.atEdge) {
       if (_scrollController.position.pixels == 0) {
@@ -52,11 +53,13 @@ class _PlayerScreenState extends State<PlayerScreen> {
       });
     }
   }
- @override
+
+  @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
   }
+
   Future<void> _refreshList() async {
     setState(() {
       _isRefreshing = true;
@@ -88,9 +91,49 @@ class _PlayerScreenState extends State<PlayerScreen> {
               ),
               TextButton(
                 child: Text('Autoriser'),
-                onPressed: () {
-                  playerController.authorizePlayer(player.displayId!);
+                onPressed: () async {
+                  await playerController.authorizePlayer(player.displayId!);
+                  setState(() {
+                    player.licensed = 1;
+                  });
                   Navigator.of(context).pop();
+                  Get.snackbar('Success', 'Display authorized successfully');
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      Get.snackbar('Error', 'Display ID is null, cannot authorize player.');
+    }
+  }
+
+  void _showNonAuthorizeDialog(Player player) {
+    if (player.displayId != null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Confirmation'),
+            content: Text(
+                "Voulez-vous vraiment annuler l'autorisation de l'afficheur?"),
+            actions: [
+              TextButton(
+                child: Text('Annuler'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: Text('Oui'),
+                onPressed: () async {
+                  await playerController.authorizePlayer(player.displayId!);
+                  setState(() {
+                    player.licensed = 0;
+                  });
+                  Navigator.of(context).pop();
+                  Get.snackbar('Success', 'Display unauthorized successfully');
                 },
               ),
             ],
@@ -197,7 +240,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
       body: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               Switch(
                 value: _showOnlyLicensed,
@@ -212,8 +255,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   _showOnlyLicensed
-                      ? 'Autorisé ? : Non Autorisé'
-                      : 'Affiché: Tout',
+                      ? 'Affiché: Non Autorisé'
+                      : 'Affiché: Tout ',
                   style: TextStyle(color: Colors.black),
                 ),
               ),
@@ -224,123 +267,139 @@ class _PlayerScreenState extends State<PlayerScreen> {
               child: RefreshIndicator(
                 onRefresh: _refreshList,
                 child: Obx(
-                  () => ListView.builder(
-                    controller: _scrollController,
-                    itemCount: playerController.playerList.length,
-                    itemBuilder: (context, index) {
-                      Player player = playerController.playerList[index];
-                      bool isLoggedIn = player.loggedIn == 1;
-                      String formattedLastAccessed = player.lastAccessed != null
-                          ? DateFormat('yyyy-MM-dd HH:mm').format(
-                              DateTime.fromMillisecondsSinceEpoch(
-                                  player.lastAccessed! * 1000))
-                          : 'Never accessed';
+                  () {
+                    List<Player> filteredPlayers = _showOnlyLicensed
+                        ? playerController.playerList
+                            .where((player) => player.licensed == 0)
+                            .toList()
+                        : playerController.playerList;
 
-                      if (_showOnlyLicensed && player.licensed == 1) {
-                        return Container();
-                      }
+                    return ListView.builder(
+                      controller: _scrollController,
+                      itemCount: filteredPlayers.length,
+                      itemBuilder: (context, index) {
+                        Player player = filteredPlayers[index];
+                        bool isLoggedIn = player.loggedIn == 1;
+                        String formattedLastAccessed =
+                            player.lastAccessed != null
+                                ? DateFormat('yyyy-MM-dd HH:mm').format(
+                                    DateTime.fromMillisecondsSinceEpoch(
+                                        player.lastAccessed! * 1000))
+                                : 'Never accessed';
 
-                      return Container(
-                        margin: EdgeInsets.symmetric(
-                            vertical: 8.0, horizontal: 8.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: ListTile(
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: 16.0, vertical: 8.0),
-                          title: Row(
-                            children: [
-                              Text(
-                                player.display ?? 'No display',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16.0,
-                                ),
-                              ),
-                              SizedBox(
-                                width: 10,
-                              ),
-                              CircleAvatar(
-                                radius: 6.0,
-                                backgroundColor:
-                                    isLoggedIn ? Colors.green : Colors.red,
+                        return Container(
+                          margin: EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 8.0),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12.0),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                spreadRadius: 2,
+                                blurRadius: 5,
+                                offset: Offset(0, 3),
                               ),
                             ],
                           ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(height: 8.0),
-                              Text(
-                                player.clientAddress?.toString() ??
-                                    'No address',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16.0,
+                          child: ListTile(
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 8.0),
+                            title: Row(
+                              children: [
+                                Text(
+                                  player.display ?? 'No display',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16.0,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(height: 8.0),
-                              Row(
-                                children: [
-                                  Text(
-                                    formattedLastAccessed,
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 16.0,
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                CircleAvatar(
+                                  radius: 6.0,
+                                  backgroundColor:
+                                      isLoggedIn ? Colors.green : Colors.red,
+                                ),
+                              ],
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(height: 8.0),
+                                Text(
+                                  player.clientAddress?.toString() ??
+                                      'No address',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 16.0,
+                                  ),
+                                ),
+                                SizedBox(height: 8.0),
+                                Row(
+                                  children: [
+                                    Text(
+                                      formattedLastAccessed,
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16.0,
+                                      ),
                                     ),
-                                  ),
-                                  SizedBox(width: 8.0),
-                                  SizedBox(width: 8.0),
-                                  Icon(
-                                    player.licensed == 1
-                                        ? Icons.check_circle
-                                        : Icons.cancel,
-                                    color: player.licensed == 1
-                                        ? Colors.green
-                                        : Colors.red,
-                                  ),
-                                ],
-                              ),
-                            ],
+                                    SizedBox(width: 8.0),
+                                    Icon(
+                                      player.licensed == 1
+                                          ? Icons.check_circle
+                                          : Icons.cancel,
+                                      color: player.licensed == 1
+                                          ? Colors.green
+                                          : Colors.red,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            trailing: PopupMenuButton<String>(
+                              itemBuilder: (BuildContext context) =>
+                                  <PopupMenuEntry<String>>[
+                                const PopupMenuItem<String>(
+                                  value: 'Option 1',
+                                  child: Text("Autoriser l'afficheur"),
+                                ),
+                                const PopupMenuItem<String>(
+                                  value: 'Option 2',
+                                  child: Text('Modifier'),
+                                ),
+                                const PopupMenuItem<String>(
+                                  value: 'Option 3',
+                                  child: Text('Supprimer '),
+                                ),
+                                const PopupMenuItem<String>(
+                                  value: 'Option 4',
+                                  child: Text('Mise en page par défaut '),
+                                ),
+                              ],
+                              onSelected: (String value) async {
+                                if (value == 'Option 1') {
+                                  if (player.licensed == 1) {
+                                    _showNonAuthorizeDialog(player);
+                                  } else {
+                                    _showAuthorizationDialog(player);
+                                  }
+                                } else if (value == 'Option 2') {
+                                } else if (value == 'Option 3') {
+                                } else if (value == 'Option 4') {
+                                  _showPlaylistPopup(player, playlists);
+                                }
+                              },
+                              child: Icon(Icons.arrow_drop_down),
+                            ),
                           ),
-                          trailing: PopupMenuButton<String>(
-                            itemBuilder: (BuildContext context) =>
-                                <PopupMenuEntry<String>>[
-                              const PopupMenuItem<String>(
-                                value: 'Option 1',
-                                child: Text("Autoriser l'afficheur"),
-                              ),
-                              const PopupMenuItem<String>(
-                                value: 'Option 2',
-                                child: Text('Modifier'),
-                              ),
-                              const PopupMenuItem<String>(
-                                value: 'Option 3',
-                                child: Text('Supprimer '),
-                              ),
-                              const PopupMenuItem<String>(
-                                value: 'Option 4',
-                                child: Text('Mise en page par défaut '),
-                              ),
-                            ],
-                            onSelected: (String value) async {
-                              if (value == 'Option 1') {
-                                _showAuthorizationDialog(player);
-                              } else if (value == 'Option 2') {
-                              } else if (value == 'Option 3') {
-                              } else if (value == 'Option 4') {
-                                _showPlaylistPopup(player, playlists);
-                              }
-                            },
-                            child: Icon(Icons.arrow_drop_down),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
             ),
@@ -350,10 +409,13 @@ class _PlayerScreenState extends State<PlayerScreen> {
       floatingActionButton: _isFabVisible
           ? FloatingActionButton(
               onPressed: _refreshList,
-              child: Icon(Icons.refresh),
+              child: Icon(
+                Icons.refresh,
+                color: Colors.white,
+              ),
               backgroundColor: kSecondaryColor,
             )
-          : null, 
+          : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }

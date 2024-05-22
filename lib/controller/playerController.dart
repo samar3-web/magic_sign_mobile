@@ -199,9 +199,9 @@ class PlayerController extends GetxController {
       print('Authorization response: ${response.statusCode}, ${response.body}');
 
       if (response.statusCode == 200) {
-        Get.snackbar('Success', 'Display authorized successfully');
+        print('Success : Display authorized successfully');
       } else {
-        Get.snackbar('Error', 'Failed to authorize display');
+        print('Error :  Failed to authorize display');
       }
     } catch (e) {
       Get.snackbar('Error', 'An error occurred: $e');
