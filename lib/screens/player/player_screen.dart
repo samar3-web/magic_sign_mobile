@@ -107,6 +107,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
           return AlertDialog(
             title: Text('Select Playlist'),
             content: DropdownButtonFormField<String>(
+              isExpanded: true,
               value: defaultPlaylistName,
               hint: Text('Select a playlist'),
               onChanged: (String? newValue) async {
@@ -129,7 +130,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         player.displayId!, selectedPlaylist.layoutId);
                     playlistController.selectedPlaylist.value = newValue;
 
-                    setState(() {});
+                    await playerController.fetchData();
+
+                    setState(() {
+                      defaultPlaylistName = newValue;
+                    });
 
                     Navigator.of(context).pop();
                   } catch (e) {

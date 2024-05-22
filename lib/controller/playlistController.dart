@@ -24,6 +24,8 @@ class PlaylistController extends GetxController {
   var isLoading = false.obs;
   var originalPlaylistList = <Playlist>[].obs;
   var selectedPlaylist = ''.obs;
+  var currentPage = 0.obs;
+  final int pageSize = 20;
 
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -33,10 +35,10 @@ class PlaylistController extends GetxController {
     return accessToken;
   }
 
-  Future<void> getPlaylist() async {
+  Future<void> getPlaylist({int start = 0, int length = 200}) async {
     try {
+      isLoading(true);
       String? accessToken = await getAccessToken();
-      print('Access Token: $accessToken');
       if (accessToken == null) {
         // Handle case when access token is not available
         Get.snackbar(
@@ -48,7 +50,7 @@ class PlaylistController extends GetxController {
       }
 
       final response = await http.get(
-        Uri.parse(apiUrl),
+        Uri.parse('$apiUrl?start=$start&length=$length'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -63,7 +65,11 @@ class PlaylistController extends GetxController {
         var jsonData = json.decode(response.body) as List?;
         if (jsonData != null) {
           var playlists = jsonData.map((e) => Playlist.fromJson(e)).toList();
-          playlistList.assignAll(playlists);
+          if (start == 0) {
+            playlistList.assignAll(playlists);
+          } else {
+            playlistList.addAll(playlists);
+          }
         } else {
           print('Response body is null or not a list');
         }
@@ -84,8 +90,18 @@ class PlaylistController extends GetxController {
         "Error fetching playlist. Please try again later.",
         snackPosition: SnackPosition.BOTTOM,
       );
+    } finally {
+      isLoading(false);
     }
   }
+
+  void loadMorePlaylist() {
+    if (!isLoading.value) {
+      currentPage.value += 1;
+      getPlaylist(start: currentPage.value * pageSize, length: pageSize);
+    }
+  }
+  
 
   Future<void> assignPlaylist(List<int> mediaIds, int playlistId,
       {Function? onSuccess, Function? onError}) async {

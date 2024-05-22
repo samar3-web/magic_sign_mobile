@@ -30,7 +30,7 @@ class MediaController extends GetxController {
     getMedia();
   }
 
-  Future<void> getMedia({int start = 0, int length = 20}) async {
+  Future<void> getMedia({int start = 0, int length = 200}) async {
     try {
       isLoading(true);
       String? accessToken = await getAccessToken();
