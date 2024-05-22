@@ -8,9 +8,9 @@ import 'package:magic_sign_mobile/model/Playlists.dart';
 import 'package:magic_sign_mobile/model/Timeline.dart';
 import 'package:magic_sign_mobile/model/Widget.dart';
 import 'package:magic_sign_mobile/controller/playlistController.dart';
-import 'package:magic_sign_mobile/screens/media_screen/media_screen.dart';
 import 'package:magic_sign_mobile/screens/playlist/previewScreen.dart';
 import 'package:magic_sign_mobile/screens/playlist/updateWidget.dart';
+import 'package:magic_sign_mobile/widgets/grid_item.dart';
 
 import '../../model/Media.dart';
 
@@ -25,7 +25,6 @@ class PlaylistDetail extends StatefulWidget {
 class _PlaylistDetail extends State<PlaylistDetail> {
   final MediaController mediaController = Get.put(MediaController());
   final PlaylistController playlistController = Get.put(PlaylistController());
-  bool _showScrollIndicator = false;
   Timeline? timeline;
   Media? media;
   @override
@@ -51,25 +50,6 @@ class _PlaylistDetail extends State<PlaylistDetail> {
     }
   }
 
-  /* Future<void> _updatePlaylistDuration() async {
-    try {
-      int totalDuration = 0;
-      for (var timeline in playlistController.timelines!) {
-        for (var playlist in timeline.playlists!) {
-          for (var widgetData in playlist.widgets!) {
-            totalDuration += widgetData.duration ?? 0;
-          }
-        }
-      }
-      playlistController.playlistDuration.value = totalDuration;
-      print('Playlist duration updated: $totalDuration');
-
-      setState(() {});
-    } catch (e) {
-      print('Error updating playlist duration: $e');
-    }
-  }
-*/
   String formatDuration(String durationString) {
     int duration = int.tryParse(durationString) ?? 0;
     int hours = duration ~/ 3600;
@@ -225,53 +205,6 @@ class _PlaylistDetail extends State<PlaylistDetail> {
     );
   }
 
-  String getFileType() {
-    // Extract file extension from mediaType
-    String? mediaType = media?.mediaType.toLowerCase();
-
-    // Map file extensions to corresponding types
-    Map<String, String> fileTypes = {
-      'jpg': 'image',
-      'image': 'image',
-      'pdf': 'pdf',
-      'doc': 'word',
-      'docx': 'word',
-      'xls': 'excel',
-      'xlsx': 'excel',
-      'ppt': 'powerpoint',
-      'pptx': 'powerpoint',
-      'video': 'video',
-    };
-
-    // Return corresponding file type
-    return fileTypes.containsKey(mediaType) ? fileTypes[mediaType]! : 'other';
-  }
-
-  Future<String> getThumbnailUrl() async {
-    String fileType = getFileType();
-    print('File type: $fileType');
-    if (fileType == 'image') {
-      // Await the result of getImageUrl() since it's asynchronous
-      print('Media ID: ${media!.mediaId}');
-      return await MediaController().getImageUrl(media!.storedAs);
-    } else {
-      switch (fileType) {
-        case 'word':
-          return 'assets/images/word-logo.png';
-        case 'pdf':
-          return 'assets/images/pdf-logo.png';
-        case 'excel':
-          return 'assets/images/excel-logo.png';
-        case 'powerpoint':
-          return 'assets/images/pp-logo.png';
-        case 'video':
-          return 'assets/images/video-logo.png';
-        default:
-          return 'assets/images/default.png';
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -320,10 +253,13 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                               childAspectRatio: 1.0,
                             ),
                             itemCount: mediaController.mediaList.length,
-                           itemBuilder: (BuildContext context, int index) {
-                            return GridItem(media: mediaController.mediaList[index]);
-                          },
-                                              ),
+                            itemBuilder: (BuildContext context, int index) {
+                              return GridItem(
+                                media: mediaController.mediaList[index],
+                                onDoubleTap: _showPlaylistSelectionDialog,
+                              );
+                            },
+                          ),
                         ),
                         SizedBox(height: 5),
                         Expanded(
@@ -395,7 +331,6 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                                         textAlign:
                                                             TextAlign.center,
                                                       ),
-                                                      // Example buttons
                                                       Row(
                                                         mainAxisAlignment:
                                                             MainAxisAlignment
@@ -446,40 +381,6 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                     ),
                   ),
           ),
-          /*
-          Positioned(
-            bottom: 10,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: IntrinsicWidth(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    // await _updatePlaylistDuration();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kSecondaryColor,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.save,
-                        color: Colors.white,
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        'Enregistrer',
-                        style: TextStyle(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),*/
         ],
       ),
     );
