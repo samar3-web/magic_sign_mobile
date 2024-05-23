@@ -115,10 +115,42 @@ class MediaController extends GetxController {
     }
   }
 
+  Future<void> showProgressDialog(
+      BuildContext context, ValueNotifier<double> progressNotifier) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: ValueListenableBuilder<double>(
+            valueListenable: progressNotifier,
+            builder: (context, progress, child) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Uploading... ${progress.toStringAsFixed(0)}%'),
+                  SizedBox(height: 20),
+                  LinearProgressIndicator(value: progress / 100),
+                ],
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> uploadFiles(BuildContext context, List<File> files) async {
     const int maxFileSize = 100 * 1024 * 1024;
+    ValueNotifier<double> progressNotifier = ValueNotifier<double>(0);
+
     try {
       String? accessToken = await getAccessToken();
+      int totalFiles = files.length;
+      int uploadedFiles = 0;
+
+      // Show the progress dialog
+      showProgressDialog(context, progressNotifier);
 
       for (File file in files) {
         if (await file.length() > maxFileSize) {
@@ -139,7 +171,9 @@ class MediaController extends GetxController {
         request.headers['Authorization'] = 'Bearer $accessToken';
 
         var response = await request.send();
+
         if (response.statusCode == 200) {
+          uploadedFiles++;
           print('File uploaded successfully');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -147,7 +181,7 @@ class MediaController extends GetxController {
               backgroundColor: Colors.green,
             ),
           );
-          await Future.delayed(Duration(seconds: 5));
+          await Future.delayed(Duration(seconds: 1));
           await getMedia();
         } else {
           print('File upload failed');
@@ -156,6 +190,9 @@ class MediaController extends GetxController {
             backgroundColor: Colors.red,
           ));
         }
+
+        // Update the progress
+        progressNotifier.value = (uploadedFiles / totalFiles) * 100;
       }
     } catch (e) {
       print('Error uploading files: $e');
@@ -163,8 +200,12 @@ class MediaController extends GetxController {
         content: Text('File upload failed'),
         backgroundColor: Colors.red,
       ));
+    } finally {
+      // Dismiss the progress dialog
+      Navigator.of(context).pop();
     }
   }
+
 
   updateMediaData(
       int mediaId, String name, String duration, String retired) async {
