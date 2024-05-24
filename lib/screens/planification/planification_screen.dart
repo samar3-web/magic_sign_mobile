@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/controller/planificationController.dart';
@@ -8,24 +7,24 @@ import 'package:magic_sign_mobile/controller/playerController.dart';
 import 'package:magic_sign_mobile/model/DisplayGroup.dart';
 import 'package:magic_sign_mobile/model/Player.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
-import 'dart:convert';
 
 class PlanificationScreen extends StatefulWidget {
   const PlanificationScreen({Key? key}) : super(key: key);
   static const String routeName = 'PlanificationScreen';
+
   @override
   State<PlanificationScreen> createState() => _PlanificationScreenState();
 }
 
 class _PlanificationScreenState extends State<PlanificationScreen> {
-  final PlanificationController planificationController =
-      Get.put(PlanificationController());
+  final PlanificationController planificationController = Get.put(PlanificationController());
   final PlayerController playerController = Get.put(PlayerController());
 
   List<String> _displayItems = [];
   String? _selectedDisplay;
   DateTime? _selectedDate;
   List<dynamic> _selectedEvents = [];
+  List<Appointment> _allAppointments = []; // Store all appointments
 
   @override
   void initState() {
@@ -37,23 +36,14 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
 
   void fetchData() async {
     try {
-      List<Map<String, dynamic>> events =
-          await planificationController.fetchScheduleEvents();
-
+      List<Map<String, dynamic>> events = await planificationController.fetchScheduleEvents();
       List<Player> players = await playerController.fetchPlayers();
+      List<DisplayGroup> displayGroups = await playerController.fetchDisplayGroup();
 
-      List<DisplayGroup> displayGroups =
-          await playerController.fetchDisplayGroup();
-      List<String> playerDisplayNames =
-          players.map((player) => player.display!).toList();
-      List<String> groupDisplayNames =
-          displayGroups.map((group) => group.displayGroup!).toList();
+      List<String> playerDisplayNames = players.map((player) => player.display!).toList();
+      List<String> groupDisplayNames = displayGroups.map((group) => group.displayGroup!).toList();
 
-      events.forEach((event) {
-        print('Event: $event');
-      });
-
-      List<Appointment> appointments = events.map((event) {
+      _allAppointments = events.map((event) {
         return Appointment(
           startTime: event['start_time'],
           endTime: event['end_time'],
@@ -65,17 +55,14 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
 
       setState(() {
         _displayItems = [
+          'Tout',
           'Groupes',
           ...groupDisplayNames,
           'Afficheurs',
           ...playerDisplayNames
         ];
-        planificationController.appointmentsDataSource =
-            AppointmentDataSource(appointments);
+        planificationController.appointmentsDataSource = AppointmentDataSource(_allAppointments);
       });
-
-      print('Fetched events: $events');
-      print('Number of events: ${events.length}');
     } catch (e) {
       print('Error fetching data: $e');
     }
@@ -83,10 +70,33 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
 
   String? getPlayerName(int displayGroupId) {
     var player = playerController.playerList.firstWhere(
-        (player) => player.displayGroupId == displayGroupId,
-        orElse: () => Player(displayGroupId: 0, display: 'Unknown'));
-    print(player.display);
+      (player) => player.displayGroupId == displayGroupId,
+      orElse: () => Player(displayGroupId: 0, display: 'Unknown'),
+    );
     return player.display;
+  }
+
+  void filterEvents() {
+    List<Appointment> filteredAppointments;
+    if (_selectedDisplay == 'Tout' || _selectedDisplay == 'Groupes' || _selectedDisplay == 'Afficheurs' || _selectedDisplay == null) {
+      filteredAppointments = _allAppointments;
+    } else {
+      filteredAppointments = _allAppointments.where((appointment) {
+        if (_displayItems.indexOf(_selectedDisplay!) > _displayItems.indexOf('Afficheurs')) {
+          // It's a player
+          return getPlayerName(int.tryParse(appointment.notes ?? '') ?? 0) == _selectedDisplay;
+        } else {
+          // It's a group
+          return appointment.notes == _selectedDisplay;
+        }
+      }).toList();
+    }
+
+    planificationController.appointmentsDataSource = AppointmentDataSource(filteredAppointments);
+    setState(() {
+      _selectedEvents = filteredAppointments.where((appointment) =>
+          appointment.startTime!.day == _selectedDate?.day).toList();
+    });
   }
 
   @override
@@ -121,6 +131,7 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
                 onSelected: (String value) {
                   setState(() {
                     _selectedDisplay = value;
+                    filterEvents(); // Filter events when a display is selected
                   });
                 },
                 itemBuilder: (BuildContext context) =>
@@ -191,10 +202,6 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
                   int displayGroupId = int.tryParse(event.notes ?? '') ?? 0;
 
                   String? playerName = getPlayerName(displayGroupId);
-
-                  print('playlist id $playlistId');
-                  print('Player id $displayGroupId');
-                  print('Player name $playerName');
 
                   return ListTile(
                     title: Row(
