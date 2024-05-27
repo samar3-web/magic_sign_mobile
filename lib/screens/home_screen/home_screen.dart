@@ -9,9 +9,9 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    GlobalKey<ScaffoldState> scaffoldkey = GlobalKey<ScaffoldState>();
+    GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
     return Scaffold(
-      key: scaffoldkey,
+      key: scaffoldKey,
       drawer: NavBar(),
       backgroundColor: boxColor,
       body: Column(
@@ -23,7 +23,7 @@ class HomeScreen extends StatelessWidget {
             leading: IconButton(
               icon: Icon(Icons.menu),
               color: Colors.white,
-              onPressed: () => scaffoldkey.currentState?.openDrawer(),
+              onPressed: () => scaffoldKey.currentState?.openDrawer(),
             ),
           ),
           Container(
@@ -47,7 +47,7 @@ class HomeScreen extends StatelessWidget {
                                     color: Colors.white,
                                   ),
                         ),
-                        kHalfSizedBox,
+                        SizedBox(height: 20),
                         Text(
                           '2023-2024',
                           style:
@@ -72,104 +72,185 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(
-                  height: kDefaultPadding,
-                ),
-                /* Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    InkWell(
-                      onTap: () {},
-                      child: Container(
-                        width: MediaQuery.of(context).size.width / 2.5,
-                        height: MediaQuery.of(context).size.height / 9,
-                        decoration: BoxDecoration(
-                          color: kOtherColor,
-                          borderRadius: BorderRadius.circular(kDefaultPadding),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Text(
-                              'Utilisateurs',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyText2!
-                                  .copyWith(
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.w800,
-                                    color: kTextBlackColor,
-                                  ),
-                            ),
-                            Text(
-                              '2',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyText2!
-                                  .copyWith(
-                                    fontSize: 25.0,
-                                    fontWeight: FontWeight.w300,
-                                    color: kTextBlackColor,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () {},
-                      child: Container(
-                        width: MediaQuery.of(context).size.width / 2.5,
-                        height: MediaQuery.of(context).size.height / 9,
-                        decoration: BoxDecoration(
-                          color: kOtherColor,
-                          borderRadius: BorderRadius.circular(kDefaultPadding),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Text(
-                              'Afficheurs',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyText2!
-                                  .copyWith(
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.w800,
-                                    color: kTextBlackColor,
-                                  ),
-                            ),
-                            Text(
-                              '3',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyText2!
-                                  .copyWith(
-                                    fontSize: 25.0,
-                                    fontWeight: FontWeight.w300,
-                                    color: kTextBlackColor,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),*/
+                SizedBox(height: kDefaultPadding),
               ],
             ),
           ),
           Expanded(
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(
-                color: kOtherColor,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(kDefaultPadding * 3),
-                  topRight: Radius.circular(kDefaultPadding * 3),
+            child: SingleChildScrollView(
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                  color: kOtherColor,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(kDefaultPadding * 2.5),
+                    topRight: Radius.circular(kDefaultPadding * 2.5),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(height: kDefaultPadding * 1.5),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: MediaQuery.of(context).size.width / 2.5,
+                            height: MediaQuery.of(context).size.height / 9,
+                            margin: EdgeInsets.only(left: 10),
+                            decoration: BoxDecoration(
+                              color: kOtherColor,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(kDefaultPadding * 0.5),
+                              ),
+                              border: Border.all(
+                                  color: kSecondaryColor, width: 2.0),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Utilisateurs',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyText2!
+                                      .copyWith(
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.w800,
+                                        color: kTextBlackColor,
+                                      ),
+                                ),
+                                Text(
+                                  '2',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyText2!
+                                      .copyWith(
+                                        fontSize: 25.0,
+                                        fontWeight: FontWeight.w300,
+                                        color: kTextBlackColor,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width / 2.5,
+                            height: MediaQuery.of(context).size.height / 9,
+                            margin: EdgeInsets.only(left: 10),
+                            decoration: BoxDecoration(
+                              color: kOtherColor,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(kDefaultPadding * 0.5),
+                              ),
+                              border: Border.all(
+                                  color: kSecondaryColor, width: 2.0),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Afficheurs',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyText2!
+                                      .copyWith(
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.w800,
+                                        color: kTextBlackColor,
+                                      ),
+                                ),
+                                Text(
+                                  '2',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyText2!
+                                      .copyWith(
+                                        fontSize: 25.0,
+                                        fontWeight: FontWeight.w300,
+                                        color: kTextBlackColor,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width / 2.5,
+                            height: MediaQuery.of(context).size.height / 9,
+                            margin: EdgeInsets.only(left: 10),
+                            decoration: BoxDecoration(
+                              color: kOtherColor,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(kDefaultPadding * 0.5),
+                              ),
+                              border: Border.all(
+                                  color: kSecondaryColor, width: 2.0),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  ' Médiathèque',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyText2!
+                                      .copyWith(
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.w800,
+                                        color: kTextBlackColor,
+                                      ),
+                                ),
+                                Text(
+                                  '2',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyText2!
+                                      .copyWith(
+                                        fontSize: 25.0,
+                                        fontWeight: FontWeight.w300,
+                                        color: kTextBlackColor,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: kDefaultPadding),
+                    Text(
+                      'Activité des afficheurs',
+                      style: Theme.of(context).textTheme.bodyText1?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 20,
+                          ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: kDefaultPadding),
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      height: MediaQuery.of(context).size.height / 4,
+                      color: Colors.white,
+                      child: Center(),
+                    ),
+                    Text(
+                      'Utilisation de la Médiathèque',
+                      style: Theme.of(context).textTheme.bodyText1?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 20,
+                          ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: kDefaultPadding),
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      height: MediaQuery.of(context).size.height / 4,
+                      color: Colors.white,
+                      child: Center(),
+                    ),
+                  ],
                 ),
               ),
-              // Add your remaining content here
             ),
           ),
         ],

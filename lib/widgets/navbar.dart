@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:magic_sign_mobile/constants.dart';
+import 'package:magic_sign_mobile/screens/player/player_group.dart';
 import 'package:magic_sign_mobile/widgets/drawer_item.dart';
 import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart';
 import 'package:magic_sign_mobile/controller/loginController.dart';
@@ -10,9 +12,10 @@ import 'package:magic_sign_mobile/screens/player/player_screen.dart';
 import 'package:magic_sign_mobile/screens/playlist/playlist_screen.dart';
 
 class NavBar extends StatelessWidget {
-   NavBar({Key? key}) : super(key: key);
+  NavBar({Key? key}) : super(key: key);
 
-  final LoginController _loginController = LoginController(); // Instantiate the login controller
+  final LoginController _loginController =
+      LoginController(); // Instantiate the login controller
 
   @override
   Widget build(BuildContext context) {
@@ -28,9 +31,15 @@ class NavBar extends StatelessWidget {
                 height: 150.0,
                 width: 150.0,
               ),
-              const SizedBox(height: 20,),
-              const Divider(thickness: 1, height: 10, color: Colors.grey,),
-               Expanded(
+              const SizedBox(
+                height: 10,
+              ),
+              const Divider(
+                thickness: 1,
+                height: 10,
+                color: Colors.grey,
+              ),
+              Flexible(
                 child: ListView.builder(
                   itemCount: drawerRoutes.length,
                   itemBuilder: (context, index) {
@@ -42,7 +51,7 @@ class NavBar extends StatelessWidget {
                           icon: item['icon'],
                           onPressed: () => onItemPressed(context, index: index),
                         ),
-                        if (index != drawerRoutes.length - 1) 
+                        if (index != drawerRoutes.length - 1)
                           const SizedBox(height: 12),
                       ],
                     );
@@ -50,7 +59,9 @@ class NavBar extends StatelessWidget {
                 ),
               ),
               //some space
-              const SizedBox(height: 20,),
+              const SizedBox(
+                height: 15,
+              ),
               //---------------------------PROFILE, SETTINGS & LOGOUT BUTTONS---------------------------
               Align(
                 alignment: Alignment.bottomLeft,
@@ -59,17 +70,19 @@ class NavBar extends StatelessWidget {
                     //HORIZONTAL LINE
                     const Divider(),
 
-                    //GO TO PROFILE
+                    /* //GO TO PROFILE
                     DrawerItem(
                       name: 'Mon profil',
                       icon: Icons.account_circle,
-                      onPressed: () => onItemPressed(context, index: -1), // Placeholder index for My Profile
-                    ),
+                      onPressed: () => onItemPressed(context,
+                          index: -1), // Placeholder index for My Profile
+                    ),*/
                     //GO TO SETTINGS (Placeholder)
                     DrawerItem(
                       name: 'Paramètres',
                       icon: Icons.settings,
-                      onPressed: () => onItemPressed(context, index: -1), // Placeholder index for Settings
+                      onPressed: () => onItemPressed(context,
+                          index: -1), // Placeholder index for Settings
                     ),
 
                     const Divider(),
@@ -78,7 +91,8 @@ class NavBar extends StatelessWidget {
                     DrawerItem(
                       name: 'Se déconnecter',
                       icon: Icons.logout,
-                      onPressed: () => _loginController.logout(), // Call the logout function
+                      onPressed: () =>
+                          _loginController.logout(), // Call the logout function
                     ),
                   ],
                 ),
@@ -96,16 +110,36 @@ class NavBar extends StatelessWidget {
       final String routeName = drawerRoutes[index]['routeName'];
       Navigator.pushNamed(context, routeName);
     } else if (index == -1) {
-      
       Navigator.pushNamed(context, MyProfile.routeName);
     }
   }
 }
 
 final List<Map<String, dynamic>> drawerRoutes = [
-  {'name': 'Tableau de bord', 'icon': Icons.dashboard, 'routeName': HomeScreen.routeName},
-  {'name': 'Médiathèque', 'icon': Icons.ondemand_video, 'routeName': MediaScreen.routeName},
-  {'name': 'Playlists', 'icon': Icons.playlist_play, 'routeName': PlaylistScreen.routeName},
+  {
+    'name': 'Tableau de bord',
+    'icon': Icons.dashboard,
+    'routeName': HomeScreen.routeName
+  },
+  {
+    'name': 'Médiathèque',
+    'icon': Icons.ondemand_video,
+    'routeName': MediaScreen.routeName
+  },
+  {
+    'name': 'Playlists',
+    'icon': Icons.playlist_play,
+    'routeName': PlaylistScreen.routeName
+  },
   {'name': 'Afficheurs', 'icon': Icons.tv, 'routeName': PlayerScreen.routeName},
-  {'name': 'Planification', 'icon': Icons.event, 'routeName': PlanificationScreen.routeName},
+  {
+    'name': "Groupes d'afficheurs",
+    'icon': Icons.dvr,
+    'routeName': PlayerGroup.routeName
+  },
+  {
+    'name': 'Planification',
+    'icon': Icons.event,
+    'routeName': PlanificationScreen.routeName
+  },
 ];

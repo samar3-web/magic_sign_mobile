@@ -6,6 +6,7 @@ import 'package:magic_sign_mobile/screens/media_screen/media_screen.dart';
 import 'package:magic_sign_mobile/model/Playlist.dart';
 import 'package:magic_sign_mobile/screens/my_profile/my_profile.dart';
 import 'package:magic_sign_mobile/screens/planification/planification_screen.dart';
+import 'package:magic_sign_mobile/screens/player/player_group.dart';
 import 'package:magic_sign_mobile/screens/player/player_screen.dart';
 import 'package:magic_sign_mobile/screens/playlist/playlist_details.dart';
 import 'package:magic_sign_mobile/screens/playlist/playlist_screen.dart';
@@ -20,11 +21,10 @@ Map<String, WidgetBuilder> routes = {
   MyProfile.routeName: (context) => const MyProfile(),
   MediaScreen.routeName: (context) => const MediaScreen(),
   PlaylistScreen.routeName: (context) => const PlaylistScreen(),
- 
   PlanificationScreen.routeName: (context) => const PlanificationScreen(),
-    PlayerScreen.routeName: (context) => const PlayerScreen(),
-
-    PlaylistDetail.routeName: (BuildContext context) => (PlaylistDetail(
+  PlayerGroup.routeName: (context) => const PlayerGroup(),
+  PlayerScreen.routeName: (context) => const PlayerScreen(),
+  PlaylistDetail.routeName: (BuildContext context) => (PlaylistDetail(
         playlist: ModalRoute.of(context)!.settings.arguments as Playlist,
       )),
   PreviewScreen.routeName: (BuildContext context) => (PlaylistDetail(
