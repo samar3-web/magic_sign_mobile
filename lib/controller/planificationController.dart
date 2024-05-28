@@ -179,22 +179,8 @@ class PlanificationController extends GetxController {
     }
   }
 
-  String getPlaylistName(int playlistId) {
-    var playlist = playlistList.firstWhere(
-        (playlist) => playlist.campaignId == playlistId,
-        orElse: () => Playlist(
-            layoutId: 0,
-            campaignId: 0,
-            layout: '',
-            status: '',
-            duration: '',
-            owner: '',
-            playlistId: 0,
-            regions: []));
-    print('Playlist ID: $playlistId');
-    print(playlist.layout);
-    return playlist.layout;
-  }
+
+ 
 
  
 }

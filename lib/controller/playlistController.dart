@@ -17,6 +17,7 @@ class PlaylistController extends GetxController {
   final String apiUrl =
       "https://magic-sign.cloud/v_ar/web/api/layout?embed=regions,playlists";
   var playlistList = <Playlist>[].obs;
+
   List<String> assignedMedia = [];
   RxList<Timeline> timelines = <Timeline>[].obs;
   RxList<PlaylistRessource> playlistRessource = <PlaylistRessource>[].obs;
@@ -40,7 +41,6 @@ class PlaylistController extends GetxController {
       isLoading(true);
       String? accessToken = await getAccessToken();
       if (accessToken == null) {
-        // Handle case when access token is not available
         Get.snackbar(
           "Error",
           "Access token not available. Please log in again.",
@@ -61,7 +61,6 @@ class PlaylistController extends GetxController {
       print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
-        // Handle successful response
         var jsonData = json.decode(response.body) as List?;
         if (jsonData != null) {
           var playlists = jsonData.map((e) => Playlist.fromJson(e)).toList();
@@ -70,11 +69,11 @@ class PlaylistController extends GetxController {
           } else {
             playlistList.addAll(playlists);
           }
+          print('Fetched playlists: $playlists'); // Debug print
         } else {
           print('Response body is null or not a list');
         }
       } else {
-        // Handle error response
         print('Failed to load playlist. Status code: ${response.statusCode}');
         Get.snackbar(
           "Error",
@@ -83,7 +82,6 @@ class PlaylistController extends GetxController {
         );
       }
     } catch (e) {
-      // Handle exceptions
       print('Error fetching playlist: $e');
       Get.snackbar(
         "Error",
@@ -101,7 +99,6 @@ class PlaylistController extends GetxController {
       getPlaylist(start: currentPage.value * pageSize, length: pageSize);
     }
   }
-  
 
   Future<void> assignPlaylist(List<int> mediaIds, int playlistId,
       {Function? onSuccess, Function? onError}) async {
