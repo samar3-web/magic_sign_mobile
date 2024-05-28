@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 class PlayerController extends GetxController {
   var playerList = <Player>[].obs;
   var displayGroupList = <DisplayGroup>[].obs;
+  String apiUrl = 'https://magic-sign.cloud/v_ar/web/api/displaygroup';
 
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -76,8 +77,6 @@ class PlayerController extends GetxController {
   }
 
   Future<List<DisplayGroup>> fetchDisplayGroup() async {
-    String apiUrl = 'https://magic-sign.cloud/v_ar/web/api/displaygroup';
-
     String? accessToken = await getAccessToken();
     if (accessToken == null) {
       Get.snackbar(
@@ -256,6 +255,37 @@ class PlayerController extends GetxController {
     } catch (e) {
       print("Error: $e");
       Get.snackbar("Error", "Une erreur s'est produite: $e");
+    }
+  }
+
+  addDisplayGroup({required String displayGroup, int? isDynamic}) async {
+    try {
+      String? accessToken = await getAccessToken();
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        body: {
+          'displayGroup': displayGroup,
+          'isDynamic': isDynamic.toString(),
+        },
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+      );
+
+      if (response.statusCode == 201) {
+        print(response.body);
+        print('group added successfully');
+      } else {
+        // Handle error response
+        print('Failed to add group. Status code: ${response.statusCode}');
+                print(response.body);
+
+        throw Exception('Failed to add group');
+      }
+    } catch (e) {
+      // Handle exceptions
+      print('Error adding group: $e');
     }
   }
 }

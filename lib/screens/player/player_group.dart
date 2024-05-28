@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/controller/playerController.dart';
 import 'package:magic_sign_mobile/model/DisplayGroup.dart';
 
@@ -14,17 +15,17 @@ class PlayerGroup extends StatefulWidget {
 
 class _PlayerGroupState extends State<PlayerGroup> {
   final PlayerController playerController = Get.put(PlayerController());
+  bool _isChecked = false;
+  List<int> selectedDynamic = [];
 
-  List<DisplayGroup> displayGroups =
-      []; // Liste pour stocker les groupes d'afficheurs
+  List<DisplayGroup> displayGroups = [];
 
   @override
   void initState() {
     super.initState();
-    fetchDisplayGroups(); // Appel de la méthode pour récupérer les données des groupes d'afficheurs
+    fetchDisplayGroups();
   }
 
-  // Méthode pour récupérer les données des groupes d'afficheurs
   Future<void> fetchDisplayGroups() async {
     List<DisplayGroup> groups = await playerController.fetchDisplayGroup();
     setState(() {
@@ -32,11 +33,97 @@ class _PlayerGroupState extends State<PlayerGroup> {
     });
   }
 
+  Future<void> addDisplayGroup(String displayGroup, int isDynamic) async {
+    await playerController.addDisplayGroup(
+        displayGroup: displayGroup, isDynamic: isDynamic);
+    fetchDisplayGroups();
+  }
+
+  void showAddGroupDialog(BuildContext context) {
+    final TextEditingController nameController = TextEditingController();
+    bool isDynamic = false;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Ajouter un groupe d\'affichage',
+            style: TextStyle(
+              fontSize: 17.0,
+              fontWeight: FontWeight.w300,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                controller: nameController,
+                style: TextStyle(
+                  fontSize: 17.0,
+                  fontWeight: FontWeight.w300,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Nom du groupe',
+                  labelStyle: TextStyle(color: kSecondaryColor, fontSize: 14.0),
+                ),
+              ),
+              Row(
+                children: [
+                  Text('Est dynamique'),
+                  Checkbox(
+                    autofocus: false,
+                    activeColor: Colors.green,
+                    checkColor: Colors.white,
+                    value: isDynamic,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        if (value!) {
+                          isDynamic = value;
+                        } else {
+                        }
+                        _isChecked = value;
+                        print('After update: $value');
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Annuler'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Ajouter'),
+              onPressed: () {
+                addDisplayGroup(nameController.text, isDynamic ? 1 : 0);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Groupes d\'afficheurs'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () {
+              showAddGroupDialog(context);
+            },
+          ),
+        ],
       ),
       body: Container(
         margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
@@ -69,15 +156,10 @@ class _PlayerGroupState extends State<PlayerGroup> {
                         fontSize: 16.0,
                       ),
                     ),
-                    SizedBox(
-                        width: 8.0), // Espacement entre le texte et l'icône
+                    SizedBox(width: 8.0),
                     group.isDynamic == 1
-                        ? Icon(Icons.check_circle,
-                            color: Colors
-                                .green) // Icône valide si isDynamic est vrai
-                        : Icon(Icons.cancel,
-                            color: Colors
-                                .red), // Icône invalide si isDynamic est faux
+                        ? Icon(Icons.check_circle, color: Colors.green)
+                        : Icon(Icons.cancel, color: Colors.red),
                   ],
                 ),
                 trailing: PopupMenuButton<String>(
@@ -93,18 +175,23 @@ class _PlayerGroupState extends State<PlayerGroup> {
                     ),
                     const PopupMenuItem<String>(
                       value: 'Option 3',
-                      child: Text('Supprimer '),
+                      child: Text('Supprimer'),
                     ),
                     const PopupMenuItem<String>(
                       value: 'Option 4',
-                      child: Text('Mise en page par défaut '),
+                      child: Text('Mise en page par défaut'),
                     ),
                   ],
                   onSelected: (String value) async {
                     if (value == 'Option 1') {
+                      // Handle Option 1
                     } else if (value == 'Option 2') {
+                      // Handle Option 2
                     } else if (value == 'Option 3') {
-                    } else if (value == 'Option 4') {}
+                      // Handle Option 3
+                    } else if (value == 'Option 4') {
+                      // Handle Option 4
+                    }
                   },
                   child: Icon(Icons.arrow_drop_down),
                 ),
