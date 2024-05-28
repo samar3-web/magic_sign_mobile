@@ -58,7 +58,6 @@ class PlaylistController extends GetxController {
       );
 
       print('Response Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         var jsonData = json.decode(response.body) as List?;
@@ -70,6 +69,7 @@ class PlaylistController extends GetxController {
             playlistList.addAll(playlists);
           }
           print('Fetched playlists: $playlists'); // Debug print
+          print('Playlist List Length: ${playlistList.length}');
         } else {
           print('Response body is null or not a list');
         }
@@ -92,7 +92,6 @@ class PlaylistController extends GetxController {
       isLoading(false);
     }
   }
-
   void loadMorePlaylist() {
     if (!isLoading.value) {
       currentPage.value += 1;

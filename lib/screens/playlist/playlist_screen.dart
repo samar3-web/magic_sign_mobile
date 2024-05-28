@@ -29,7 +29,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     super.initState();
     playlistController.getPlaylist();
     _scrollController.addListener(_scrollListener);
-    print('Playlist List Length: ${playlistController.playlistList.length}');
   }
 
   void _scrollListener() {
