@@ -68,7 +68,7 @@ class PlaylistController extends GetxController {
           } else {
             playlistList.addAll(playlists);
           }
-          print('Fetched playlists: $playlists'); // Debug print
+          print('Fetched playlists: $playlists'); 
           print('Playlist List Length: ${playlistList.length}');
         } else {
           print('Response body is null or not a list');

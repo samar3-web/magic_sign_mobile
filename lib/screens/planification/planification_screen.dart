@@ -99,8 +99,8 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
         regions: [],
       ),
     );
-    print('Playlist ID: $playlistId'); // Debug print
-    print('Playlist Name: ${playlist.layout}'); // Debug print
+    print('Playlist ID: $playlistId'); 
+    print('Playlist Name: ${playlist.layout}'); 
     return playlist.layout;
   }
 
@@ -237,8 +237,8 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
                   int displayGroupId = int.tryParse(event.notes ?? '') ?? 0;
 
                   String? playerName = getPlayerName(displayGroupId);
-                  print('Event: $event'); // Debug print
-                  print('Playlist Name: $playlistName'); // Debug print
+                  print('Event: $event'); 
+                  print('Playlist Name: $playlistName'); 
                   return ListTile(
                     title: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
