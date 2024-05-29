@@ -10,6 +10,7 @@ class PlayerController extends GetxController {
   var playerList = <Player>[].obs;
   var displayGroupList = <DisplayGroup>[].obs;
   String apiUrl = 'https://magic-sign.cloud/v_ar/web/api/displaygroup';
+  var selectedPlaylist = ''.obs;
 
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -279,7 +280,7 @@ class PlayerController extends GetxController {
       } else {
         // Handle error response
         print('Failed to add group. Status code: ${response.statusCode}');
-                print(response.body);
+        print(response.body);
 
         throw Exception('Failed to add group');
       }
@@ -288,4 +289,77 @@ class PlayerController extends GetxController {
       print('Error adding group: $e');
     }
   }
+
+  Future<void> deleteGroup(int displayGroupId) async {
+    try {
+      String? accessToken = await getAccessToken();
+      http.Response response = await http.delete(
+        Uri.parse(
+            'https://magic-sign.cloud/v_ar/web/api/displaygroup/$displayGroupId'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+      print(response.statusCode);
+      if (response.statusCode == 204) {
+        print('displayGroupId deleted successfully');
+      } else {
+        print('Failed to delete displayGroupId');
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+   Future<void> setLayout(int displayGroupId, int displayId) async {
+    String? accessToken = await getAccessToken();
+    if (accessToken == null) {
+      Get.snackbar(
+        "Error",
+        "Access token not available. Please log in again.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    final String apiUrl =
+        "https://magic-sign.cloud/v_ar/web/api/displaygroup/$displayGroupId/display/assign";
+
+    try {
+      Map<String, String> headers = {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      };
+
+      Map<String, String> requestBody = {
+        "displayId": displayId.toString(),
+      };
+
+      print(
+          "Sending PUT request to $apiUrl with headers $headers and body $requestBody");
+      final response = await http.put(
+        Uri.parse(apiUrl),
+        headers: headers,
+        body: requestBody,
+      );
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        print("player  set successfully.");
+      } else if (response.statusCode == 404) {
+        print("Resource not found. Status code: 404");
+        Get.snackbar("Error",
+            "Ressource non trouvée (404). Veuillez vérifier les identifiants.");
+      } else {
+        print(
+            "Failed to set default layout. Status code: ${response.statusCode}");
+        Get.snackbar("Error",
+            "Échec . Code de statut: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error: $e");
+      Get.snackbar("Error", "Une erreur s'est produite: $e");
+    }
+  }
+
 }

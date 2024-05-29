@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/controller/playerController.dart';
 import 'package:magic_sign_mobile/model/DisplayGroup.dart';
+import 'package:magic_sign_mobile/model/Player.dart';
 
 class PlayerGroup extends StatefulWidget {
   const PlayerGroup({Key? key}) : super(key: key);
@@ -80,8 +81,7 @@ class _PlayerGroupState extends State<PlayerGroup> {
                       setState(() {
                         if (value!) {
                           isDynamic = value;
-                        } else {
-                        }
+                        } else {}
                         _isChecked = value;
                         print('After update: $value');
                       });
@@ -104,6 +104,99 @@ class _PlayerGroupState extends State<PlayerGroup> {
                 addDisplayGroup(nameController.text, isDynamic ? 1 : 0);
                 Navigator.of(context).pop();
               },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showConfirmDeleteDialog(
+      int displayGroupId, String displayGroup) async {
+    bool deleteConfirmed = false;
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Supprimer "$displayGroup"'),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                  'Êtes-vous sûr de vouloir supprimer ce groupe d\'afficheurs ?'),
+              SizedBox(height: 8),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                deleteConfirmed = true;
+                Navigator.of(context).pop();
+              },
+              child: Text('Oui'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Non'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (deleteConfirmed) {
+      await playerController.deleteGroup(displayGroupId).then((_) {
+        fetchDisplayGroups();
+      });
+    }
+  }
+
+  Future<void> _showPlayerSelectionDialog(DisplayGroup displayGroup, Player player) async {
+    List<Player> players = await playerController.fetchPlayers();
+
+    List<int> selectedPlayers = [];
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Sélectionner des joueurs'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: players.map((player) {
+                return CheckboxListTile(
+                  title: Text(player.display ?? ''),
+                  value: selectedPlayers.contains(player.displayId),
+                  onChanged: (bool? value) {
+                    setState(() {
+                      if (value!) {
+                        selectedPlayers.add(player.displayId!);
+                      } else {
+                        selectedPlayers.remove(player.displayId);
+                      }
+                    });
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () {
+                print('Selected players: $selectedPlayers');
+                playerController.setLayout(displayGroup.displayGroupId!,player.displayId!);
+                Navigator.of(context).pop();
+              },
+              child: Text('Valider'),
             ),
           ],
         );
@@ -184,11 +277,12 @@ class _PlayerGroupState extends State<PlayerGroup> {
                   ],
                   onSelected: (String value) async {
                     if (value == 'Option 1') {
-                      // Handle Option 1
+                      //_showPlayerSelectionDialog(group);
                     } else if (value == 'Option 2') {
                       // Handle Option 2
                     } else if (value == 'Option 3') {
-                      // Handle Option 3
+                      _showConfirmDeleteDialog(
+                          group.displayGroupId!, group.displayGroup!);
                     } else if (value == 'Option 4') {
                       // Handle Option 4
                     }

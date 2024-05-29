@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart';
 import 'package:magic_sign_mobile/controller/loginController.dart';
@@ -8,40 +9,20 @@ late bool _passwordVisible;
 
 class LoginScreen extends StatefulWidget {
   static String routeName = 'LoginScreen';
-  const LoginScreen({Key? key});
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final LocalAuthentication _localAuthentication = LocalAuthentication();
-  LoginController controller = LoginController();
+  final LoginController controller = Get.put(LoginController());
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
     _passwordVisible = true;
-  }
-
-  Future<void> _authenticateWithFingerprint() async {
-    try {
-      bool isAuthenticated = await _localAuthentication.authenticate(
-        localizedReason: 'Authenticate to login',
-        
-      );
-
-      if (isAuthenticated) {
-        // Navigate to the home screen
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
-        );
-      }
-    } catch (e) {
-      // Handle authentication errors
-      print('Authentication failed: $e');
-    }
   }
 
   @override
@@ -53,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             Container(
               width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height / 2.8,
+              height: MediaQuery.of(context).size.height / 3,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -63,28 +44,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 150.0,
                     width: 150.0,
                   ),
-                  SizedBox(
-                    height: kDefaultPadding / 2,
+                  Text(
+                    'Connectez-vous pour continuer',
+                    style: Theme.of(context).textTheme.subtitle2,
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Hi ',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyText1!
-                            .copyWith(fontWeight: FontWeight.w200),
-                      ),
-                      Text('Admin',
-                          style: Theme.of(context).textTheme.bodyText1!),
-                    ],
-                  ),
-                  SizedBox(
-                    height: kDefaultPadding / 6,
-                  ),
-                  Text('Sign in to continue',
-                      style: Theme.of(context).textTheme.subtitle2)
                 ],
               ),
             ),
@@ -103,11 +66,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   children: [
                     Form(
+                      key: _formKey,
                       child: Column(
                         children: [
-                          SizedBox(
-                            height: kDefaultPadding,
-                          ),
+                          SizedBox(height: kDefaultPadding),
                           TextFormField(
                             controller: controller.username,
                             textAlign: TextAlign.start,
@@ -118,23 +80,19 @@ class _LoginScreenState extends State<LoginScreen> {
                               fontWeight: FontWeight.w300,
                             ),
                             decoration: InputDecoration(
-                              labelText: 'Username',
+                              labelText: 'Nom d\'utilisateur ',
                               floatingLabelBehavior:
                                   FloatingLabelBehavior.always,
                               isDense: true,
                             ),
                             validator: (value) {
-                              RegExp regExp = new RegExp(emailPattern);
                               if (value == null || value.isEmpty) {
-                                return 'Please enter a valid username';
-                              } else if (!regExp.hasMatch(value)) {
-                                return 'Please enter a valid username';
+                                return 'Entrer un nom d\'utilisateur ';
                               }
+                              return null;
                             },
                           ),
-                          SizedBox(
-                            height: kDefaultPadding,
-                          ),
+                          SizedBox(height: kDefaultPadding),
                           TextFormField(
                             controller: controller.password,
                             obscureText: _passwordVisible,
@@ -146,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               fontWeight: FontWeight.w300,
                             ),
                             decoration: InputDecoration(
-                              labelText: 'Password',
+                              labelText: 'Mot de passe ',
                               floatingLabelBehavior:
                                   FloatingLabelBehavior.always,
                               isDense: true,
@@ -159,43 +117,34 @@ class _LoginScreenState extends State<LoginScreen> {
                                 icon: Icon(
                                   _passwordVisible
                                       ? Icons.visibility_off_outlined
-                                      : Icons.visibility_off_outlined,
+                                      : Icons.visibility,
                                 ),
                                 iconSize: kDefaultPadding,
                               ),
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Entrer un mot de passe ';
+                              }
+                              return null;
+                            },
                           ),
-                          SizedBox(
-                            height: kDefaultPadding * 2,
-                          ),
+                          SizedBox(height: kDefaultPadding * 2),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               ElevatedButton(
                                 onPressed: () {
-                                  controller.login();
+                                  if (_formKey.currentState!.validate()) {
+                                    controller.login();
+                                  }
                                 },
                                 child: Text(
-                                  'Sign in',
+                                  'Se connecter',
                                   style: TextStyle(color: kSecondaryColor),
                                 ),
                               ),
                               SizedBox(height: kDefaultPadding),
-                              Text(
-                                'or',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: kSecondaryColor,
-                                  fontSize: 16.0,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              SizedBox(height: kDefaultPadding),
-                              IconButton(
-                                onPressed: _authenticateWithFingerprint,
-                                icon: Icon(Icons.fingerprint,
-                                    color: kSecondaryColor, size: 52),
-                              ),
                             ],
                           ),
                         ],
