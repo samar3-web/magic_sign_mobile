@@ -35,7 +35,7 @@ class LoginController extends GetxController {
         var accessToken = data['access_token'];
         var tokenType = data['token_type'];
         var expirationDate = data['expires_in'];
-         var expiresIn = data['expires_in']; // Assuming expires_in is in seconds
+        var expiresIn = data['expires_in']; // Assuming expires_in is in seconds
         var expiryDate = DateTime.now().add(Duration(seconds: expiresIn));
         await saveAccessToken(accessToken, expiryDate);
 
@@ -44,7 +44,6 @@ class LoginController extends GetxController {
         print(tokenType);
         print(expirationDate);
         print('**********response data *********');
-
 
         await verifyCredentials(accessToken, username.text, password.text);
 
@@ -55,7 +54,8 @@ class LoginController extends GetxController {
       }
     } else {
       print("Login Failed");
-      Get.snackbar('La connexion a échoué', 'Nom d\'utilisateur ou mot de passe incorrect',
+      Get.snackbar('La connexion a échoué',
+          'Nom d\'utilisateur ou mot de passe incorrect',
           backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
@@ -76,7 +76,8 @@ class LoginController extends GetxController {
       if (data['authentication'] == 'true') {
         Get.to(() => HomeScreen());
       } else {
-        Get.snackbar('La connexion a échoué', 'Nom d\'utilisateur ou mot de passe incorrect',
+        Get.snackbar('La connexion a échoué',
+            'Nom d\'utilisateur ou mot de passe incorrect',
             backgroundColor: Colors.red, colorText: Colors.white);
       }
     } else {
@@ -85,11 +86,12 @@ class LoginController extends GetxController {
     }
   }
 
- Future<void> saveAccessToken(String token, DateTime expiryDate) async {
+  Future<void> saveAccessToken(String token, DateTime expiryDate) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('access_token', token);
     await prefs.setString('expiry_date', expiryDate.toIso8601String());
   }
+
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('access_token');
@@ -104,12 +106,27 @@ class LoginController extends GetxController {
     }
     return null;
   }
-    Future<void> clearAccessToken() async {
+
+  Future<void> clearAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('access_token');
     await prefs.remove('expiry_date');
   }
-  
+
+  Future<List<dynamic>> fetchUsers() async {
+    String? accessToken = await getAccessToken();
+
+    final response = await http
+        .get(Uri.parse('https://magic-sign.cloud/v_ar/web/api/user'), headers: {
+      'Authorization': 'Bearer $accessToken',
+    });
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load users');
+    }
+  }
 
   logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

@@ -65,7 +65,8 @@ class MediaController extends GetxController {
           mediaList.addAll(jsonData);
           originalMediaList.addAll(jsonData);
         }
-
+        print('olllllllllld get ');
+        print(mediaList.length);
         print("Media fetched and lists updated.");
       } else {
         print('Failed to load media. Status code: ${response.statusCode}');
@@ -92,6 +93,52 @@ class MediaController extends GetxController {
       currentPage.value += 1;
       getMedia(start: currentPage.value * pageSize, length: pageSize);
     }
+  }
+
+ 
+
+  Future<List<Media>> fetchMediaData() async {
+    try {
+      isLoading(true);
+      String? accessToken = await getAccessToken();
+      if (accessToken == null) {
+        Get.snackbar(
+          "Error",
+          "Access token not available. Please log in again.",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+
+      final response = await http.get(
+        Uri.parse('$apiUrl'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return parseMediaItems(response.body);
+      } else {
+        print('Failed to load media. Status code: ${response.statusCode}');
+        Get.snackbar(
+          "Error",
+          "Failed to load media. Status code: ${response.statusCode}",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    } catch (e) {
+      print('Error fetching media: $e');
+      Get.snackbar(
+        "Error",
+        "Error fetching media. Please try again later.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading(false);
+    }
+    return [];
   }
 
   Future<String> getImageUrl(String storedAs) async {
@@ -205,7 +252,6 @@ class MediaController extends GetxController {
       Navigator.of(context).pop();
     }
   }
-
 
   updateMediaData(
       int mediaId, String name, String duration, String retired) async {

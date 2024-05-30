@@ -45,7 +45,6 @@ class PlayerController extends GetxController {
       if (response.statusCode == 200) {
         var jsonData = json.decode(response.body) as List<dynamic>;
 
-        // Mapper les données pour récupérer les displayGroupId
         List<dynamic> displayGroupIds = [];
         jsonData.forEach((display) {
           int? displayGroupId = display['displayGroupId'];
@@ -65,6 +64,60 @@ class PlayerController extends GetxController {
             .toList();
 
         playerList.assignAll(jsonDataa);
+
+        return displayGroupIds;
+      } else {
+        print('Erreur: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Erreur: $e');
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetch() async {
+    String apiUrl = 'https://magic-sign.cloud/v_ar/web/api/display-ms';
+
+    try {
+      String? accessToken = await getAccessToken();
+      if (accessToken == null) {
+        Get.snackbar(
+          "Error",
+          "Access token not available. Please log in again.",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return [];
+      }
+
+      http.Response response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        var jsonData = json.decode(response.body) as List<dynamic>;
+
+        List<Map<String, dynamic>> displayGroupIds = [];
+        jsonData.forEach((display) {
+          int? displayGroupId = display['displayGroupId'];
+          String? name = display['display'];
+          int? isConnected = display['loggedIn'] == 1 ? 1 : 0;
+          int? isAuthorized = display['licensed'] == 1 ? 1 : 0;
+
+          if (displayGroupId != null && name != null) {
+            Map<String, dynamic> newDisplay = {
+              'id': displayGroupId,
+              'name': name,
+              'connected': isConnected,
+              'authorized': isAuthorized,
+            };
+            displayGroupIds.add(newDisplay);
+          }
+        });
 
         return displayGroupIds;
       } else {
@@ -311,7 +364,7 @@ class PlayerController extends GetxController {
     }
   }
 
-   Future<void> setLayout(int displayGroupId, int displayId) async {
+  Future<void> setLayout(int displayGroupId, int displayId) async {
     String? accessToken = await getAccessToken();
     if (accessToken == null) {
       Get.snackbar(
@@ -353,13 +406,11 @@ class PlayerController extends GetxController {
       } else {
         print(
             "Failed to set default layout. Status code: ${response.statusCode}");
-        Get.snackbar("Error",
-            "Échec . Code de statut: ${response.statusCode}");
+        Get.snackbar("Error", "Échec . Code de statut: ${response.statusCode}");
       }
     } catch (e) {
       print("Error: $e");
       Get.snackbar("Error", "Une erreur s'est produite: $e");
     }
   }
-
 }
