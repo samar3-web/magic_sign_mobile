@@ -93,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(
                           'Admin',
                           style:
-                              Theme.of(context).textTheme.subtitle1?.copyWith(
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
                                     fontWeight: FontWeight.w200,
                                     color: Colors.white,
                                   ),
@@ -102,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(
                           '2023-2024',
                           style:
-                              Theme.of(context).textTheme.subtitle2?.copyWith(
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
                                     fontWeight: FontWeight.w200,
                                     color: Colors.white,
                                   ),
@@ -157,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     SizedBox(height: kDefaultPadding),
                     Text(
                       'Activité des afficheurs',
-                      style: Theme.of(context).textTheme.bodyText2?.copyWith(
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                             fontSize: 20,
@@ -188,7 +188,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     Text(
                       'Utilisation de la Médiathèque',
-                      style: Theme.of(context).textTheme.bodyText2?.copyWith(
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                             fontSize: 20,
@@ -246,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Text(
             title,
-            style: Theme.of(context).textTheme.bodyText2!.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                   fontSize: 16.0,
                   fontWeight: FontWeight.w800,
                   color: kTextBlackColor,
@@ -254,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Text(
             count,
-            style: Theme.of(context).textTheme.bodyText2!.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                   fontSize: 25.0,
                   fontWeight: FontWeight.w300,
                   color: kTextBlackColor,

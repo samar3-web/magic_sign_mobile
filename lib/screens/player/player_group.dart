@@ -18,13 +18,14 @@ class _PlayerGroupState extends State<PlayerGroup> {
   final PlayerController playerController = Get.put(PlayerController());
   bool _isChecked = false;
   List<int> selectedDynamic = [];
-
   List<DisplayGroup> displayGroups = [];
+  List<Player> availableDisplays = [];
 
   @override
   void initState() {
     super.initState();
     fetchDisplayGroups();
+    fetchAvailableDisplays();
   }
 
   Future<void> fetchDisplayGroups() async {
@@ -34,9 +35,22 @@ class _PlayerGroupState extends State<PlayerGroup> {
     });
   }
 
+  Future<void> fetchAvailableDisplays() async {
+    List<Player> displays = await playerController.fetchPlayers();
+    setState(() {
+      availableDisplays = displays;
+    });
+  }
+
   Future<void> addDisplayGroup(String displayGroup, int isDynamic) async {
     await playerController.addDisplayGroup(
         displayGroup: displayGroup, isDynamic: isDynamic);
+    fetchDisplayGroups();
+  }
+
+  Future<void> addMemberToGroup(int displayGroupId, int displayId) async {
+    await playerController.AddMember(displayGroupId, displayId);
+    // Optionally refresh the display groups
     fetchDisplayGroups();
   }
 
@@ -154,49 +168,56 @@ class _PlayerGroupState extends State<PlayerGroup> {
     }
   }
 
-  Future<void> _showPlayerSelectionDialog(DisplayGroup displayGroup, Player player) async {
-    List<Player> players = await playerController.fetchPlayers();
-
-    List<int> selectedPlayers = [];
-
-    await showDialog(
+  void showAddMemberDialog(BuildContext context, int displayGroupId) {
+    showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Sélectionner des joueurs'),
-          content: SingleChildScrollView(
-            child: Column(
-              children: players.map((player) {
+          title: Text(
+            'Ajouter des membres au groupe',
+            style: TextStyle(
+              fontSize: 17.0,
+              fontWeight: FontWeight.w300,
+            ),
+          ),
+          content: Container(
+            width: double.minPositive,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: availableDisplays.length,
+              itemBuilder: (context, index) {
+                Player display = availableDisplays[index];
                 return CheckboxListTile(
-                  title: Text(player.display ?? ''),
-                  value: selectedPlayers.contains(player.displayId),
+                  title: Text(display.display!),
+                  value: selectedDynamic.contains(display.displayGroupId),
                   onChanged: (bool? value) {
                     setState(() {
-                      if (value!) {
-                        selectedPlayers.add(player.displayId!);
+                      if (value == true) {
+                        selectedDynamic.add(display.displayGroupId!);
                       } else {
-                        selectedPlayers.remove(player.displayId);
+                        selectedDynamic.remove(display.displayGroupId);
                       }
                     });
                   },
                 );
-              }).toList(),
+              },
             ),
           ),
           actions: <Widget>[
             TextButton(
+              child: Text('Annuler'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Annuler'),
             ),
             TextButton(
+              child: Text('Ajouter'),
               onPressed: () {
-                print('Selected players: $selectedPlayers');
-                playerController.setLayout(displayGroup.displayGroupId!,player.displayId!);
+                for (int displayId in selectedDynamic) {
+                  addMemberToGroup(displayGroupId, displayId);
+                }
                 Navigator.of(context).pop();
               },
-              child: Text('Valider'),
             ),
           ],
         );
@@ -277,7 +298,7 @@ class _PlayerGroupState extends State<PlayerGroup> {
                   ],
                   onSelected: (String value) async {
                     if (value == 'Option 1') {
-                      //_showPlayerSelectionDialog(group);
+                      showAddMemberDialog(context, group.displayGroupId!);
                     } else if (value == 'Option 2') {
                       // Handle Option 2
                     } else if (value == 'Option 3') {

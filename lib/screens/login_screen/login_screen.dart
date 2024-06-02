@@ -46,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   Text(
                     'Connectez-vous pour continuer',
-                    style: Theme.of(context).textTheme.subtitle2,
+                    style: Theme.of(context).textTheme.titleSmall,
                   ),
                 ],
               ),

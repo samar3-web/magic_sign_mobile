@@ -8,6 +8,7 @@ import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/controller/mediaController.dart';
 import 'package:magic_sign_mobile/screens/media_screen/media_details_dialog.dart';
 import 'package:magic_sign_mobile/model/Media.dart';
+import 'package:shimmer/shimmer.dart';
 
 class MediaScreen extends StatefulWidget {
   const MediaScreen({Key? key}) : super(key: key);
@@ -20,7 +21,7 @@ class MediaScreen extends StatefulWidget {
 class _MediaScreenState extends State<MediaScreen> {
   late MediaController mediaController = Get.put(MediaController());
   final ScrollController _scrollController = ScrollController();
-
+  bool isloading = false;
   Future<void> _refreshMedia() async {
     await mediaController.getMedia();
   }
@@ -28,15 +29,23 @@ class _MediaScreenState extends State<MediaScreen> {
   @override
   void initState() {
     super.initState();
-    mediaController = Get.put(MediaController());
-    mediaController.getMedia();
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-              _scrollController.position.maxScrollExtent &&
-          !mediaController.isLoading.value) {
-        mediaController.loadMoreMedia();
+      if (_scrollController.offset >=
+          _scrollController.position.maxScrollExtent) {
+        setState(() {
+          isloading = true;
+        });
+        fetchdata();
       }
     });
+  }
+  Future<void> fetchdata() async{
+    await Future.delayed(Duration(seconds : 2),((){
+      setState(() {
+        mediaController.getMedia();
+        isloading = false;
+      });
+    }));
   }
 
   @override
@@ -291,7 +300,16 @@ class GridItem extends StatelessWidget {
         future: getThumbnailUrl(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Container();
+            return Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+              ),
+            );
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
@@ -324,6 +342,13 @@ class GridItem extends StatelessWidget {
                               builder: (image) {
                                 return Center(child: Image.file(image));
                               },
+                              placeHolder: Shimmer.fromColors(
+                                baseColor: Colors.grey[300]!,
+                                highlightColor: Colors.grey[100]!,
+                                child: Container(
+                                  color: Colors.white,
+                                ),
+                              ),
                             )
                           : Image.asset(
                               thumbnailUrl,

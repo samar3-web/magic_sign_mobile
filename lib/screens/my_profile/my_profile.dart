@@ -10,7 +10,7 @@ class MyProfile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Profile' ,style: Theme.of(context).textTheme.bodyText2?.copyWith(fontWeight: FontWeight.w200,color: Colors.white)),
+        title: Text('My Profile' ,style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w200,color: Colors.white)),
         actions: [
           Container(
             child: Row(
@@ -49,7 +49,7 @@ class MyProfile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Admin', style: Theme.of(context).textTheme.subtitle1,),
+                    Text('Admin', style: Theme.of(context).textTheme.titleMedium,),
                   ],
                 )
         

@@ -36,6 +36,7 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
     fetchData();
     planificationController.fetchScheduleEvent();
     planificationController.getPlaylist();
+    playlistController.getPlaylist();
   }
 
   void fetchData() async {
@@ -99,8 +100,8 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
         regions: [],
       ),
     );
-    print('Playlist ID: $playlistId'); 
-    print('Playlist Name: ${playlist.layout}'); 
+    print('Playlist ID: $playlistId');
+    print('Playlist Name: ${playlist.layout}');
     return playlist.layout;
   }
 
@@ -231,14 +232,13 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
                 itemCount: _selectedEvents.length,
                 itemBuilder: (context, index) {
                   var event = _selectedEvents[index];
-                  int playlistId =
-                      int.tryParse(event.location ?? '') ?? 0;
+                  int playlistId = int.tryParse(event.location ?? '') ?? 0;
                   String playlistName = getPlaylistName(playlistId);
                   int displayGroupId = int.tryParse(event.notes ?? '') ?? 0;
 
                   String? playerName = getPlayerName(displayGroupId);
-                  print('Event: $event'); 
-                  print('Playlist Name: $playlistName'); 
+                  print('Event: $event');
+                  print('Playlist Name: $playlistName');
                   return ListTile(
                     title: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,

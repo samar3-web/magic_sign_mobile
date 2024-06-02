@@ -364,7 +364,7 @@ class PlayerController extends GetxController {
     }
   }
 
-  Future<void> setLayout(int displayGroupId, int displayId) async {
+  Future<void> AddMember(int displayGroupId, int displayId) async {
     String? accessToken = await getAccessToken();
     if (accessToken == null) {
       Get.snackbar(
@@ -389,7 +389,7 @@ class PlayerController extends GetxController {
 
       print(
           "Sending PUT request to $apiUrl with headers $headers and body $requestBody");
-      final response = await http.put(
+      final response = await http.post(
         Uri.parse(apiUrl),
         headers: headers,
         body: requestBody,
@@ -397,7 +397,7 @@ class PlayerController extends GetxController {
       print("Response status: ${response.statusCode}");
       print("Response body: ${response.body}");
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 204) {
         print("player  set successfully.");
       } else if (response.statusCode == 404) {
         print("Resource not found. Status code: 404");

@@ -29,12 +29,12 @@ class HomeScreen extends StatelessWidget {
         ),
         textTheme: GoogleFonts.sourceCodeProTextTheme(Theme.of(context).textTheme).apply().copyWith(
           // custom text for bodyText1
-          bodyText1: TextStyle(
+          bodyLarge: TextStyle(
             color: boxColor,
             fontSize: 35.0,
             fontWeight: FontWeight.bold,
           ),
-          subtitle2: TextStyle(
+          titleSmall: TextStyle(
             color: boxColor,
             fontSize: 18.0,
             fontWeight: FontWeight.w300,

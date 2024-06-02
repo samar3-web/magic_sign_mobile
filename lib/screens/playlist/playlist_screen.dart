@@ -254,21 +254,21 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                             'Layout: ${playlist.layout}',
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .bodyText2,
+                                                .bodyMedium,
                                           ),
                                           SizedBox(height: 4),
                                           Text(
                                             'Duration: ${formatDuration(playlist.duration)}',
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .bodyText2,
+                                                .bodyMedium,
                                           ),
                                           SizedBox(height: 4),
                                           Text(
                                             'Owner: ${playlist.owner}',
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .bodyText2,
+                                                .bodyMedium,
                                           ),
                                           SizedBox(height: 4),
                                           Row(
@@ -277,7 +277,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                                 'Status : ',
                                                 style: Theme.of(context)
                                                     .textTheme
-                                                    .bodyText2,
+                                                    .bodyMedium,
                                               ),
                                               SizedBox(width: 4),
                                               Container(
