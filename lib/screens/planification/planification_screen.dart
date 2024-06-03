@@ -198,11 +198,18 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
                 children: [
                   SfCalendar(
                     view: CalendarView.month,
+                    allowedViews: <CalendarView>[
+                      CalendarView.day,
+                      CalendarView.week,
+                      CalendarView.workWeek,
+                      CalendarView.month,
+                      CalendarView.schedule
+                    ],
                     dataSource: planificationController.appointmentsDataSource,
                     firstDayOfWeek: 1,
                     todayHighlightColor: kSecondaryColor,
                     selectionDecoration: BoxDecoration(
-                      color: kSecondaryColor.withOpacity(0.3),
+                      color: kSecondaryColor.withOpacity(0.5),
                       border: Border.all(color: kSecondaryColor),
                       borderRadius: const BorderRadius.all(Radius.circular(4)),
                       shape: BoxShape.rectangle,
