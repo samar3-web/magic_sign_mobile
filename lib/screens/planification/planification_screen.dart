@@ -8,7 +8,6 @@ import 'package:magic_sign_mobile/controller/playlistController.dart';
 import 'package:magic_sign_mobile/model/DisplayGroup.dart';
 import 'package:magic_sign_mobile/model/Player.dart';
 import 'package:magic_sign_mobile/model/Playlist.dart';
-import 'package:magic_sign_mobile/widgets/BaseScreen.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 class PlanificationScreen extends StatefulWidget {
@@ -38,7 +37,6 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
     planificationController.fetchScheduleEvent();
     planificationController.getPlaylist();
     playlistController.getPlaylist();
-    playerController.fetchData();
   }
 
   void fetchData() async {
@@ -140,8 +138,10 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BaseScreen(
-      title: 'Planification',
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Planification'),
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -198,18 +198,11 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
                 children: [
                   SfCalendar(
                     view: CalendarView.month,
-                    allowedViews: <CalendarView>[
-                      CalendarView.day,
-                      CalendarView.week,
-                      CalendarView.workWeek,
-                      CalendarView.month,
-                      CalendarView.schedule
-                    ],
                     dataSource: planificationController.appointmentsDataSource,
                     firstDayOfWeek: 1,
                     todayHighlightColor: kSecondaryColor,
                     selectionDecoration: BoxDecoration(
-                      color: kSecondaryColor.withOpacity(0.5),
+                      color: Colors.transparent,
                       border: Border.all(color: kSecondaryColor),
                       borderRadius: const BorderRadius.all(Radius.circular(4)),
                       shape: BoxShape.rectangle,

@@ -8,6 +8,7 @@ import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/controller/mediaController.dart';
 import 'package:magic_sign_mobile/screens/media_screen/media_details_dialog.dart';
 import 'package:magic_sign_mobile/model/Media.dart';
+import 'package:magic_sign_mobile/widgets/BaseScreen.dart';
 import 'package:shimmer/shimmer.dart';
 
 class MediaScreen extends StatefulWidget {
@@ -19,7 +20,7 @@ class MediaScreen extends StatefulWidget {
 }
 
 class _MediaScreenState extends State<MediaScreen> {
-  late MediaController mediaController = Get.put(MediaController());
+  late MediaController mediaController;
   final ScrollController _scrollController = ScrollController();
   bool isloading = false;
 
@@ -30,6 +31,7 @@ class _MediaScreenState extends State<MediaScreen> {
   @override
   void initState() {
     super.initState();
+    mediaController = Get.put(MediaController());
     _scrollController.addListener(() {
       if (_scrollController.offset >=
               _scrollController.position.maxScrollExtent &&
@@ -51,179 +53,151 @@ class _MediaScreenState extends State<MediaScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    mediaController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Media Screen'),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          // Call function to select and upload files
-          List<File> pickedFiles = await _selectFiles();
-          if (pickedFiles.isNotEmpty) {
-            mediaController.uploadFiles(context, pickedFiles);
-          }
-        },
-        backgroundColor: kSecondaryColor,
-        child: Icon(Icons.add),
-      ),
-      body: RefreshIndicator(
-        onRefresh: _refreshMedia,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color:
-                            Colors.white, // Background color of the TextField
-                        borderRadius:
-                            BorderRadius.circular(12.0), // Radius of the border
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            spreadRadius: 2,
-                            blurRadius: 5,
-                            offset: Offset(0, 3), // changes position of shadow
-                          ),
-                        ],
-                      ),
-                      child: TextField(
-                        style: TextStyle(fontSize: 16.0),
-                        decoration: InputDecoration(
-                          hintText: 'Rechercher',
-                          hintStyle: TextStyle(color: boxColor),
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                                12.0),
-                            borderSide:
-                                BorderSide.none, 
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                                12.0), 
-                            borderSide: BorderSide(
-                              color: kSecondaryColor
-                                  , 
-                              width: 2.0,
+    return BaseScreen(
+      title: 'Media Screen',
+      body: Scaffold(
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            // Call function to select and upload files
+            List<File> pickedFiles = await _selectFiles();
+            if (pickedFiles.isNotEmpty) {
+              mediaController.uploadFiles(context, pickedFiles);
+            }
+          },
+          backgroundColor: kSecondaryColor,
+          child: Icon(Icons.add),
+        ),
+        body: RefreshIndicator(
+          onRefresh: _refreshMedia,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                              offset: Offset(0, 3),
                             ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                                12.0),
-                            borderSide: BorderSide(
-                              color: Colors
-                                  .grey, 
-                              width: 1.0,
-                            ),
-                          ),
-                          contentPadding: EdgeInsets.all(
-                              12.0), 
+                          ],
                         ),
-                        onChanged: (value) {
-                          mediaController.searchMedia(value);
-                        },
+                        child: TextField(
+                          style: TextStyle(fontSize: 16.0),
+                          decoration: InputDecoration(
+                            hintText: 'Rechercher',
+                            hintStyle: TextStyle(color: boxColor),
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              borderSide: BorderSide(
+                                color: kSecondaryColor,
+                                width: 2.0,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 1.0,
+                              ),
+                            ),
+                            contentPadding: EdgeInsets.all(12.0),
+                          ),
+                          onChanged: (value) {
+                            mediaController.searchMedia(value);
+                          },
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
-                children: [
-                  DropdownButton<String>(
-                    onChanged: (String? newValue) {
-                      if (newValue != null) {
-                        setState(() {
-                          mediaController.filterByType(newValue);
-                        });
-                      }
-                    },
-                    items: <String>[
-                      'Image',
-                      'PDF',
-                      'Word',
-                      'Excel',
-                      'PowerPoint',
-                      'Video'
-                    ].map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    hint: Text('Filter by type'),
-                  ),
-                  SizedBox(width: 10),
-                  DropdownButton<String>(
-                    onChanged: (String? newValue) {
-                      if (newValue != null) {
-                        setState(() {
-                          mediaController.filterByOwner(newValue);
-                        });
-                      }
-                    },
-                    items: <String>['ADMIN', 'SUPERADMIN']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    hint: Text('Filter by owner'),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Obx(
-                () {
-                  if (mediaController.isLoading.value &&
-                      mediaController.mediaList.isEmpty) {
-                    return Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  } else {
-                    return NotificationListener<ScrollNotification>(
-                      onNotification: (ScrollNotification scrollInfo) {
-                        if (scrollInfo.metrics.pixels ==
-                                scrollInfo.metrics.maxScrollExtent &&
-                            !mediaController.isLoading.value) {
-                          mediaController.loadMoreMedia();
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Row(
+                  children: [
+                    DropdownButton<String>(
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            mediaController.filterByType(newValue);
+                          });
                         }
-                        return false;
                       },
-                      child: GridView.builder(
-                        controller: _scrollController,
-                        padding: EdgeInsets.all(16.0),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 16.0,
-                          mainAxisSpacing: 16.0,
-                          childAspectRatio: 1.0,
-                        ),
-                        itemCount: mediaController.mediaList.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return GridItem(
-                              media: mediaController.mediaList[index]);
-                        },
-                      ),
-                    );
-                  }
-                },
+                      items: <String>[
+                        'Image',
+                        'PDF',
+                        'Word',
+                        'Excel',
+                        'PowerPoint',
+                        'Video'
+                      ].map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      hint: Text('Filter by type'),
+                    ),
+                    SizedBox(width: 10),
+                    DropdownButton<String>(
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            mediaController.filterByOwner(newValue);
+                          });
+                        }
+                      },
+                      items: <String>['ADMIN', 'SUPERADMIN']
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      hint: Text('Filter by owner'),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              Obx( () =>
+                 Expanded(
+                  child: GridView.builder(
+                    controller: _scrollController,
+                    padding: EdgeInsets.all(16.0),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 16.0,
+                      mainAxisSpacing: 16.0,
+                      childAspectRatio: 1.0,
+                    ),
+                    itemCount: mediaController.mediaList.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return GridItem(media: mediaController.mediaList[index]);
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

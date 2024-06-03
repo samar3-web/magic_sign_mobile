@@ -17,6 +17,10 @@ class MediaController extends GetxController {
   var currentPage = 0.obs;
   final int pageSize = 20;
 
+  var isUpdating = false.obs;
+  TextEditingController name = TextEditingController();
+  TextEditingController duration = TextEditingController();
+
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('access_token');
@@ -94,8 +98,6 @@ class MediaController extends GetxController {
       getMedia(start: currentPage.value * pageSize, length: pageSize);
     }
   }
-
- 
 
   Future<List<Media>> fetchMediaData() async {
     try {
@@ -275,6 +277,8 @@ class MediaController extends GetxController {
       print(response.body);
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
+        Get.back();
+        getMedia();
       } else {
         print('response status code not 200');
       }

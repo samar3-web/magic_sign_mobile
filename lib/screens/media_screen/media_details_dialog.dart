@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
+import 'package:magic_sign_mobile/controller/mediaController.dart';
 import 'package:magic_sign_mobile/screens/media_screen/DeleteDialog.dart';
 import 'package:magic_sign_mobile/screens/media_screen/ModifyDialog.dart';
 import 'package:magic_sign_mobile/model/Media.dart';
@@ -20,6 +22,7 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
   bool _isControllerInitialized = false;
   IconButton? _playButton;
   IconButton? _pauseButton;
+  late MediaController mediaController;
 
   String formatDuration(String durationString) {
     int duration = int.tryParse(durationString) ?? 0;
@@ -30,7 +33,6 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
   }
 
   Future<String> _getImageUrl() async {
-    // Simulating fetching image URL asynchronously
     await Future.delayed(Duration(seconds: 2));
     return "https://magic-sign.cloud/v_ar/web/MSlibrary/${widget.media.storedAs}";
   }
@@ -38,6 +40,7 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
   @override
   void initState() {
     super.initState();
+    mediaController = Get.put(MediaController());
     if (widget.media.mediaType.toLowerCase() == 'video') {
       _videoPlayerController = VideoPlayerController.network(
           'https://magic-sign.cloud/v_ar/web/MSlibrary/${widget.media.storedAs}');
@@ -74,9 +77,26 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Name: ${widget.media.name}',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Obx(
+              () => Container(
+                child: mediaController.isUpdating.value
+                    ? TextField(
+                        controller: mediaController.name,
+                        style: TextStyle(
+                          fontSize: 17.0,
+                          fontWeight: FontWeight.w300,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Name',
+                          labelStyle:
+                              TextStyle(color: kTextBlackColor, fontSize: 17.0),
+                        ),
+                      )
+                    : Text(
+                        'Name: ${widget.media.name}',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+              ),
             ),
             SizedBox(height: 2),
             Text(
@@ -84,9 +104,26 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 2),
-            Text(
-              'Duration: ${formatDuration(widget.media.duration)}',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Obx(
+              () => Container(
+                child: mediaController.isUpdating.value
+                    ? TextField(
+                        controller: mediaController.duration,
+                        style: TextStyle(
+                          fontSize: 17.0,
+                          fontWeight: FontWeight.w300,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Duration',
+                          labelStyle:
+                              TextStyle(color: kTextBlackColor, fontSize: 17.0),
+                        ),
+                      )
+                    : Text(
+                        'Duration: ${widget.media.duration}',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+              ),
             ),
             SizedBox(height: 2),
             Text(
@@ -148,23 +185,35 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    showDialog(
-                      context: context,
-                      builder: (context) => ModifyDialog(media: widget.media),
-                    );
-                  });
+                
+                  if (mediaController.isUpdating.value) {
+                    mediaController.updateMediaData(
+                        widget.media.mediaId,
+                        mediaController.name.text,
+                        mediaController.duration.text,
+                        widget.media.retired);
+                    
+                        mediaController.isUpdating.value =
+                      !mediaController.isUpdating.value;
+                  } else {
+                      mediaController.isUpdating.value =
+                      !mediaController.isUpdating.value;
+                  mediaController.name.text = widget.media.name;
+
+                  mediaController.duration.text = widget.media.duration;
+                  }
                 },
                 child: Text('Modifier'),
               ),
               ElevatedButton(
                 onPressed: () {
+                  /*
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     showDialog(
                       context: context,
                       builder: (context) => DeleteDialog(media: widget.media),
                     );
-                  });
+                  });*/
                 },
                 child: Text('Supprimer'),
               ),
