@@ -8,6 +8,7 @@ import 'package:magic_sign_mobile/controller/playlistController.dart';
 import 'package:magic_sign_mobile/model/DisplayGroup.dart';
 import 'package:magic_sign_mobile/model/Player.dart';
 import 'package:magic_sign_mobile/model/Playlist.dart';
+import 'package:magic_sign_mobile/widgets/BaseScreen.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 class PlanificationScreen extends StatefulWidget {
@@ -37,6 +38,7 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
     planificationController.fetchScheduleEvent();
     planificationController.getPlaylist();
     playlistController.getPlaylist();
+    playerController.fetchData();
   }
 
   void fetchData() async {
@@ -138,10 +140,8 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Planification'),
-      ),
+    return BaseScreen(
+      title: 'Planification',
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -202,7 +202,7 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
                     firstDayOfWeek: 1,
                     todayHighlightColor: kSecondaryColor,
                     selectionDecoration: BoxDecoration(
-                      color: Colors.transparent,
+                      color: kSecondaryColor.withOpacity(0.3),
                       border: Border.all(color: kSecondaryColor),
                       borderRadius: const BorderRadius.all(Radius.circular(4)),
                       shape: BoxShape.rectangle,

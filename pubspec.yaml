@@ -28,7 +28,7 @@ dependencies:
   syncfusion_flutter_pdfviewer: ^25.1.35
   flutter_file_view: ^2.2.1
   file_picker: ^8.0.0+1
-  syncfusion_flutter_calendar: ^25.1.38
+  syncfusion_flutter_calendar: ^25.2.6+1
   lazy_loading_list: ^1.0.1
   cached_network_image_builder: ^0.3.0
   cached_network_image: ^3.3.1

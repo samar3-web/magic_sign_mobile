@@ -22,6 +22,7 @@ class _MediaScreenState extends State<MediaScreen> {
   late MediaController mediaController = Get.put(MediaController());
   final ScrollController _scrollController = ScrollController();
   bool isloading = false;
+
   Future<void> _refreshMedia() async {
     await mediaController.getMedia();
   }
@@ -31,21 +32,20 @@ class _MediaScreenState extends State<MediaScreen> {
     super.initState();
     _scrollController.addListener(() {
       if (_scrollController.offset >=
-          _scrollController.position.maxScrollExtent) {
-        setState(() {
-          isloading = true;
-        });
-        fetchdata();
-      }
+              _scrollController.position.maxScrollExtent &&
+          !_scrollController.position.outOfRange) {}
     });
   }
-  Future<void> fetchdata() async{
-    await Future.delayed(Duration(seconds : 2),((){
-      setState(() {
-        mediaController.getMedia();
-        isloading = false;
-      });
-    }));
+
+  Future<void> fetchdata() async {
+    await Future.delayed(Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          mediaController.getMedia();
+          isloading = false;
+        });
+      }
+    });
   }
 
   @override
@@ -80,17 +80,58 @@ class _MediaScreenState extends State<MediaScreen> {
               child: Row(
                 children: [
                   Expanded(
-                    child: TextField(
-                      style: TextStyle(fontSize: 16.0),
-                      decoration: InputDecoration(
-                        hintText: 'Search...',
-                        hintStyle: TextStyle(color: boxColor),
-                        prefixIcon: Icon(Icons.search),
-                        border: OutlineInputBorder(),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color:
+                            Colors.white, // Background color of the TextField
+                        borderRadius:
+                            BorderRadius.circular(12.0), // Radius of the border
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: Offset(0, 3), // changes position of shadow
+                          ),
+                        ],
                       ),
-                      onChanged: (value) {
-                        mediaController.searchMedia(value);
-                      },
+                      child: TextField(
+                        style: TextStyle(fontSize: 16.0),
+                        decoration: InputDecoration(
+                          hintText: 'Rechercher',
+                          hintStyle: TextStyle(color: boxColor),
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                                12.0),
+                            borderSide:
+                                BorderSide.none, 
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                                12.0), 
+                            borderSide: BorderSide(
+                              color: kSecondaryColor
+                                  , 
+                              width: 2.0,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                                12.0),
+                            borderSide: BorderSide(
+                              color: Colors
+                                  .grey, 
+                              width: 1.0,
+                            ),
+                          ),
+                          contentPadding: EdgeInsets.all(
+                              12.0), 
+                        ),
+                        onChanged: (value) {
+                          mediaController.searchMedia(value);
+                        },
+                      ),
                     ),
                   ),
                 ],
@@ -102,9 +143,11 @@ class _MediaScreenState extends State<MediaScreen> {
                 children: [
                   DropdownButton<String>(
                     onChanged: (String? newValue) {
-                      setState(() {
-                        mediaController.filterByType(newValue!);
-                      });
+                      if (newValue != null) {
+                        setState(() {
+                          mediaController.filterByType(newValue);
+                        });
+                      }
                     },
                     items: <String>[
                       'Image',
@@ -124,9 +167,11 @@ class _MediaScreenState extends State<MediaScreen> {
                   SizedBox(width: 10),
                   DropdownButton<String>(
                     onChanged: (String? newValue) {
-                      setState(() {
-                        mediaController.filterByOwner(newValue!);
-                      });
+                      if (newValue != null) {
+                        setState(() {
+                          mediaController.filterByOwner(newValue);
+                        });
+                      }
                     },
                     items: <String>['ADMIN', 'SUPERADMIN']
                         .map<DropdownMenuItem<String>>((String value) {
@@ -227,6 +272,7 @@ class GridViewUI extends StatelessWidget {
 class GridItem extends StatelessWidget {
   final Media media;
   final int maxNameLength;
+
   const GridItem({Key? key, required this.media, this.maxNameLength = 20})
       : super(key: key);
 

@@ -6,6 +6,7 @@ import 'package:magic_sign_mobile/controller/playerController.dart';
 import 'package:magic_sign_mobile/controller/playlistController.dart';
 import 'package:magic_sign_mobile/model/Player.dart';
 import 'package:magic_sign_mobile/model/Playlist.dart';
+import 'package:magic_sign_mobile/widgets/BaseScreen.dart';
 
 class PlayerScreen extends StatefulWidget {
   const PlayerScreen({Key? key}) : super(key: key);
@@ -233,10 +234,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Afficheurs'),
-      ),
+    return BaseScreen(
+      title: 'Afficheurs',
       body: Column(
         children: [
           Row(
@@ -404,19 +403,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
               ),
             ),
           ),
+         
         ],
       ),
-      floatingActionButton: _isFabVisible
-          ? FloatingActionButton(
-              onPressed: _refreshList,
-              child: Icon(
-                Icons.refresh,
-                color: Colors.white,
-              ),
-              backgroundColor: kSecondaryColor,
-            )
-          : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

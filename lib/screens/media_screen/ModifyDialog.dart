@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/controller/mediaController.dart';
 import 'package:magic_sign_mobile/model/Media.dart';
+import 'package:magic_sign_mobile/screens/media_screen/media_screen.dart';
 
 class ModifyDialog extends StatefulWidget {
   final Media media;
@@ -32,37 +33,37 @@ class _ModifyDialogState extends State<ModifyDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Modify Media'),
+      title: Text('Modifier Media'),
       content: SingleChildScrollView(
         child: Column(
-
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          
-          TextField(
-            controller: _nameController,
-            style: TextStyle(
-            fontSize: 17.0,
-            fontWeight: FontWeight.w300,
-                            ),
-            decoration: InputDecoration(labelText: 'Name',
-            labelStyle: TextStyle(color: kTextBlackColor,fontSize: 17.0)
-                        ),
-          ),
-          TextField(
-            controller: _durationController,
-               style: TextStyle(
-                              fontSize: 17.0,
-                              fontWeight: FontWeight.w300,
-                            ),
-            decoration: InputDecoration(labelText: 'Duration',
-                        labelStyle: TextStyle(color: kTextBlackColor,fontSize: 17.0)
-),
-            keyboardType: TextInputType.number,
-          ),
-        ],
-      ),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _nameController,
+              style: TextStyle(
+                fontSize: 17.0,
+                fontWeight: FontWeight.w300,
+              ),
+              decoration: InputDecoration(
+                labelText: 'Name',
+                labelStyle: TextStyle(color: kTextBlackColor, fontSize: 17.0),
+              ),
+            ),
+            TextField(
+              controller: _durationController,
+              style: TextStyle(
+                fontSize: 17.0,
+                fontWeight: FontWeight.w300,
+              ),
+              decoration: InputDecoration(
+                labelText: 'Duration',
+                labelStyle: TextStyle(color: kTextBlackColor, fontSize: 17.0),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(
@@ -79,7 +80,10 @@ class _ModifyDialogState extends State<ModifyDialog> {
               _durationController.text,
               _retiredController.text,
             );
-            Navigator.of(context).pop();
+            controller.getMedia();
+
+            Navigator.of(context)
+                .popUntil(ModalRoute.withName(MediaScreen.routeName));
           },
           child: Text('Save'),
         ),

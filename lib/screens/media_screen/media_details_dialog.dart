@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/screens/media_screen/DeleteDialog.dart';
 import 'package:magic_sign_mobile/screens/media_screen/ModifyDialog.dart';
 import 'package:magic_sign_mobile/model/Media.dart';
@@ -15,82 +16,116 @@ class MediaDetailsDialog extends StatefulWidget {
 }
 
 class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
-  VideoPlayerController _videoPlayerController =
-      VideoPlayerController.asset('');
+  VideoPlayerController? _videoPlayerController;
   bool _isControllerInitialized = false;
   IconButton? _playButton;
   IconButton? _pauseButton;
 
+  String formatDuration(String durationString) {
+    int duration = int.tryParse(durationString) ?? 0;
+    int hours = duration ~/ 3600;
+    int minutes = (duration % 3600) ~/ 60;
+    int seconds = duration % 60;
+    return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  Future<String> _getImageUrl() async {
+    // Simulating fetching image URL asynchronously
+    await Future.delayed(Duration(seconds: 2));
+    return "https://magic-sign.cloud/v_ar/web/MSlibrary/${widget.media.storedAs}";
+  }
+
   @override
   void initState() {
+    super.initState();
     if (widget.media.mediaType.toLowerCase() == 'video') {
       _videoPlayerController = VideoPlayerController.network(
           'https://magic-sign.cloud/v_ar/web/MSlibrary/${widget.media.storedAs}');
-
-      _videoPlayerController.initialize().then((_) {
+      _videoPlayerController!.initialize().then((_) {
         if (mounted) {
           setState(() {
             _isControllerInitialized = true;
             _playButton = IconButton(
               icon: Icon(Icons.play_arrow),
               onPressed: () {
-                _videoPlayerController.play();
+                _videoPlayerController!.play();
               },
             );
             _pauseButton = IconButton(
               icon: Icon(Icons.pause),
               onPressed: () {
-                _videoPlayerController.pause();
+                _videoPlayerController!.pause();
               },
             );
           });
         }
       }).catchError((error) {
-        if (error.toString().contains('initialize_error_not_video')) {
-          print('Ignoring VideoPlayerException: ${error.toString()}');
-        } else {
-          print('Error initializing video player: $error');
-        }
-      });
-    } else {
-      setState(() {
-        _isControllerInitialized = false;
-        _playButton = null;
-        _pauseButton = null;
+        print('Error initializing video player: $error');
       });
     }
-    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Media Details'),
+      title: Text(widget.media.name),
       content: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+            Text(
+              'Name: ${widget.media.name}',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 2),
+            Text(
+              'Type: ${widget.media.mediaType}',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 2),
+            Text(
+              'Duration: ${formatDuration(widget.media.duration)}',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 2),
+            Text(
+              'Owner: ${widget.media.owner}',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 4),
             if (widget.media.mediaType.toLowerCase() == 'image')
-              Image.network(
-                "https://magic-sign.cloud/v_ar/web/MSlibrary/${widget.media.storedAs}",
-                fit: BoxFit.cover,
+              FutureBuilder<String>(
+                future: _getImageUrl(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else {
+                    return Image.network(
+                      snapshot.data!,
+                      fit: BoxFit.cover,
+                    );
+                  }
+                },
               ),
             if (widget.media.mediaType.toLowerCase() == 'video')
               SizedBox(
                 height: 200,
                 width: 200,
-                child: _videoPlayerController.value.isInitialized
+                child: _videoPlayerController?.value.isInitialized ?? false
                     ? AspectRatio(
-                        aspectRatio: _videoPlayerController.value.aspectRatio,
-                        child: VideoPlayer(_videoPlayerController),
+                        aspectRatio: _videoPlayerController!.value.aspectRatio,
+                        child: VideoPlayer(_videoPlayerController!),
                       )
                     : Center(
                         child: CircularProgressIndicator(),
                       ),
               ),
-            if (_isControllerInitialized == true &&
-                widget.media.mediaType == "video")
+            if (_isControllerInitialized && widget.media.mediaType == "video")
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [_playButton!, _pauseButton!],
@@ -103,10 +138,6 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
                   "https://magic-sign.cloud/v_ar/web/MSlibrary/${widget.media.storedAs}",
                 ),
               ),
-            Text('Name: ${widget.media.name}'),
-            Text('Type: ${widget.media.mediaType}'),
-            Text('Duration: ${widget.media.duration}'),
-            Text('Owner: ${widget.media.owner}'),
           ],
         ),
       ),
@@ -116,17 +147,25 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
           child: Row(
             children: [
               ElevatedButton(
-                onPressed: () => showDialog(
-                  context: context,
-                  builder: (context) => ModifyDialog(media: widget.media),
-                ),
+                onPressed: () {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    showDialog(
+                      context: context,
+                      builder: (context) => ModifyDialog(media: widget.media),
+                    );
+                  });
+                },
                 child: Text('Modifier'),
               ),
               ElevatedButton(
-                onPressed: () => showDialog(
-                  context: context,
-                  builder: (context) => DeleteDialog(media: widget.media),
-                ),
+                onPressed: () {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    showDialog(
+                      context: context,
+                      builder: (context) => DeleteDialog(media: widget.media),
+                    );
+                  });
+                },
                 child: Text('Supprimer'),
               ),
             ],
@@ -144,7 +183,7 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
 
   @override
   void dispose() {
-    _videoPlayerController.dispose();
+    _videoPlayerController?.dispose();
     super.dispose();
   }
 }

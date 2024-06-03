@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/controller/mediaController.dart';
 import 'package:magic_sign_mobile/model/Media.dart';
+import 'package:magic_sign_mobile/screens/media_screen/media_screen.dart';
 
 class DeleteDialog extends StatefulWidget {
   final Media media;
@@ -13,12 +15,12 @@ class DeleteDialog extends StatefulWidget {
 }
 
 class _DeleteDialogState extends State<DeleteDialog> {
-    final MediaController mediaController = Get.find(); 
+  final MediaController mediaController = Get.find();
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Confirmation'),
+      title: Text('Supression'),
       content: Text('Voulez-vous vraiment supprimer ${widget.media.name}?'),
       actions: <Widget>[
         TextButton(
@@ -28,20 +30,26 @@ class _DeleteDialogState extends State<DeleteDialog> {
           },
           child: Text('Annuler'),
         ),
-       ElevatedButton(
+        ElevatedButton(
           onPressed: () async {
             // Perform delete operation using the controller
-            bool deleteSuccess = await mediaController.deleteMedia(widget.media.mediaId);
+            bool deleteSuccess =
+                await mediaController.deleteMedia(widget.media.mediaId);
             if (deleteSuccess) {
               // Reload data after successful deletion
               mediaController.getMedia();
               // Show snackbar notification
-              Get.snackbar('Suppression', 'Le média ${widget.media.name} a été supprimé.', backgroundColor: Colors.green);
+              Get.snackbar('Suppression',
+                  'Le média ${widget.media.name} a été supprimé.',
+                  backgroundColor: kSecondaryColor);
             } else {
               // Handle delete failure
-              Get.snackbar('Erreur', 'Une erreur s\'est produite lors de la suppression.', backgroundColor: Colors.red);
+              Get.snackbar('Erreur',
+                  'Une erreur s\'est produite lors de la suppression.',
+                  backgroundColor: Colors.red);
             }
-            Navigator.of(context).pop(); // Close the dialog
+            Navigator.of(context)
+                .popUntil(ModalRoute.withName(MediaScreen.routeName));
           },
           child: Text('Confirmer'),
         ),
