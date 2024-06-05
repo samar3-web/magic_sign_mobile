@@ -1,23 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart';
 import 'package:magic_sign_mobile/screens/login_screen/login_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
 
-class splashScreen extends StatelessWidget {
+class splashScreen extends StatefulWidget {
   static String routeName = 'SplashScreen';
 
   const splashScreen({super.key});
 
   @override
+  State<splashScreen> createState() => _splashScreenState();
+}
+
+class _splashScreenState extends State<splashScreen> {
+  var isLoggedIn = false;
+  isLoggedInFn() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var result = prefs.getString("access_token") != null;
+    setState(() {
+      isLoggedIn = result;
+    });
+  }
+
+  @override
+  void initState() {
+    isLoggedInFn();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    double height = 310; // Initialize height with a default value
+    double height = 310;
 
-    double width = 310; // Initialize height with a default value
+    double width = 310;
 
-    // Using WidgetsBinding.instance!.addPostFrameCallback() to execute navigation after the first frame.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(seconds: 5), () {
-        Navigator.pushNamedAndRemoveUntil(
-            context, LoginScreen.routeName, (route) => false);
+        Get.off(() => isLoggedIn ? const HomeScreen() : const LoginScreen());
       });
     });
 
@@ -29,7 +50,7 @@ class splashScreen extends StatelessWidget {
             Image.asset(
               'assets/images/logo_magic.png',
               height: height, // Using Sizer's percentage height
-              width: width,  // Using Sizer's percentage width
+              width: width, // Using Sizer's percentage width
             ),
           ],
         ),

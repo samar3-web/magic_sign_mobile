@@ -62,13 +62,20 @@ class PlaylistController extends GetxController {
       if (response.statusCode == 200) {
         var jsonData = json.decode(response.body) as List?;
         if (jsonData != null) {
+          jsonData.sort((a, b) {
+            var aCreatedDt = DateTime.parse(a['createdDt']);
+            var bCreatedDt = DateTime.parse(b['createdDt']);
+            return bCreatedDt.compareTo(aCreatedDt);
+          });
+        }
+        if (jsonData != null) {
           var playlists = jsonData.map((e) => Playlist.fromJson(e)).toList();
           if (start == 0) {
             playlistList.assignAll(playlists);
           } else {
             playlistList.addAll(playlists);
           }
-          print('Fetched playlists: $playlists'); 
+          print('Fetched playlists: $playlists');
           print('Playlist List Length: ${playlistList.length}');
         } else {
           print('Response body is null or not a list');
@@ -92,6 +99,7 @@ class PlaylistController extends GetxController {
       isLoading(false);
     }
   }
+
   void loadMorePlaylist() {
     if (!isLoading.value) {
       currentPage.value += 1;

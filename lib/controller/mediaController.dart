@@ -36,7 +36,7 @@ class MediaController extends GetxController {
 
   Future<void> getMedia({int start = 0, int length = 200}) async {
     try {
-      isLoading(true);
+      isLoading.value = true;
       String? accessToken = await getAccessToken();
       if (accessToken == null) {
         Get.snackbar(
@@ -44,6 +44,7 @@ class MediaController extends GetxController {
           "Access token not available. Please log in again.",
           snackPosition: SnackPosition.BOTTOM,
         );
+        isLoading.value = false;
         return;
       }
 
@@ -72,7 +73,10 @@ class MediaController extends GetxController {
         print('olllllllllld get ');
         print(mediaList.length);
         print("Media fetched and lists updated.");
+        isLoading.value = false;
       } else {
+        isLoading.value = false;
+
         print('Failed to load media. Status code: ${response.statusCode}');
         Get.snackbar(
           "Error",
@@ -87,8 +91,9 @@ class MediaController extends GetxController {
         "Error fetching media. Please try again later.",
         snackPosition: SnackPosition.BOTTOM,
       );
+      isLoading.value = false;
     } finally {
-      isLoading(false);
+      isLoading.value = false;
     }
   }
 

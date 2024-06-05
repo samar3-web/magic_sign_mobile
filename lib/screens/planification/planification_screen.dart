@@ -98,6 +98,7 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
         owner: '',
         playlistId: 0,
         regions: [],
+        createdDt: '',
       ),
     );
     print('Playlist ID: $playlistId');

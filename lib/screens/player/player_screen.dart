@@ -193,6 +193,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         owner: '',
                         playlistId: 2,
                         regions: [],
+                        createdDt: '',
                       ),
                     );
                     await playerController.setDefaultLayout(

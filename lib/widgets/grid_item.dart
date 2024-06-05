@@ -4,6 +4,7 @@ import 'package:cached_network_image_builder/cached_network_image_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/model/Media.dart';
+import 'package:magic_sign_mobile/screens/media_screen/MediaDialog.dart';
 import 'package:magic_sign_mobile/screens/media_screen/media_details_dialog.dart';
 import 'package:magic_sign_mobile/controller/mediaController.dart';
 
@@ -67,7 +68,7 @@ class GridItem extends StatelessWidget {
         showDialog(
           context: context,
           builder: (BuildContext context) {
-            return MediaDetailsDialog(media: media);
+            return MediaDialog(media: media);
           },
         );
       },

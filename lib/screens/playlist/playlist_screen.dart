@@ -29,10 +29,19 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
   void initState() {
     super.initState();
     playlistController.getPlaylist();
-    _scrollController.addListener(_scrollListener);
+    _scrollController.addListener(() {
+      if (_scrollController.offset >=
+              _scrollController.position.maxScrollExtent &&
+          !_scrollController.position.outOfRange) {
+        setState(() {
+          _isFabVisible = false;
+        });
+      }
+      
+    });
   }
 
-  void _scrollListener() {
+  /* void _scrollListener() {
     if (_scrollController.position.atEdge) {
       if (_scrollController.position.pixels == 0) {
         setState(() {
@@ -48,7 +57,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
         _isFabVisible = true;
       });
     }
-  }
+  }*/
 
   @override
   void dispose() {
@@ -389,7 +398,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
             ),
           ],
         ),
-      ), 
+      ),
     );
   }
 }

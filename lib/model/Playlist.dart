@@ -9,17 +9,19 @@ class Playlist {
   final String owner;
   final int playlistId;
   final List<Region> regions;
+  final String createdDt;
 
-  Playlist({
-    required this.layoutId,
-    required this.campaignId,
-    required this.layout,
-    required this.status,
-    required this.duration,
-    required this.owner,
-    required this.playlistId,
-    required this.regions,
-  });
+  Playlist(
+      {required this.layoutId,
+      required this.campaignId,
+      required this.layout,
+      required this.status,
+      required this.duration,
+      required this.owner,
+      required this.playlistId,
+      required this.regions,
+          required this.createdDt,
+});
 
   factory Playlist.fromJson(Map<String, dynamic> json) {
     return Playlist(
@@ -34,6 +36,8 @@ class Playlist {
             return Region.fromJson(regionJson);
           }).toList() ??
           [],
+                createdDt: json['createdDt'] ?? 'Unknown',
+
     );
   }
 }
