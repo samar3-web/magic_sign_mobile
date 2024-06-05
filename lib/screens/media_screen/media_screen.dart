@@ -23,6 +23,7 @@ class _MediaScreenState extends State<MediaScreen> {
   late MediaController mediaController;
   final ScrollController _scrollController = ScrollController();
   bool isloading = false;
+  bool allMediaLoaded = false;
 
   Future<void> _refreshMedia() async {
     await mediaController.getMedia();
@@ -50,6 +51,20 @@ class _MediaScreenState extends State<MediaScreen> {
     });
   }
 
+  Future<List<File>> _selectFiles() async {
+    FilePickerResult? results = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+    );
+
+    if (results != null) {
+      return results.files.map((file) => File(file.path!)).toList();
+    } else {
+      return [];
+    }
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -60,7 +75,7 @@ class _MediaScreenState extends State<MediaScreen> {
   @override
   Widget build(BuildContext context) {
     return BaseScreen(
-      title: 'Media Screen',
+      title: 'Médiathèque',
       body: Scaffold(
         floatingActionButton: FloatingActionButton(
           onPressed: () async {
@@ -178,8 +193,8 @@ class _MediaScreenState extends State<MediaScreen> {
                   ],
                 ),
               ),
-              Obx( () =>
-                 Expanded(
+              Obx(
+                () => Expanded(
                   child: GridView.builder(
                     controller: _scrollController,
                     padding: EdgeInsets.all(16.0),
@@ -204,44 +219,6 @@ class _MediaScreenState extends State<MediaScreen> {
   }
 }
 
-Future<List<File>> _selectFiles() async {
-  FilePickerResult? results = await FilePicker.platform.pickFiles(
-    allowMultiple: true,
-    type: FileType.custom,
-    allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
-  );
-
-  if (results != null) {
-    return results.files.map((file) => File(file.path!)).toList();
-  } else {
-    return [];
-  }
-}
-
-class GridViewUI extends StatelessWidget {
-  final List<Media> mediaList;
-  final ScrollController controller;
-
-  GridViewUI({required this.mediaList, required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      controller: controller,
-      padding: EdgeInsets.all(16.0),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16.0,
-        mainAxisSpacing: 16.0,
-        childAspectRatio: 1.0,
-      ),
-      itemCount: mediaList.length,
-      itemBuilder: (BuildContext context, int index) {
-        return GridItem(media: mediaList[index]);
-      },
-    );
-  }
-}
 
 class GridItem extends StatelessWidget {
   final Media media;

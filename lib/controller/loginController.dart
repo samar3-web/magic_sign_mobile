@@ -128,6 +128,23 @@ class LoginController extends GetxController {
     }
   }
 
+  Future<Map<String, dynamic>> getUser() async {
+    String? accessToken = await getAccessToken();
+
+    final response = await http.get(
+        Uri.parse('https://magic-sign.cloud/v_ar/web/api/user/me'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+        });
+
+    if (response.statusCode == 200) {
+      print(response.body);
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load user');
+    }
+  }
+
   logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('access_token');

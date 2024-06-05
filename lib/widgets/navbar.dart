@@ -132,11 +132,11 @@ final List<Map<String, dynamic>> drawerRoutes = [
     'routeName': PlaylistScreen.routeName
   },
   {'name': 'Afficheurs', 'icon': Icons.tv, 'routeName': PlayerScreen.routeName},
-  {
+ /* {
     'name': "Groupes d'afficheurs",
     'icon': Icons.dvr,
     'routeName': PlayerGroup.routeName
-  },
+  },*/
   {
     'name': 'Planification',
     'icon': Icons.event,

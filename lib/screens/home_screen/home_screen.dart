@@ -21,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final PlayerController playerController = Get.put(PlayerController());
   final MediaController mediaController = Get.put(MediaController());
   final LoginController loginController = Get.put(LoginController());
+  Map<String, dynamic>? user;
 
   List<dynamic> users = [];
   List<dynamic> player = [];
@@ -36,6 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
     }).catchError((error) {
       print('Failed to fetch users: $error');
     });
+
+    fetchUser();
 
     playerController.fetch().then((data) {
       setState(() {
@@ -56,6 +59,17 @@ class _HomeScreenState extends State<HomeScreen> {
     int totalFileSizeBytes = mediaItems.fold(
         0, (sum, item) => sum + (int.tryParse(item.fileSize) ?? 0));
     return totalFileSizeBytes / (1024 * 1024);
+  }
+
+  Future<void> fetchUser() async {
+    try {
+      Map<String, dynamic> userData = await loginController.getUser();
+      setState(() {
+        user = userData;
+      });
+    } catch (e) {
+      print('Failed to load user: $e');
+    }
   }
 
   @override
@@ -91,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Admin',
+                          user?['userName'] ?? 'Admin',
                           style:
                               Theme.of(context).textTheme.titleSmall?.copyWith(
                                     fontWeight: FontWeight.w200,
@@ -100,7 +114,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         SizedBox(height: 20),
                         Text(
-                          '2023-2024',
+                          user?['lastAccessed'] ??
+                              'Last accessed not available',
                           style:
                               Theme.of(context).textTheme.titleSmall?.copyWith(
                                     fontWeight: FontWeight.w200,
@@ -134,8 +149,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 decoration: BoxDecoration(
                   color: kOtherColor,
                   borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(kDefaultPadding * 2.5),
-                    topRight: Radius.circular(kDefaultPadding * 2.5),
+                    topLeft: Radius.circular(kDefaultPadding * 1.5),
+                    topRight: Radius.circular(kDefaultPadding * 1),
                   ),
                 ),
                 child: Column(
@@ -314,5 +329,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    mediaController.dispose();
+    playerController.dispose();
+    super.dispose();
   }
 }

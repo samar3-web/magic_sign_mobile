@@ -346,7 +346,7 @@ class MediaController extends GetxController {
 
         print(jsonData);
         mediaList.assignAll(jsonData);
-        originalMediaList.assignAll(jsonData);
+        //originalMediaList.assignAll(jsonData);
       } else {
         print('Failed to search media. Status code: ${response.statusCode}');
         Get.snackbar(

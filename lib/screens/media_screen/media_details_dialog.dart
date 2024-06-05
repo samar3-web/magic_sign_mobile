@@ -207,13 +207,13 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  /*
+                  
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     showDialog(
                       context: context,
                       builder: (context) => DeleteDialog(media: widget.media),
                     );
-                  });*/
+                  });
                 },
                 child: Text('Supprimer'),
               ),
