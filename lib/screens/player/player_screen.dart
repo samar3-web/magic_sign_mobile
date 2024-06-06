@@ -20,39 +20,24 @@ class PlayerScreen extends StatefulWidget {
 class _PlayerScreenState extends State<PlayerScreen> {
   final PlayerController playerController = Get.put(PlayerController());
   final PlaylistController playlistController = Get.put(PlaylistController());
-  bool _isRefreshing = false;
   bool _showOnlyLicensed = false;
-  bool _isFabVisible = true;
+  bool _isRefreshing = false;
+
   final ScrollController _scrollController = ScrollController();
   List<Playlist> playlists = [];
-  double _lastScrollOffset = 0.0;
 
   @override
   void initState() {
     super.initState();
     playerController.fetchData();
     playerController.fetchDisplayGroup();
-    _scrollController.addListener(_scrollListener);
+    _scrollController.addListener(() {
+      if (_scrollController.offset >=
+              _scrollController.position.maxScrollExtent &&
+          !_scrollController.position.outOfRange) {}
+    });
 
     print('Player List Length: ${playerController.playerList.length}');
-  }
-
-  void _scrollListener() {
-    if (_scrollController.position.atEdge) {
-      if (_scrollController.position.pixels == 0) {
-        setState(() {
-          _isFabVisible = true;
-        });
-      } else {
-        setState(() {
-          _isFabVisible = false;
-        });
-      }
-    } else {
-      setState(() {
-        _isFabVisible = true;
-      });
-    }
   }
 
   @override
@@ -240,7 +225,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
       body: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Switch(
                 value: _showOnlyLicensed,
@@ -249,14 +234,15 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     _showOnlyLicensed = value;
                   });
                 },
-                activeColor: const Color.fromARGB(255, 148, 144, 144),
+                trackColor: MaterialStateProperty.all(Colors.black12),
+                activeThumbImage: const AssetImage('assets/images/error.png'),
+                inactiveThumbImage:
+                    const AssetImage('assets/images/authorized.png'),
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  _showOnlyLicensed
-                      ? 'Affiché: Non Autorisé'
-                      : 'Affiché: Tout ',
+                  _showOnlyLicensed ? 'Non Autorisé' : 'Autorisé ',
                   style: TextStyle(color: Colors.black),
                 ),
               ),
@@ -270,10 +256,15 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   () {
                     List<Player> filteredPlayers = _showOnlyLicensed
                         ? playerController.playerList
-                            .where((player) => player.licensed == 0)
+                            .where((player) =>
+                                player.licensed ==
+                                0) // Filtrer les joueurs sans licence
                             .toList()
-                        : playerController.playerList;
-
+                        : playerController.playerList
+                            .where((player) =>
+                                player.licensed ==
+                                1) // Filtrer les joueurs avec licence
+                            .toList();
                     return ListView.builder(
                       controller: _scrollController,
                       itemCount: filteredPlayers.length,
@@ -347,15 +338,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                         fontSize: 16.0,
                                       ),
                                     ),
-                                    SizedBox(width: 8.0),
-                                    Icon(
-                                      player.licensed == 1
-                                          ? Icons.check_circle
-                                          : Icons.cancel,
-                                      color: player.licensed == 1
-                                          ? Colors.green
-                                          : Colors.red,
-                                    ),
                                   ],
                                 ),
                               ],
@@ -404,7 +386,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
               ),
             ),
           ),
-         
         ],
       ),
     );

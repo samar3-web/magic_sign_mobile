@@ -334,7 +334,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     mediaController.dispose();
-    playerController.dispose();
     super.dispose();
   }
 }
