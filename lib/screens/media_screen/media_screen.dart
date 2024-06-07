@@ -68,7 +68,6 @@ class _MediaScreenState extends State<MediaScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
-    mediaController.dispose();
     super.dispose();
   }
 
@@ -88,141 +87,137 @@ class _MediaScreenState extends State<MediaScreen> {
           backgroundColor: kSecondaryColor,
           child: Icon(Icons.add),
         ),
-        body: Obx( () => mediaController.isLoading.value ? 
-        Center(child: CircularProgressIndicator(),)
-        :
-          RefreshIndicator(
-            onRefresh: _refreshMedia,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12.0),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                spreadRadius: 2,
-                                blurRadius: 5,
-                                offset: Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: TextField(
-                            style: TextStyle(fontSize: 16.0),
-                            decoration: InputDecoration(
-                              hintText: 'Rechercher',
-                              hintStyle: TextStyle(color: boxColor),
-                              prefixIcon: Icon(Icons.search),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                                borderSide: BorderSide(
-                                  color: kSecondaryColor,
-                                  width: 2.0,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                                borderSide: BorderSide(
-                                  color: Colors.grey,
-                                  width: 1.0,
-                                ),
-                              ),
-                              contentPadding: EdgeInsets.all(12.0),
+        body: RefreshIndicator(
+          onRefresh: _refreshMedia,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                              offset: Offset(0, 3),
                             ),
-                            onChanged: (value) {
-                              mediaController.searchMedia(value);
-                            },
+                          ],
+                        ),
+                        child: TextField(
+                          style: TextStyle(fontSize: 16.0),
+                          decoration: InputDecoration(
+                            hintText: 'Rechercher',
+                            hintStyle: TextStyle(color: boxColor),
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              borderSide: BorderSide(
+                                color: kSecondaryColor,
+                                width: 2.0,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 1.0,
+                              ),
+                            ),
+                            contentPadding: EdgeInsets.all(12.0),
                           ),
+                          onChanged: (value) {
+                            mediaController.searchMedia(value);
+                          },
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Row(
-                    children: [
-                      DropdownButton<String>(
-                        onChanged: (String? newValue) {
-                          if (newValue != null) {
-                            setState(() {
-                              mediaController.filterByType(newValue);
-                            });
-                          }
-                        },
-                        items: <String>[
-                          'Image',
-                          'PDF',
-                          'Word',
-                          'Excel',
-                          'PowerPoint',
-                          'Video'
-                        ].map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        hint: Text('Filter by type'),
-                      ),
-                      SizedBox(width: 10),
-                      DropdownButton<String>(
-                        onChanged: (String? newValue) {
-                          if (newValue != null) {
-                            setState(() {
-                              mediaController.filterByOwner(newValue);
-                            });
-                          }
-                        },
-                        items: <String>['ADMIN', 'SUPERADMIN']
-                            .map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        hint: Text('Filter by owner'),
-                      ),
-                    ],
-                  ),
-                ),
-                Obx(
-                  () => Expanded(
-                    child: GridView.builder(
-                      controller: _scrollController,
-                      padding: EdgeInsets.all(16.0),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 16.0,
-                        mainAxisSpacing: 16.0,
-                        childAspectRatio: 1.0,
-                      ),
-                      itemCount: mediaController.mediaList.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return GridItem(media: mediaController.mediaList[index]);
-                      },
                     ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    DropdownButton<String>(
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            mediaController.filterByType(newValue);
+                          });
+                        }
+                      },
+                      items: <String>[
+                        'Image',
+                        'PDF',
+                        'Word',
+                        'Excel',
+                        'PowerPoint',
+                        'Video'
+                      ].map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      hint: Text('Type'),
+                    ),
+                    SizedBox(width: 10),
+                    DropdownButton<String>(
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            mediaController.filterByOwner(newValue);
+                          });
+                        }
+                      },
+                      items: <String>['ADMIN', 'SUPERADMIN']
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      hint: Text('Owner'),
+                    ),
+                  ],
+                ),
+              ),
+              Obx(
+                () => Expanded(
+                  child: GridView.builder(
+                    controller: _scrollController,
+                    padding: EdgeInsets.all(16.0),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 16.0,
+                      mainAxisSpacing: 16.0,
+                      childAspectRatio: 1.0,
+                    ),
+                    itemCount: mediaController.mediaList.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return GridItem(media: mediaController.mediaList[index]);
+                    },
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 }
-
 
 class GridItem extends StatelessWidget {
   final Media media;

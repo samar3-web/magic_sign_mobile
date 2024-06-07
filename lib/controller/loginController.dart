@@ -1,14 +1,17 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart';
 import 'package:magic_sign_mobile/screens/login_screen/login_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginController extends GetxController {
   TextEditingController username = TextEditingController();
   TextEditingController password = TextEditingController();
+  Timer? _timer; 
+  bool isRefreshingToken = false;
 
   Future<void> login() async {
     var url = "https://magic-sign.cloud/v_ar/web/api/authorize/access_token";
@@ -34,21 +37,24 @@ class LoginController extends GetxController {
         var data = jsonDecode(response.body);
         var accessToken = data['access_token'];
         var tokenType = data['token_type'];
-        var expirationDate = data['expires_in'];
-        var expiresIn = data['expires_in']; // Assuming expires_in is in seconds
+        var expiresIn = data['expires_in']; 
         var expiryDate = DateTime.now().add(Duration(seconds: expiresIn));
         await saveAccessToken(accessToken, expiryDate);
+        await saveCredentials(username.text, password.text); 
 
         print('**********response data *********');
         print(accessToken);
         print(tokenType);
-        print(expirationDate);
+        print(expiresIn);
         print('**********response data *********');
 
         await verifyCredentials(accessToken, username.text, password.text);
 
         username.clear();
         password.clear();
+
+        // Schedule the token refresh
+        scheduleTokenRefresh(expiresIn);
       } catch (error) {
         print("Parsing Error: $error");
       }
@@ -58,6 +64,69 @@ class LoginController extends GetxController {
           'Nom d\'utilisateur ou mot de passe incorrect',
           backgroundColor: Colors.red, colorText: Colors.white);
     }
+  }
+
+  void scheduleTokenRefresh(int expiresIn) {
+    _timer?.cancel();
+
+    int refreshInterval = expiresIn - 60;
+    if (refreshInterval > 0) {
+      _timer = Timer(Duration(seconds: refreshInterval), refreshAccessToken);
+    }
+  }
+
+  Future<void> refreshAccessToken() async {
+    if (isRefreshingToken) return; 
+    isRefreshingToken = true;
+
+    print('Attempting to refresh token...');
+    var url = "https://magic-sign.cloud/v_ar/web/api/authorize/access_token";
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? username = prefs.getString('username');
+    String? password = prefs.getString('password');
+
+    if (username != null && password != null) {
+      Map<String, dynamic> body = {
+        "username": username,
+        "password": password,
+        "grant_type": "client_credentials",
+        "client_id": "xpFXul0aZEVcNbXZaMfMZS6XcUivtI5xhFFyBaps",
+        "client_secret":
+            "6KtHovsZM52sW9dvYKhYTHXhTyCbEXWpyST5niIvtLKBQw8tiYai1xrCtGdimzTjIe7nUMVtPgY5KiK3WipDTDOxZl0De8AhOwzZI5bhFsEEwuQklXbU2xHH3lbiCdQiEFniqN2p0f2HCpOtzifABrJvgPsXNP12WrVuybdGv4Pj6IpcJflrrQ4spOwiwDOHr3boiQkA2tTthyV7yTjl8qctb4zNPnU7NHnMnuCYguE6hLATxIbvCY4Pz3yP0J"
+      };
+
+      var response = await http.post(
+        Uri.parse(url),
+        body: body,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        try {
+          var data = jsonDecode(response.body);
+          var accessToken = data['access_token'];
+          var tokenType = data['token_type'];
+          var expiresIn = data['expires_in'];
+          var expiryDate = DateTime.now().add(Duration(seconds: expiresIn));
+          await saveAccessToken(accessToken, expiryDate);
+
+          print('Token refreshed successfully');
+          print('New Access Token: $accessToken');
+          print('Expires In: $expiresIn seconds');
+
+          scheduleTokenRefresh(expiresIn);
+        } catch (error) {
+          print("Parsing Error: $error");
+        }
+      } else {
+        print("Token refresh failed");
+      }
+    } else {
+      print("Username or password not found in SharedPreferences");
+    }
+    isRefreshingToken = false;
   }
 
   Future<void> verifyCredentials(
@@ -92,6 +161,12 @@ class LoginController extends GetxController {
     await prefs.setString('expiry_date', expiryDate.toIso8601String());
   }
 
+  Future<void> saveCredentials(String username, String password) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('username', username);
+    await prefs.setString('password', password);
+  }
+
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('access_token');
@@ -99,10 +174,14 @@ class LoginController extends GetxController {
     if (token != null && expiryDateString != null) {
       DateTime expiryDate = DateTime.parse(expiryDateString);
       if (DateTime.now().isBefore(expiryDate)) {
+        print('Token is still valid');
         return token;
       } else {
+        print('Token has expired');
         await clearAccessToken();
       }
+    } else {
+      print('No token found');
     }
     return null;
   }
@@ -111,10 +190,16 @@ class LoginController extends GetxController {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('access_token');
     await prefs.remove('expiry_date');
+    print('Access Token cleared');
   }
 
   Future<List<dynamic>> fetchUsers() async {
     String? accessToken = await getAccessToken();
+
+    if (accessToken == null) {
+      await refreshAccessToken();
+      accessToken = await getAccessToken();
+    }
 
     final response = await http
         .get(Uri.parse('https://magic-sign.cloud/v_ar/web/api/user'), headers: {
@@ -130,6 +215,11 @@ class LoginController extends GetxController {
 
   Future<Map<String, dynamic>> getUser() async {
     String? accessToken = await getAccessToken();
+
+    if (accessToken == null) {
+      await refreshAccessToken();
+      accessToken = await getAccessToken();
+    }
 
     final response = await http.get(
         Uri.parse('https://magic-sign.cloud/v_ar/web/api/user/me'),
@@ -148,6 +238,8 @@ class LoginController extends GetxController {
   logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('access_token');
+    await prefs.remove('username'); 
+    await prefs.remove('password'); 
     print('Access Token Removed');
     Get.offAll(() => LoginScreen());
   }

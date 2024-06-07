@@ -37,7 +37,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
           _isFabVisible = false;
         });
       }
-      
     });
   }
 
@@ -111,7 +110,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: Text('Annuler'),
             ),
             TextButton(
               onPressed: () {
@@ -120,7 +119,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                 });
                 Navigator.of(context).pop();
               },
-              child: Text('Save'),
+              child: Text('Modifier'),
             ),
           ],
         );
@@ -348,16 +347,25 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                               <PopupMenuEntry<String>>[
                                             const PopupMenuItem<String>(
                                               value: 'Option 1',
-                                              child: Text('Editer'),
+                                              child: ListTile(
+                                                leading: Icon(Icons.edit),
+                                                title: Text('Modifier'),
+                                              ),
                                             ),
                                             const PopupMenuItem<String>(
                                               value: 'Option 2',
-                                              child: Text('Supprimer'),
+                                              child: ListTile(
+                                                leading: Icon(Icons.delete),
+                                                title: Text('Supprimer '),
+                                              ),
                                             ),
                                             const PopupMenuItem<String>(
                                               value: 'Option 3',
-                                              child:
-                                                  Text('Planifier maintenant'),
+                                              child: ListTile(
+                                                leading: Icon(Icons.today),
+                                                title: Text(
+                                                    'Planifier maintenant '),
+                                              ),
                                             ),
                                           ],
                                           onSelected: (String value) {

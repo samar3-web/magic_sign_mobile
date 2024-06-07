@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:magic_sign_mobile/constants.dart';
-import 'package:magic_sign_mobile/screens/player/player_group.dart';
 import 'package:magic_sign_mobile/widgets/drawer_item.dart';
 import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart';
 import 'package:magic_sign_mobile/controller/loginController.dart';

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:get/get.dart';
+import 'package:magic_sign_mobile/controller/loginController.dart';
 import 'package:magic_sign_mobile/model/DisplayGroup.dart';
 import 'package:magic_sign_mobile/model/Player.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,6 +12,7 @@ class PlayerController extends GetxController {
   var displayGroupList = <DisplayGroup>[].obs;
   String apiUrl = 'https://magic-sign.cloud/v_ar/web/api/displaygroup';
   var selectedPlaylist = ''.obs;
+  LoginController loginController = Get.put(LoginController());
 
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -25,12 +27,8 @@ class PlayerController extends GetxController {
     try {
       String? accessToken = await getAccessToken();
       if (accessToken == null) {
-        Get.snackbar(
-          "Error",
-          "Access token not available. Please log in again.",
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return [];
+        await loginController.refreshAccessToken();
+        accessToken = await getAccessToken();
       }
 
       http.Response response = await http.get(
@@ -312,105 +310,67 @@ class PlayerController extends GetxController {
     }
   }
 
-  addDisplayGroup({required String displayGroup, int? isDynamic}) async {
+  editPlayer({
+    required int displayId,
+    required String display,
+    required int defaultLayoutId,
+    required int licensed,
+    required String license,
+    required int incSchedule,
+    required int emailAlert,
+    required int wakeOnLanEnabled,
+  }) async {
     try {
+      Map<String, dynamic> body = {
+        'display': display,
+        'defaultLayoutId': defaultLayoutId.toString(),
+        'licensed': licensed.toString(),
+        'license': license,
+        'incSchedule': incSchedule.toString(),
+        'emailAlert': emailAlert.toString(),
+        'wakeOnLanEnabled': wakeOnLanEnabled.toString(),
+      };
+
       String? accessToken = await getAccessToken();
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        body: {
-          'displayGroup': displayGroup,
-          'isDynamic': isDynamic.toString(),
-        },
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-      );
-
-      if (response.statusCode == 201) {
-        print(response.body);
-        print('group added successfully');
-      } else {
-        // Handle error response
-        print('Failed to add group. Status code: ${response.statusCode}');
-        print(response.body);
-
-        throw Exception('Failed to add group');
-      }
-    } catch (e) {
-      // Handle exceptions
-      print('Error adding group: $e');
-    }
-  }
-
-  Future<void> deleteGroup(int displayGroupId) async {
-    try {
-      String? accessToken = await getAccessToken();
-      http.Response response = await http.delete(
+      http.Response response = await http.put(
         Uri.parse(
-            'https://magic-sign.cloud/v_ar/web/api/displaygroup/$displayGroupId'),
+            'https://magic-sign.cloud/v_ar/web/api/display-ms/$displayId'),
+        body: body,
         headers: {
           'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
       );
       print(response.statusCode);
-      if (response.statusCode == 204) {
-        print('displayGroupId deleted successfully');
+      print(response.body);
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
       } else {
-        print('Failed to delete displayGroupId');
+        print('response status code not 200');
       }
     } catch (e) {
       print(e);
     }
   }
 
-  Future<void> AddMember(int displayGroupId, int displayId) async {
-    String? accessToken = await getAccessToken();
-    if (accessToken == null) {
-      Get.snackbar(
-        "Error",
-        "Access token not available. Please log in again.",
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
-    final String apiUrl =
-        "https://magic-sign.cloud/v_ar/web/api/displaygroup/$displayGroupId/display/assign";
-
+  Future<void> deletePlayer(int displayId) async {
     try {
-      Map<String, String> headers = {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/x-www-form-urlencoded',
-      };
-
-      Map<String, String> requestBody = {
-        "displayId": displayId.toString(),
-      };
-
-      print(
-          "Sending PUT request to $apiUrl with headers $headers and body $requestBody");
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: headers,
-        body: requestBody,
+      String? accessToken = await getAccessToken();
+      http.Response response = await http.delete(
+        Uri.parse(
+            'https://magic-sign.cloud/v_ar/web/api/display-ms/$displayId'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+        },
       );
-      print("Response status: ${response.statusCode}");
-      print("Response body: ${response.body}");
-
+      print(response.statusCode);
       if (response.statusCode == 204) {
-        print("player  set successfully.");
-      } else if (response.statusCode == 404) {
-        print("Resource not found. Status code: 404");
-        Get.snackbar("Error",
-            "Ressource non trouvée (404). Veuillez vérifier les identifiants.");
+        print('display deleted successfully');
       } else {
-        print(
-            "Failed to set default layout. Status code: ${response.statusCode}");
-        Get.snackbar("Error", "Échec . Code de statut: ${response.statusCode}");
+        print('Failed to delete display');
       }
     } catch (e) {
-      print("Error: $e");
-      Get.snackbar("Error", "Une erreur s'est produite: $e");
+      print(e);
     }
   }
 }

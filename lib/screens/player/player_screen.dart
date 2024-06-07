@@ -83,7 +83,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     player.licensed = 1;
                   });
                   Navigator.of(context).pop();
-                  Get.snackbar('Success', 'Display authorized successfully');
+                  Get.snackbar('Succès', 'Afficheur autorisé avec succès');
                 },
               ),
             ],
@@ -119,7 +119,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     player.licensed = 0;
                   });
                   Navigator.of(context).pop();
-                  Get.snackbar('Success', 'Display unauthorized successfully');
+                  Get.snackbar('Succès', 'Afficheur non autorisé avec succès');
                 },
               ),
             ],
@@ -159,11 +159,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Select Playlist'),
+            title: Text('Sélectionner Playlist'),
             content: DropdownButtonFormField<String>(
               isExpanded: true,
               value: defaultPlaylistName,
-              hint: Text('Select a playlist'),
+              hint: Text('Sélectionner playlist'),
               onChanged: (String? newValue) async {
                 if (newValue != null) {
                   try {
@@ -192,6 +192,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     });
 
                     Navigator.of(context).pop();
+                    Get.snackbar("Succès",
+                        "Mise en page par défaut attribué avec succès");
                   } catch (e) {
                     print("Error setting default layout: $e");
                     Get.snackbar("Erreur",
@@ -216,6 +218,111 @@ class _PlayerScreenState extends State<PlayerScreen> {
       Get.snackbar("Erreur",
           "Une erreur s'est produite lors de l'affichage des playlists.");
     }
+  }
+
+  void _showDeleteDialog(Player player) {
+    if (player.displayId != null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Confirmation de suppression'),
+            content: Text('Voulez-vous vraiment supprimer cet afficheur?'),
+            actions: [
+              TextButton(
+                child: Text('Annuler'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: Text('Supprimer'),
+                onPressed: () async {
+                  await playerController.deletePlayer(player.displayId!);
+                  await playerController.fetchData();
+                  Navigator.of(context).pop();
+                  Get.snackbar('Succès', 'Afficheur supprimé avec succès');
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      Get.snackbar('Error', 'Display ID is null, cannot delete player.');
+    }
+  }
+
+  void _showEditDialog(Player player) {
+    final TextEditingController displayController =
+        TextEditingController(text: player.display);
+    final TextEditingController licenseController =
+        TextEditingController(text: player.license);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Modifier Player'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  controller: displayController,
+                  style: TextStyle(
+                    fontSize: 17.0,
+                    fontWeight: FontWeight.w300,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Nom du Player',
+                    labelStyle:
+                        TextStyle(color: kTextBlackColor, fontSize: 17.0),
+                  ),
+                ),
+                TextField(
+                  controller: licenseController,
+                  style: TextStyle(
+                    fontSize: 17.0,
+                    fontWeight: FontWeight.w300,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Licence',
+                    labelStyle:
+                        TextStyle(color: kTextBlackColor, fontSize: 17.0),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: Text('Annuler'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Modifier'),
+              onPressed: () async {
+                await playerController.editPlayer(
+                  displayId: player.displayId!,
+                  display: displayController.text,
+                  defaultLayoutId: player.defaultLayoutId!,
+                  licensed: player.licensed!,
+                  license: licenseController.text,
+                  incSchedule: player.incSchedule!,
+                  emailAlert: player.emailAlert!,
+                  wakeOnLanEnabled: player.wakeOnLanEnabled!,
+                );
+                Navigator.of(context).pop();
+                Get.snackbar('Succès', 'Player modifié avec succès');
+                playerController.fetchData();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -347,19 +454,31 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                   <PopupMenuEntry<String>>[
                                 const PopupMenuItem<String>(
                                   value: 'Option 1',
-                                  child: Text("Autoriser l'afficheur"),
+                                  child: ListTile(
+                                    leading: Icon(Icons.done),
+                                    title: Text("Autoriser l'afficheur"),
+                                  ),
                                 ),
                                 const PopupMenuItem<String>(
                                   value: 'Option 2',
-                                  child: Text('Modifier'),
+                                  child: ListTile(
+                                    leading: Icon(Icons.edit),
+                                    title: Text('Modifier'),
+                                  ),
                                 ),
                                 const PopupMenuItem<String>(
                                   value: 'Option 3',
-                                  child: Text('Supprimer '),
+                                  child: ListTile(
+                                    leading: Icon(Icons.delete),
+                                    title: Text('Supprimer '),
+                                  ),
                                 ),
                                 const PopupMenuItem<String>(
                                   value: 'Option 4',
-                                  child: Text('Mise en page par défaut '),
+                                  child: ListTile(
+                                    leading: Icon(Icons.web),
+                                    title: Text('Mise en page par défaut '),
+                                  ),
                                 ),
                               ],
                               onSelected: (String value) async {
@@ -370,7 +489,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                     _showAuthorizationDialog(player);
                                   }
                                 } else if (value == 'Option 2') {
+                                  _showEditDialog(player);
                                 } else if (value == 'Option 3') {
+                                  _showDeleteDialog(player);
                                 } else if (value == 'Option 4') {
                                   _showPlaylistPopup(player, playlists);
                                 }

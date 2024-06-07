@@ -7,16 +7,25 @@ class Player {
   int? licensed;
   String? defaultLayout;
   int? displayGroupId;
-  Player({
-    this.displayId,
-    this.display,
-    this.clientAddress,
-    this.lastAccessed,
-    this.loggedIn,
-    this.licensed,
-    this.defaultLayout,
-   this.displayGroupId,
-  });
+  int? defaultLayoutId;
+  String? license;
+  int? incSchedule;
+  int? emailAlert;
+  int? wakeOnLanEnabled;
+  Player(
+      {this.displayId,
+      this.display,
+      this.clientAddress,
+      this.lastAccessed,
+      this.loggedIn,
+      this.licensed,
+      this.defaultLayout,
+      this.displayGroupId,
+      this.defaultLayoutId,
+      this.license,
+      this.incSchedule,
+      this.emailAlert,
+      this.wakeOnLanEnabled});
 
   Player.fromJson(Map<String, dynamic> json) {
     displayId = json['displayId'];
@@ -27,5 +36,10 @@ class Player {
     licensed = json['licensed'];
     defaultLayout = json['defaultLayout'];
     displayGroupId = json['displayGroupId'];
+    defaultLayoutId = json['defaultLayoutId'];
+    license = json['license'];
+    incSchedule = json['incSchedule'];
+    emailAlert = json['emailAlert'];
+    wakeOnLanEnabled = json['wakeOnLanEnabled'];
   }
 }

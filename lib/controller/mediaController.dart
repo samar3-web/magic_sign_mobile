@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:magic_sign_mobile/controller/loginController.dart';
 import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart';
 import 'package:magic_sign_mobile/model/Media.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,6 +21,7 @@ class MediaController extends GetxController {
   var isUpdating = false.obs;
   TextEditingController name = TextEditingController();
   TextEditingController duration = TextEditingController();
+  LoginController loginController = Get.put(LoginController());
 
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -39,13 +41,9 @@ class MediaController extends GetxController {
       isLoading.value = true;
       String? accessToken = await getAccessToken();
       if (accessToken == null) {
-        Get.snackbar(
-          "Error",
-          "Access token not available. Please log in again.",
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        await loginController.refreshAccessToken();
+        accessToken = await getAccessToken();
         isLoading.value = false;
-        return;
       }
 
       final response = await http.get(

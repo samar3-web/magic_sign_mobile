@@ -41,8 +41,6 @@ class _PlaylistDetail extends State<PlaylistDetail> {
     try {
       print('Fetching assigned media...');
       await playlistController.getAssignedMedia(widget.playlist!.layoutId);
-      print('Fetching widgets...');
-      await playlistController.getWidget();
       print('Data fetched successfully.');
     } catch (e) {
       print('Error fetching data: $e');
