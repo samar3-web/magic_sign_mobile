@@ -203,6 +203,7 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
                 },
                 child: Text('Modifier'),
               ),
+              SizedBox(width: 10),
               ElevatedButton(
                 onPressed: () {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
