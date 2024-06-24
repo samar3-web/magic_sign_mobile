@@ -37,7 +37,7 @@ class _splashScreenState extends State<splashScreen> {
     double width = 310;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(seconds: 5), () {
+      Future.delayed(const Duration(seconds: 2), () {
         Get.off(() => isLoggedIn ? const HomeScreen() : const LoginScreen());
       });
     });
@@ -49,8 +49,8 @@ class _splashScreenState extends State<splashScreen> {
           children: [
             Image.asset(
               'assets/images/logo_magic.png',
-              height: height, // Using Sizer's percentage height
-              width: width, // Using Sizer's percentage width
+              height: height,
+              width: width, 
             ),
           ],
         ),

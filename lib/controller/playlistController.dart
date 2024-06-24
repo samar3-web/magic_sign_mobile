@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_rx/get_rx.dart';
 import 'package:magic_sign_mobile/model/Playlist.dart';
@@ -199,8 +200,9 @@ class PlaylistController extends GetxController {
       Map<String, List<Zone>> zones = {};
       jsonResponse.forEach((key, value) {
         List<Zone> zoneList =
-            (value as List).map((item) => Zone.fromJson(item)).toList();
+            (value as List).map((item) => Zone.fromJson(item,int.parse(key))).toList();
         zones[key] = zoneList;
+
       });
       return zones;
     } else {
@@ -284,6 +286,8 @@ class PlaylistController extends GetxController {
       print(response.body);
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
+         Get.snackbar('Modification', ' Le playlist a été modifié.',
+            backgroundColor: Colors.green);
       } else {
         print('response status code not 200');
       }

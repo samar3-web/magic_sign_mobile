@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/controller/playlistController.dart';
 import 'package:magic_sign_mobile/model/Zone.dart';
+import 'package:magic_sign_mobile/screens/playlist/zoneWidget.dart';
 
 class PreviewScreen extends StatefulWidget {
   final int layoutId;
@@ -22,69 +23,49 @@ class _PreviewScreenState extends State<PreviewScreen> {
     futureZones = playlistController.fetchZones(widget.layoutId);
   }
 
-  @override
+   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Zones Display'),
       ),
-      body: FutureBuilder<Map<String, List<Zone>>>(
-        future: futureZones,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
-          } else if (snapshot.data != null && snapshot.data!.isNotEmpty) {
-            return Container(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height -
-                  AppBar().preferredSize.height,
-              child: Stack(
-                children: snapshot.data!.entries.expand((entry) {
-                  return entry.value.map((zone) {
-                    return Positioned(
-                      left: calculLeft(zone.left),
-                      top: double.parse(zone.top.toString()),
-                      child: Container(
-                        width: double.parse(zone.width.toString()),
-                        height: double.parse(zone.height.toString()),
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          border: Border.all(color: Colors.red, width: 2),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Zone ID: ${entry.key}',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ),
-                    );
-                  });
-                }).toList(),
-              ),
-            );
-          } else {
-            return Center(child: Text("No zones data available"));
-          }
-        },
+      body: Container(
+        width: Get.width,
+        height: Get.height,
+        child: Center(
+          child: FutureBuilder<Map<String, List<Zone>>>(
+            future: futureZones,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text("Error: ${snapshot.error}"));
+              } else if (snapshot.data != null && snapshot.data!.isNotEmpty) {
+                return Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height - AppBar().preferredSize.height,
+                  child: Stack(
+                    children: snapshot.data!.entries.expand((entry) {
+                      return entry.value.map((zone) {
+                        return ZoneWidget(
+                          left: zone.left,
+                          width: zone.width,
+                          top: double.parse(zone.top.toString()),
+                       zoneId: zone.zoneId,
+                        );
+                      }).toList();
+                    }).toList(),
+                  ),
+                );
+              } else {
+                return Center(child: Text("No zones data available"));
+              }
+            },
+          ),
+        ),
       ),
     );
   }
 
- double calculLeft(double left) {
-    switch (left) {
-      case > 1440:
-        return Get.width * 0.75; 
-      case > 960:
-        return Get.width * 0.5;
-      case > 480:
-        return Get.width * 0.25;
-      default:
-        return 0;
-    }
-  }
+ 
 }

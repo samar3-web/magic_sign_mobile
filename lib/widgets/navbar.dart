@@ -69,19 +69,19 @@ class NavBar extends StatelessWidget {
                     //HORIZONTAL LINE
                     const Divider(),
 
-                    /* //GO TO PROFILE
+                    ///GO TO PROFILE
                     DrawerItem(
                       name: 'Mon profil',
                       icon: Icons.account_circle,
                       onPressed: () => onItemPressed(context,
-                          index: -1), // Placeholder index for My Profile
-                    ),*/
+                          index: -1), 
+                    ),
                     //GO TO SETTINGS (Placeholder)
                     DrawerItem(
                       name: 'Paramètres',
                       icon: Icons.settings,
                       onPressed: () => onItemPressed(context,
-                          index: -1), // Placeholder index for Settings
+                          index: -1), 
                     ),
 
                     const Divider(),
@@ -91,7 +91,7 @@ class NavBar extends StatelessWidget {
                       name: 'Se déconnecter',
                       icon: Icons.logout,
                       onPressed: () =>
-                          _loginController.logout(), // Call the logout function
+                          _loginController.logout(), 
                     ),
                   ],
                 ),

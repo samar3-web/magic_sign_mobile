@@ -279,8 +279,10 @@ class MediaController extends GetxController {
       print(response.statusCode);
       print(response.body);
       if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
+        
         Get.back();
+         Get.snackbar('Modification', ' Le média a été modifié.',
+            backgroundColor: Colors.green);
         getMedia();
       } else {
         print('response status code not 200');

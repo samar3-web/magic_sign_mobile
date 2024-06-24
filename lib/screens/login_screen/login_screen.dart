@@ -143,6 +143,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                   'Se connecter',
                                   style: TextStyle(color: kSecondaryColor),
                                 ),
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                      MaterialStateProperty.all<Color>(
+                                          Colors.white),
+                                ),
                               ),
                               SizedBox(height: kDefaultPadding),
                             ],

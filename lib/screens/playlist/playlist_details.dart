@@ -7,6 +7,7 @@ import 'package:magic_sign_mobile/model/Timeline.dart';
 import 'package:magic_sign_mobile/controller/playlistController.dart';
 import 'package:magic_sign_mobile/screens/media_screen/MediaDialog.dart';
 import 'package:magic_sign_mobile/screens/media_screen/media_details_dialog.dart';
+import 'package:magic_sign_mobile/screens/playlist/PositioningAlertDialog.dart';
 import 'package:magic_sign_mobile/screens/playlist/previewScreen.dart';
 import 'package:magic_sign_mobile/widgets/grid_item.dart';
 
@@ -166,6 +167,15 @@ class _PlaylistDetail extends State<PlaylistDetail> {
       ),
     );
   }
+    Future<void> _showZonesInDialog() async {
+    try {
+      final futureZones = playlistController.fetchZones(widget.playlist!.layoutId);
+      final zones = await futureZones;
+      PositioningAlertDialog.show(context, zones);
+    } catch (e) {
+      print("Error fetching zones data: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -187,6 +197,13 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
+                            IconButton(
+                              icon: Icon(Icons.personal_video),
+                              color: Colors.grey,
+                              onPressed: () {
+                                _showZonesInDialog();
+                              },
+                            ),
                             IconButton(
                               icon: Icon(Icons.visibility),
                               color: Colors.grey,
