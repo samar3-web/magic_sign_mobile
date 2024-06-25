@@ -11,7 +11,8 @@ class Media {
   final String retired;
   final String createdDt;
   final String fileSize;
-
+  Media(this.mediaId, this.ownerId, this.name, this.mediaType, this.storedAs,
+      this.duration, this.owner, this.retired, this.createdDt, this.fileSize);
   Media._({
     required this.mediaId,
     required this.ownerId,

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cached_network_image_builder/cached_network_image_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:magic_sign_mobile/controller/connectionController.dart';
 import 'package:magic_sign_mobile/model/Media.dart';
 import 'package:magic_sign_mobile/screens/media_screen/MediaDialog.dart';
 import 'package:magic_sign_mobile/screens/media_screen/media_details_dialog.dart';
@@ -33,12 +34,17 @@ class GridItem extends StatelessWidget {
   }
 
   Future<String> getThumbnailUrl() async {
+    var isConnected = await Connectioncontroller.isConnected();
     String fileType = getFileType();
     print('File type: $fileType');
     try {
       if (fileType == 'image') {
-        print('Media ID: ${media.mediaId}');
-        return await MediaController().getImageUrl(media.storedAs);
+        if (isConnected) {
+          print('Media ID: ${media.mediaId}');
+          return await MediaController().getImageUrl(media.storedAs);
+        } else {
+          return 'assets/images/logo.jpg';
+        }
       } else {
         switch (fileType) {
           case 'word':

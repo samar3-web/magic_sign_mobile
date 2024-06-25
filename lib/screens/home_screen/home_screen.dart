@@ -55,6 +55,12 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    mediaController.dispose();
+    playerController.dispose();
+  }
+
   double calculateTotalFileSizeInMB(List<Media> mediaItems) {
     int totalFileSizeBytes = mediaItems.fold(
         0, (sum, item) => sum + (int.tryParse(item.fileSize) ?? 0));
@@ -329,10 +335,5 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }

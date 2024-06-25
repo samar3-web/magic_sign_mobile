@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_rx/get_rx.dart';
+import 'package:magic_sign_mobile/controller/connectionController.dart';
 import 'package:magic_sign_mobile/model/Playlist.dart';
 import 'package:magic_sign_mobile/model/PlaylistRessource.dart';
 import 'package:magic_sign_mobile/model/Playlists.dart';
@@ -11,6 +13,7 @@ import 'package:magic_sign_mobile/model/Regions.dart';
 import 'package:magic_sign_mobile/model/Timeline.dart';
 import 'package:magic_sign_mobile/model/Zone.dart';
 import 'package:magic_sign_mobile/screens/playlist/playlist_details.dart';
+import 'package:magic_sign_mobile/sqlitedb/magic_sign_db.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -29,6 +32,11 @@ class PlaylistController extends GetxController {
   var currentPage = 0.obs;
   final int pageSize = 20;
 
+  @override
+  void onInit() {
+    syncronizePlaylists();
+  }
+
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('access_token');
@@ -38,66 +46,78 @@ class PlaylistController extends GetxController {
   }
 
   Future<void> getPlaylist({int start = 0, int length = 200}) async {
-    try {
-      isLoading(true);
-      String? accessToken = await getAccessToken();
-      if (accessToken == null) {
-        Get.snackbar(
-          "Error",
-          "Access token not available. Please log in again.",
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return;
-      }
-
-      final response = await http.get(
-        Uri.parse('$apiUrl?start=$start&length=$length'),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      print('Response Status Code: ${response.statusCode}');
-
-      if (response.statusCode == 200) {
-        var jsonData = json.decode(response.body) as List?;
-        if (jsonData != null) {
-          jsonData.sort((a, b) {
-            var aCreatedDt = DateTime.parse(a['createdDt']);
-            var bCreatedDt = DateTime.parse(b['createdDt']);
-            return bCreatedDt.compareTo(aCreatedDt);
-          });
+    var isConnected = await Connectioncontroller.isConnected();
+    if (isConnected) {
+      try {
+        isLoading(true);
+        String? accessToken = await getAccessToken();
+        if (accessToken == null) {
+          Get.snackbar(
+            "Error",
+            "Access token not available. Please log in again.",
+            snackPosition: SnackPosition.BOTTOM,
+          );
+          return;
         }
-        if (jsonData != null) {
-          var playlists = jsonData.map((e) => Playlist.fromJson(e)).toList();
-          if (start == 0) {
-            playlistList.assignAll(playlists);
-          } else {
-            playlistList.addAll(playlists);
+
+        final response = await http.get(
+          Uri.parse('$apiUrl?start=$start&length=$length'),
+          headers: {
+            'Authorization': 'Bearer $accessToken',
+            'Content-Type': 'application/json',
+          },
+        );
+
+        print('Response Status Code: ${response.statusCode}');
+
+        if (response.statusCode == 200) {
+          var jsonData = json.decode(response.body) as List?;
+          if (jsonData != null) {
+            jsonData.sort((a, b) {
+              var aCreatedDt = DateTime.parse(a['createdDt']);
+              var bCreatedDt = DateTime.parse(b['createdDt']);
+              return bCreatedDt.compareTo(aCreatedDt);
+            });
           }
-          print('Fetched playlists: $playlists');
-          print('Playlist List Length: ${playlistList.length}');
+          if (jsonData != null) {
+            var playlists = jsonData.map((e) => Playlist.fromJson(e)).toList();
+            if (start == 0) {
+              playlistList.assignAll(playlists);
+            } else {
+              playlistList.addAll(playlists);
+            }
+            print('Fetched playlists: $playlists');
+            print('Playlist List Length: ${playlistList.length}');
+            for (var playlist in playlists) {
+              await MagicSignDB().createPlaylist(playlist, 1);
+              print(playlist.regions);
+            }
+          } else {
+            print('Response body is null or not a list');
+          }
         } else {
-          print('Response body is null or not a list');
+          print('Failed to load playlist. Status code: ${response.statusCode}');
+          Get.snackbar(
+            "Error",
+            "Failed to load playlist. Status code: ${response.statusCode}",
+            snackPosition: SnackPosition.BOTTOM,
+          );
         }
-      } else {
-        print('Failed to load playlist. Status code: ${response.statusCode}');
+      } catch (e) {
+        print('Error fetching playlist: $e');
         Get.snackbar(
           "Error",
-          "Failed to load playlist. Status code: ${response.statusCode}",
+          "Error fetching playlist. Please try again later.",
           snackPosition: SnackPosition.BOTTOM,
         );
+      } finally {
+        isLoading(false);
       }
-    } catch (e) {
-      print('Error fetching playlist: $e');
-      Get.snackbar(
-        "Error",
-        "Error fetching playlist. Please try again later.",
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    } finally {
-      isLoading(false);
+    } else {
+      Get.snackbar("OFFLINE MODE", "you are now in the offline mode");
+      var playlist = await MagicSignDB().fetchAllPlaylist();
+      playlistList.clear();
+      playlistList.assignAll(playlist);
     }
   }
 
@@ -199,10 +219,10 @@ class PlaylistController extends GetxController {
       Map<String, dynamic> jsonResponse = json.decode(response.body);
       Map<String, List<Zone>> zones = {};
       jsonResponse.forEach((key, value) {
-        List<Zone> zoneList =
-            (value as List).map((item) => Zone.fromJson(item,int.parse(key))).toList();
+        List<Zone> zoneList = (value as List)
+            .map((item) => Zone.fromJson(item, int.parse(key)))
+            .toList();
         zones[key] = zoneList;
-
       });
       return zones;
     } else {
@@ -214,34 +234,50 @@ class PlaylistController extends GetxController {
     required String name,
     String? description,
   }) async {
-    try {
-      String? accessToken = await getAccessToken();
-      final response = await http.post(
-        Uri.parse('https://magic-sign.cloud/v_ar/web/api/layout'),
-        body: {
-          'name': name,
-          if (description != null) 'description': description,
-        },
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-      );
+    var isConnected = await Connectioncontroller.isConnected();
+    if (isConnected) {
+      try {
+        String? accessToken = await getAccessToken();
+        final response = await http.post(
+          Uri.parse('https://magic-sign.cloud/v_ar/web/api/layout'),
+          body: {
+            'name': name,
+            if (description != null) 'description': description,
+          },
+          headers: {
+            'Authorization': 'Bearer $accessToken',
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+        );
 
-      if (response.statusCode == 201) {
-        // Layout added successfully
+        if (response.statusCode == 201) {
+          // Layout added successfully
 
-        print('Layout added successfully');
-        Get.to(PlaylistDetail(
-            playlist: Playlist.fromJson(jsonDecode(response.body))));
-      } else {
-        // Handle error response
-        print('Failed to add layout. Status code: ${response.statusCode}');
-        throw Exception('Failed to add layout');
+          print('Layout added successfully');
+          Get.to(PlaylistDetail(
+              playlist: Playlist.fromJson(jsonDecode(response.body))));
+        } else {
+          // Handle error response
+          print('Failed to add layout. Status code: ${response.statusCode}');
+          throw Exception('Failed to add layout');
+        }
+      } catch (e) {
+        // Handle exceptions
+        print('Error adding layout: $e');
       }
-    } catch (e) {
-      // Handle exceptions
-      print('Error adding layout: $e');
+    } else {
+      var playlist = new Playlist(
+          layoutId: 0,
+          campaignId: 0,
+          layout: name,
+          status: "status",
+          duration: "duration",
+          owner: "owner",
+          playlistId: 0,
+          regions: [],
+          createdDt: "createdDt");
+      await MagicSignDB().createPlaylist(playlist, 0);
+      Get.to(PlaylistDetail(playlist: playlist));
     }
   }
 
@@ -286,7 +322,7 @@ class PlaylistController extends GetxController {
       print(response.body);
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
-         Get.snackbar('Modification', ' Le playlist a été modifié.',
+        Get.snackbar('Modification', ' Le playlist a été modifié.',
             backgroundColor: Colors.green);
       } else {
         print('response status code not 200');
@@ -402,6 +438,22 @@ class PlaylistController extends GetxController {
       }
     } catch (error) {
       print('Erreur: $error');
+    }
+  }
+
+  void syncronizePlaylists() async {
+    var isConnected = await Connectioncontroller.isConnected();
+    if (isConnected) {
+      Get.dialog(Center(
+        child: CircularProgressIndicator(),
+      ));
+      var unsyncPlaylists = await MagicSignDB().SYNCfetchAllPlaylist();
+      if (unsyncPlaylists.isNotEmpty) {
+        for (var playlist in unsyncPlaylists) {
+          addLayout(name: playlist.layout);
+        }
+      }
+      Get.back();
     }
   }
 }

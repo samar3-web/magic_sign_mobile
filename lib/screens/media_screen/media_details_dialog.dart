@@ -142,6 +142,8 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
                     return Text('Error: ${snapshot.error}');
                   } else {
                     return Image.network(
+                      errorBuilder: (context, o, s) =>
+                          Image.asset("assets/images/logo.jpg"),
                       snapshot.data!,
                       fit: BoxFit.cover,
                     );

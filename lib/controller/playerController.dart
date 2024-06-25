@@ -1,9 +1,13 @@
 import 'dart:convert';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:magic_sign_mobile/controller/connectionController.dart';
 import 'package:magic_sign_mobile/controller/loginController.dart';
 import 'package:magic_sign_mobile/model/DisplayGroup.dart';
 import 'package:magic_sign_mobile/model/Player.dart';
+import 'package:magic_sign_mobile/sqlitedb/magic_sign_db.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -14,6 +18,11 @@ class PlayerController extends GetxController {
   var selectedPlaylist = ''.obs;
   LoginController loginController = Get.put(LoginController());
 
+  @override
+  void onInit() {
+    fetchData();
+  }
+
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('access_token');
@@ -21,109 +30,125 @@ class PlayerController extends GetxController {
     return accessToken;
   }
 
-  Future<List<dynamic>> fetchData() async {
+  fetchData() async {
     String apiUrl = 'https://magic-sign.cloud/v_ar/web/api/display-ms';
+    var isConnected = await Connectioncontroller.isConnected();
+    if (isConnected) {
+      try {
+        String? accessToken = await getAccessToken();
+        if (accessToken == null) {
+          await loginController.refreshAccessToken();
+          accessToken = await getAccessToken();
+        }
 
-    try {
-      String? accessToken = await getAccessToken();
-      if (accessToken == null) {
-        await loginController.refreshAccessToken();
-        accessToken = await getAccessToken();
-      }
+        http.Response response = await http.get(
+          Uri.parse(apiUrl),
+          headers: {
+            'Authorization': 'Bearer $accessToken',
+            'Content-Type': 'application/json',
+          },
+        );
+        print('Response Status Code: ${response.statusCode}');
+        print('Response Body: ${response.body}');
+        if (response.statusCode == 200) {
+          var jsonData = json.decode(response.body) as List<dynamic>;
 
-      http.Response response = await http.get(
-        Uri.parse(apiUrl),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Content-Type': 'application/json',
-        },
-      );
-      print('Response Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
-      if (response.statusCode == 200) {
-        var jsonData = json.decode(response.body) as List<dynamic>;
+          List<dynamic> displayGroupIds = [];
+          jsonData.forEach((display) {
+            int? displayGroupId = display['displayGroupId'];
+            String? name = display['display'];
 
-        List<dynamic> displayGroupIds = [];
-        jsonData.forEach((display) {
-          int? displayGroupId = display['displayGroupId'];
-          String? name = display['display'];
+            if (displayGroupId != null && name != null) {
+              Map<String, dynamic> newDisplay = {
+                'id': displayGroupId,
+                'name': name
+              };
+              displayGroupIds.add(newDisplay);
+            }
+          });
+          print('Json Data: $jsonData');
+          var jsonDataa = (json.decode(response.body) as List)
+              .map((e) => Player.fromJson(e))
+              .toList();
 
-          if (displayGroupId != null && name != null) {
-            Map<String, dynamic> newDisplay = {
-              'id': displayGroupId,
-              'name': name
-            };
-            displayGroupIds.add(newDisplay);
+          playerList.assignAll(jsonDataa);
+          for (Player player in playerList) {
+            await MagicSignDB().createPlayer(player, 1);
           }
-        });
-        print('Json Data: $jsonData');
-        var jsonDataa = (json.decode(response.body) as List)
-            .map((e) => Player.fromJson(e))
-            .toList();
-
-        playerList.assignAll(jsonDataa);
-
-        return displayGroupIds;
-      } else {
-        print('Erreur: ${response.statusCode}');
+          return displayGroupIds;
+        } else {
+          print('Erreur: ${response.statusCode}');
+          return [];
+        }
+      } catch (e) {
+        print('Erreur: $e');
         return [];
       }
-    } catch (e) {
-      print('Erreur: $e');
-      return [];
+    } else {
+      Get.snackbar("offline mode", "you are now in the offline mode ");
+
+      var players = await MagicSignDB().fetchAllPlayers();
+      playerList.value = players;
+      return players;
     }
   }
 
   Future<List<Map<String, dynamic>>> fetch() async {
     String apiUrl = 'https://magic-sign.cloud/v_ar/web/api/display-ms';
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult.contains(ConnectivityResult.mobile) ||
+        connectivityResult.contains(ConnectivityResult.wifi)) {
+      try {
+        String? accessToken = await getAccessToken();
+        if (accessToken == null) {
+          Get.snackbar(
+            "Error",
+            "Access token not available. Please log in again.",
+            snackPosition: SnackPosition.BOTTOM,
+          );
+          return [];
+        }
 
-    try {
-      String? accessToken = await getAccessToken();
-      if (accessToken == null) {
-        Get.snackbar(
-          "Error",
-          "Access token not available. Please log in again.",
-          snackPosition: SnackPosition.BOTTOM,
+        http.Response response = await http.get(
+          Uri.parse(apiUrl),
+          headers: {
+            'Authorization': 'Bearer $accessToken',
+            'Content-Type': 'application/json',
+          },
         );
+
+        if (response.statusCode == 200) {
+          var jsonData = json.decode(response.body) as List<dynamic>;
+
+          List<Map<String, dynamic>> displayGroupIds = [];
+          jsonData.forEach((display) {
+            int? displayGroupId = display['displayGroupId'];
+            String? name = display['display'];
+            int? isConnected = display['loggedIn'] == 1 ? 1 : 0;
+            int? isAuthorized = display['licensed'] == 1 ? 1 : 0;
+
+            if (displayGroupId != null && name != null) {
+              Map<String, dynamic> newDisplay = {
+                'id': displayGroupId,
+                'name': name,
+                'connected': isConnected,
+                'authorized': isAuthorized,
+              };
+              displayGroupIds.add(newDisplay);
+            }
+          });
+
+          return displayGroupIds;
+        } else {
+          print('Erreur: ${response.statusCode}');
+          return [];
+        }
+      } catch (e) {
+        print('Erreur: $e');
         return [];
       }
-
-      http.Response response = await http.get(
-        Uri.parse(apiUrl),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        var jsonData = json.decode(response.body) as List<dynamic>;
-
-        List<Map<String, dynamic>> displayGroupIds = [];
-        jsonData.forEach((display) {
-          int? displayGroupId = display['displayGroupId'];
-          String? name = display['display'];
-          int? isConnected = display['loggedIn'] == 1 ? 1 : 0;
-          int? isAuthorized = display['licensed'] == 1 ? 1 : 0;
-
-          if (displayGroupId != null && name != null) {
-            Map<String, dynamic> newDisplay = {
-              'id': displayGroupId,
-              'name': name,
-              'connected': isConnected,
-              'authorized': isAuthorized,
-            };
-            displayGroupIds.add(newDisplay);
-          }
-        });
-
-        return displayGroupIds;
-      } else {
-        print('Erreur: ${response.statusCode}');
-        return [];
-      }
-    } catch (e) {
-      print('Erreur: $e');
+    } else {
+      Get.snackbar("offline mode ", "you are now in the offline mode ");
       return [];
     }
   }
@@ -181,51 +206,7 @@ class PlayerController extends GetxController {
   }
 
   Future<List<Player>> fetchPlayers() async {
-    String apiUrl = 'https://magic-sign.cloud/v_ar/web/api/display-ms';
-
-    try {
-      String? accessToken = await getAccessToken();
-      if (accessToken == null) {
-        Get.snackbar(
-          "Error",
-          "Access token not available. Please log in again.",
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return [];
-      }
-
-      http.Response response = await http.get(
-        Uri.parse(apiUrl),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      print('Response Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        var jsonData = json.decode(response.body) as List;
-
-        List<Player> players =
-            jsonData.map((data) => Player.fromJson(data)).toList();
-        jsonData.forEach((player) {
-          int? playerId = player['id'];
-          String? name = player['display'];
-        });
-        playerList.assignAll(players);
-        print('Players: $players');
-
-        return players;
-      } else {
-        print('Error: ${response.statusCode}');
-        return [];
-      }
-    } catch (e) {
-      print('Error: $e');
-      return [];
-    }
+    return playerList;
   }
 
   Future<void> authorizePlayer(int displayId) async {
@@ -294,6 +275,7 @@ class PlayerController extends GetxController {
 
       if (response.statusCode == 200) {
         print("Default layout set successfully.");
+        fetchData();
       } else if (response.statusCode == 404) {
         print("Resource not found. Status code: 404");
         Get.snackbar("Error",
@@ -344,12 +326,12 @@ class PlayerController extends GetxController {
       print(response.statusCode);
       print(response.body);
       if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
+        fetchData();
       } else {
-        print('response status code not 200');
+        Get.snackbar("oops", response.body);
       }
     } catch (e) {
-      print(e);
+      Get.snackbar("oops", e.toString());
     }
   }
 
@@ -366,6 +348,7 @@ class PlayerController extends GetxController {
       print(response.statusCode);
       if (response.statusCode == 204) {
         print('display deleted successfully');
+        fetchData();
       } else {
         print('Failed to delete display');
       }
