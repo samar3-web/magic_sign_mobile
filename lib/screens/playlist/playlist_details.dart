@@ -284,7 +284,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                             children: timeline.mediaList
                                                 .map((Media media) {
                                               print(
-                                                  'Media: ${media.name}, Duration: ${media.duration}, Additional Info: ${media.mediaType}');
+                                                  'Media: ${media.name}, Duration: ${media.duration}, Additional Info: ${media.mediaId}');
                                               return GestureDetector(
                                                 onTap: () {
                                                   showDialog(

@@ -1,25 +1,31 @@
-import 'dart:developer';
-
+import 'package:cached_network_image_builder/cached_network_image_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/controller/mediaController.dart';
 import 'package:magic_sign_mobile/controller/playerController.dart';
 import 'package:magic_sign_mobile/controller/playlistController.dart';
 import 'package:magic_sign_mobile/controller/previewController.dart';
+import 'package:magic_sign_mobile/model/AssignedMedia.dart';
 import 'package:magic_sign_mobile/model/Media.dart';
-import 'package:magic_sign_mobile/screens/playlist/previewScreen.dart';
+import 'package:magic_sign_mobile/model/Timeline.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:video_player/video_player.dart'; // Import video player package
 
 class ZoneWidget extends StatefulWidget {
   int zoneId;
   double top;
   double left;
   double width;
-  ZoneWidget(
-      {super.key,
-      required this.zoneId,
-      required this.top,
-      required this.left,
-      required this.width});
+  int layoutId;
+
+  ZoneWidget({
+    super.key,
+    required this.zoneId,
+    required this.top,
+    required this.left,
+    required this.width,
+    required this.layoutId,
+  });
 
   @override
   State<ZoneWidget> createState() => _ZoneWidgetState();
@@ -30,43 +36,45 @@ class _ZoneWidgetState extends State<ZoneWidget> {
   final Previewcontroller previewcontroller = Get.put(Previewcontroller());
 
   List<Timeline> medias = [];
+  AssignedMedia? media; // Nullable media object
+
   @override
   void initState() {
     super.initState();
+    VideoPlayerController? _videoPlayerController;
+
     print('sss ${Get.width}');
     print(calculLeft(widget.left));
     print(calculWidth(widget.width));
-    previewcontroller.getAssignedMedia(widget.zoneId);
+    previewcontroller.fetchAssignedMedia(widget.layoutId);
   }
 
   double calculLeft(double left) {
-    switch (left) {
-      case > 1440:
-        return Get.width * 0.75;
-      case > 960:
-        return Get.width * 0.5;
-      case > 480:
-        return Get.width * 0.25;
-      default:
-        return 0;
+    if (left > 1440) {
+      return Get.width * 0.75;
+    } else if (left > 960) {
+      return Get.width * 0.5;
+    } else if (left > 480) {
+      return Get.width * 0.25;
+    } else {
+      return 0;
     }
   }
 
   double calculWidth(double width) {
-    switch (width) {
-      case > 1440:
-        return Get.width;
-      case > 960:
-        return Get.width * 0.75;
-      case > 480:
-        return Get.width * 0.5;
-      default:
-        return Get.width * 0.25;
+    if (width > 1440) {
+      return Get.width;
+    } else if (width > 960) {
+      return Get.width * 0.75;
+    } else if (width > 480) {
+      return Get.width * 0.5;
+    } else {
+      return Get.width * 0.25;
     }
   }
 
-  String getFileType(Media media) {
-    String mediaType = media.mediaType.toLowerCase();
+  String getFileType(AssignedMedia media) {
+    String mediaType = media.type.toLowerCase();
 
     Map<String, String> fileTypes = {
       'jpg': 'image',
@@ -83,11 +91,12 @@ class _ZoneWidgetState extends State<ZoneWidget> {
     return fileTypes.containsKey(mediaType) ? fileTypes[mediaType]! : 'other';
   }
 
-  Future<String> getThumbnailUrl(Media media) async {
+  Future<String> getThumbnailUrl(AssignedMedia media) async {
     String fileType = getFileType(media);
     print('File type: $fileType');
     try {
       if (fileType == 'image') {
+        print('Media ID: ${media.mediaID}');
         return await MediaController().getImageUrl(media.storedAs);
       } else {
         switch (fileType) {
@@ -114,16 +123,117 @@ class _ZoneWidgetState extends State<ZoneWidget> {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-        left: calculLeft(widget.left),
-        top: widget.top,
-        child: Container(
-          height: Get.height * 0.5,
-          width: calculWidth(widget.width),
-          child: Center(child: Image.asset('assets/images/default.png')),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.red),
-            borderRadius: BorderRadius.all(Radius.circular(3)),
-          ),
-        ));
+      left: calculLeft(widget.left),
+      top: widget.top,
+      child: Container(
+        height: Get.height * 0.5,
+        width: calculWidth(widget.width),
+        child: Obx(() {
+          if (previewcontroller.mediasList.isEmpty) {
+            return Center(child: CircularProgressIndicator());
+          } else {
+            final List<AssignedMedia> allMedia = previewcontroller.mediasList
+                .expand((timeline) => timeline.mediaList)
+                .toList();
+
+            return ListView.builder(
+              itemCount: allMedia.length,
+              itemBuilder: (context, index) {
+                AssignedMedia media = allMedia[index];
+                print('Media ID: ${media.mediaID}');
+                print('Name: ${media.name}');
+                print('Type: ${media.type}');
+                print('Duration: ${media.duration}');
+                String fileType = getFileType(media);
+
+                return FutureBuilder<String>(
+                  future: getThumbnailUrl(media),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return Icon(Icons.error);
+                    } else {
+                      String url = snapshot.data!;
+                      print(url);
+                      return fileType == 'image'
+                          ? Image.network(
+                              "https://magic-sign.cloud/v_ar/web/MSlibrary/${media.mediaID}",
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes !=
+                                            null
+                                        ? loadingProgress
+                                                .cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(Icons.error);
+                              },
+                            )
+                          : fileType == 'video'
+                              ? VideoPlayerWidget(
+                                  media:
+                                      media) 
+                              : Image.asset(url);
+                    }
+                  },
+                );
+              },
+            );
+          }
+        }),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.red),
+          borderRadius: BorderRadius.all(Radius.circular(3)),
+        ),
+      ),
+    );
+  }
+}
+
+class VideoPlayerWidget extends StatefulWidget {
+  final AssignedMedia media;
+
+  VideoPlayerWidget({required this.media});
+
+  @override
+  _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
+}
+
+class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
+  late VideoPlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.network(
+        "https://magic-sign.cloud/v_ar/web/MSlibrary/${widget.media.mediaID}")
+      ..initialize().then((_) {
+        setState(() {});
+        _controller.play();
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _controller.value.isInitialized
+        ? AspectRatio(
+            aspectRatio: _controller.value.aspectRatio,
+            child: VideoPlayer(_controller),
+          )
+        : Center(child: CircularProgressIndicator());
   }
 }

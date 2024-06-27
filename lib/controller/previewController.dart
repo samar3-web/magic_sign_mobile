@@ -2,14 +2,15 @@ import 'dart:convert';
 
 import 'package:get/get.dart';
 import 'package:get/get.dart';
-import 'package:magic_sign_mobile/model/Media.dart';
+import 'package:magic_sign_mobile/model/PreviewTimeline.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 import '../model/Timeline.dart';
 
 class Previewcontroller extends GetxController {
-  var mediasList = [].obs;
+  var mediasList = <PreviewTimeline>[].obs;
+  RxList<PreviewTimeline> timelines = <PreviewTimeline>[].obs;
 
   @override
   void onInit() {
@@ -24,8 +25,7 @@ class Previewcontroller extends GetxController {
     return accessToken;
   }
 
-  getAssignedMedia(int layoutId) async {
-    this.mediasList.clear();
+  Future<void> fetchAssignedMedia(int layoutId) async {
     try {
       String? accessToken = await getAccessToken();
       String url =
@@ -38,21 +38,36 @@ class Previewcontroller extends GetxController {
       );
 
       print('Response Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
+      print('Response Bodyyyyyyyyyyyyyy: ${response.body}');
 
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonData = json.decode(response.body);
+        List<PreviewTimeline> fetchedTimelines = [];
 
         jsonData.forEach((key, value) {
-          int timelineId =
-              key != null ? int.tryParse(key.toString()) ?? -1 : -1;
-          Media timeline = Media.fromJson(value);
-          mediasList.add(timeline);
+          try {
+            int timelineId = int.tryParse(key) ?? -1;
+            if (timelineId == -1) {
+              throw Exception('Invalid timeline ID: $key');
+            }
+
+            PreviewTimeline timeline = PreviewTimeline.fromJson(timelineId, value);
+            fetchedTimelines.add(timeline);
+
+            print(
+                'Timeline ID: ${timeline.timelineId} has ${timeline.mediaList.length} media items');
+          } catch (e) {
+            print('Error parsing timeline with key $key: $e');
+          }
         });
-      } else {}
+
+        mediasList.assignAll(fetchedTimelines);
+        print("Updated mediasList, new count: ${mediasList.length}");
+      } else {
+        print('Response status code not 200');
+      }
     } catch (e) {
       print('Error: $e');
     }
-    return mediasList.value;
   }
 }

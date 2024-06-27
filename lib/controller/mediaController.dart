@@ -294,6 +294,7 @@ class MediaController extends GetxController {
             '',
             '',
             '',
+            '',
           );
           await MagicSignDB().createMedia(media, 0);
         } else {

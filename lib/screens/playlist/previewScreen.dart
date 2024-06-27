@@ -23,7 +23,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
     futureZones = playlistController.fetchZones(widget.layoutId);
   }
 
-   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -43,15 +43,17 @@ class _PreviewScreenState extends State<PreviewScreen> {
               } else if (snapshot.data != null && snapshot.data!.isNotEmpty) {
                 return Container(
                   width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height - AppBar().preferredSize.height,
+                  height: MediaQuery.of(context).size.height -
+                      AppBar().preferredSize.height,
                   child: Stack(
                     children: snapshot.data!.entries.expand((entry) {
                       return entry.value.map((zone) {
                         return ZoneWidget(
                           left: zone.left,
                           width: zone.width,
+                          layoutId: widget.layoutId,
                           top: double.parse(zone.top.toString()),
-                       zoneId: zone.zoneId,
+                          zoneId: zone.zoneId,
                         );
                       }).toList();
                     }).toList(),
@@ -66,6 +68,4 @@ class _PreviewScreenState extends State<PreviewScreen> {
       ),
     );
   }
-
- 
 }

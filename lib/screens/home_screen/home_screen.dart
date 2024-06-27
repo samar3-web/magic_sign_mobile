@@ -59,6 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     mediaController.dispose();
     playerController.dispose();
+    super.dispose();
   }
 
   double calculateTotalFileSizeInMB(List<Media> mediaItems) {
