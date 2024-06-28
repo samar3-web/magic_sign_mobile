@@ -1,15 +1,15 @@
-import 'package:cached_network_image_builder/cached_network_image_builder.dart';
+import 'dart:async';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/controller/mediaController.dart';
-import 'package:magic_sign_mobile/controller/playerController.dart';
 import 'package:magic_sign_mobile/controller/playlistController.dart';
 import 'package:magic_sign_mobile/controller/previewController.dart';
 import 'package:magic_sign_mobile/model/AssignedMedia.dart';
-import 'package:magic_sign_mobile/model/Media.dart';
 import 'package:magic_sign_mobile/model/Timeline.dart';
-import 'package:shimmer/shimmer.dart';
-import 'package:video_player/video_player.dart'; // Import video player package
+import 'package:magic_sign_mobile/widgets/VideoPlayerWidget.dart';
+import 'package:video_player/video_player.dart';
 
 class ZoneWidget extends StatefulWidget {
   int zoneId;
@@ -34,19 +34,35 @@ class ZoneWidget extends StatefulWidget {
 class _ZoneWidgetState extends State<ZoneWidget> {
   final PlaylistController playlistController = Get.put(PlaylistController());
   final Previewcontroller previewcontroller = Get.put(Previewcontroller());
+  late Duration duration;
+  late Timer timer;
+  var currentIndex = 0;
+  late AssignedMedia media;
+  late String fileType;
+  late List<AssignedMedia> medias;
+  timerCallback() {
+    if (currentIndex < medias.length) {
+      setState(() {
+        currentIndex++;
+      });
+    } else {
+      setState(() {
+        currentIndex = 0;
+      });
+    }
+  }
 
-  List<Timeline> medias = [];
-  AssignedMedia? media; // Nullable media object
+  getAssignedMedia() {}
 
   @override
   void initState() {
     super.initState();
-    VideoPlayerController? _videoPlayerController;
-
-    print('sss ${Get.width}');
-    print(calculLeft(widget.left));
-    print(calculWidth(widget.width));
     previewcontroller.fetchAssignedMedia(widget.layoutId);
+    medias = [];
+
+    duration = new Duration(
+        seconds: medias.isEmpty ? 0 : int.parse(medias.first.duration));
+    timer = new Timer(duration, timerCallback);
   }
 
   double calculLeft(double left) {
@@ -122,6 +138,11 @@ class _ZoneWidgetState extends State<ZoneWidget> {
 
   @override
   Widget build(BuildContext context) {
+    medias = previewcontroller.mediasList.value
+        .firstWhere((t) => t.timelineId == widget.zoneId)
+        .mediaList;
+    media = medias[currentIndex];
+
     return Positioned(
       left: calculLeft(widget.left),
       top: widget.top,
@@ -132,61 +153,51 @@ class _ZoneWidgetState extends State<ZoneWidget> {
           if (previewcontroller.mediasList.isEmpty) {
             return Center(child: CircularProgressIndicator());
           } else {
-            final List<AssignedMedia> allMedia = previewcontroller.mediasList
-                .expand((timeline) => timeline.mediaList)
-                .toList();
-
-            return ListView.builder(
-              itemCount: allMedia.length,
+            /*return ListView.builder(
+              itemCount: previewcontroller.mediasList.firstWhere((t) => t.timelineId == widget.zoneId).mediaList.length,
               itemBuilder: (context, index) {
-                AssignedMedia media = allMedia[index];
-                print('Media ID: ${media.mediaID}');
-                print('Name: ${media.name}');
-                print('Type: ${media.type}');
-                print('Duration: ${media.duration}');
+                AssignedMedia media = previewcontroller.mediasList.firstWhere((t) => t.timelineId == widget.zoneId).mediaList[index];
+               
                 String fileType = getFileType(media);
-
-                return FutureBuilder<String>(
-                  future: getThumbnailUrl(media),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator();
-                    } else if (snapshot.hasError) {
-                      return Icon(Icons.error);
-                    } else {
-                      String url = snapshot.data!;
-                      print(url);
-                      return fileType == 'image'
-                          ? Image.network(
-                              "https://magic-sign.cloud/v_ar/web/MSlibrary/${media.mediaID}",
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes !=
-                                            null
-                                        ? loadingProgress
-                                                .cumulativeBytesLoaded /
-                                            loadingProgress.expectedTotalBytes!
-                                        : null,
-                                  ),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(Icons.error);
-                              },
-                            )
-                          : fileType == 'video'
-                              ? VideoPlayerWidget(
-                                  media:
-                                      media) 
-                              : Image.asset(url);
-                    }
-                  },
-                );
+*/
+            return FutureBuilder<String>(
+              future: getThumbnailUrl(medias[currentIndex]),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Icon(Icons.error);
+                } else {
+                  String url = snapshot.data!;
+                  return fileType == 'image'
+                      ? Center(
+                          child: Image.network(
+                            "https://magic-sign.cloud/v_ar/web/MSlibrary/${medias[currentIndex].mediaID}",
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes !=
+                                          null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(Icons.error);
+                            },
+                          ),
+                        )
+                      : fileType == 'video'
+                          ? VideoPlayerWidget(media: medias[currentIndex])
+                          : Image.asset(url);
+                }
               },
             );
+            //},
+            //);
           }
         }),
         decoration: BoxDecoration(
@@ -195,45 +206,5 @@ class _ZoneWidgetState extends State<ZoneWidget> {
         ),
       ),
     );
-  }
-}
-
-class VideoPlayerWidget extends StatefulWidget {
-  final AssignedMedia media;
-
-  VideoPlayerWidget({required this.media});
-
-  @override
-  _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
-}
-
-class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
-  late VideoPlayerController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = VideoPlayerController.network(
-        "https://magic-sign.cloud/v_ar/web/MSlibrary/${widget.media.mediaID}")
-      ..initialize().then((_) {
-        setState(() {});
-        _controller.play();
-      });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _controller.value.isInitialized
-        ? AspectRatio(
-            aspectRatio: _controller.value.aspectRatio,
-            child: VideoPlayer(_controller),
-          )
-        : Center(child: CircularProgressIndicator());
   }
 }

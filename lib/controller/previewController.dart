@@ -25,7 +25,7 @@ class Previewcontroller extends GetxController {
     return accessToken;
   }
 
-  Future<void> fetchAssignedMedia(int layoutId) async {
+  fetchAssignedMedia(int layoutId) async {
     try {
       String? accessToken = await getAccessToken();
       String url =

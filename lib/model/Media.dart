@@ -31,6 +31,10 @@ class Media {
 
   factory Media.fromJson(Map<String, dynamic> json) {
     int parsedMediaId = int.tryParse(json['mediaId'].toString()) ?? -1;
+    if( parsedMediaId == -1){
+          int parsedMediaId = int.tryParse(json['mediaID'].toString()) ?? -1;
+
+    }
     int parsedOwnerId = int.tryParse(json['ownerId'].toString()) ?? -1;
 
     return Media._(
