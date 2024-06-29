@@ -32,9 +32,21 @@ class _DeleteDialogState extends State<DeleteDialog> {
         ),
         ElevatedButton(
           onPressed: () async {
+            bool deleteSuccess =
                 await mediaController.deleteMedia(widget.media.mediaId);
+            if (deleteSuccess) {
+              mediaController.getMedia();
+              Get.snackbar('Suppression',
+                  'Le média ${widget.media.name} a été supprimé.');
+            } else {
+              Get.snackbar('Erreur',
+                  'Une erreur s\'est produite lors de la suppression.',
+                  backgroundColor: Colors.red);
+            }
+            Navigator.of(context)
+                .popUntil(ModalRoute.withName(MediaScreen.routeName));
+          },           
           
-          },
           child: Text('Confirmer'),
         ),
       ],

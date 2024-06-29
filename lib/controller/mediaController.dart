@@ -43,7 +43,7 @@ class MediaController extends GetxController {
     getMedia();
   }
 
-  Future<void> getMedia({int start = 0, int length = 200}) async {
+  Future<List<Media>> getMedia({int start = 0, int length = 200}) async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult.contains(ConnectivityResult.mobile) ||
         connectivityResult.contains(ConnectivityResult.wifi)) {
@@ -85,6 +85,7 @@ class MediaController extends GetxController {
           print(mediaList.length);
           print("Media fetched and lists updated.");
           isLoading.value = false;
+          return parseMediaItems(response.body);
         } else {
           isLoading.value = false;
 
@@ -110,59 +111,6 @@ class MediaController extends GetxController {
       Get.snackbar("offline mode", "you are now in the offline mode ");
       var players = await MagicSignDB().fetchAllMedia();
       mediaList.value = players;
-    }
-  }
-
-  void loadMoreMedia() {
-    if (!isLoading.value) {
-      currentPage.value += 1;
-      getMedia(start: currentPage.value * pageSize, length: pageSize);
-    }
-  }
-
-  Future<List<Media>> fetchMediaData() async {
-    var isConnected = await Connectioncontroller.isConnected();
-    if (isConnected) {
-      try {
-        isLoading(true);
-        String? accessToken = await getAccessToken();
-        if (accessToken == null) {
-          Get.snackbar(
-            "Error",
-            "Access token not available. Please log in again.",
-            snackPosition: SnackPosition.BOTTOM,
-          );
-        }
-
-        final response = await http.get(
-          Uri.parse('$apiUrl'),
-          headers: {
-            'Authorization': 'Bearer $accessToken',
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache',
-          },
-        );
-
-        if (response.statusCode == 200) {
-          return parseMediaItems(response.body);
-        } else {
-          print('Failed to load media. Status code: ${response.statusCode}');
-          Get.snackbar(
-            "Error",
-            "Failed to load media. Status code: ${response.statusCode}",
-            snackPosition: SnackPosition.BOTTOM,
-          );
-        }
-      } catch (e) {
-        print('Error fetching media: $e');
-        Get.snackbar(
-          "Error",
-          "Error fetching media. Please try again later.",
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      } finally {
-        isLoading(false);
-      }
     }
     return [];
   }
@@ -350,10 +298,7 @@ class MediaController extends GetxController {
         );
 
         if (response.statusCode == 204) {
-          Get.snackbar('Supression', ' Ls média a été supprimée.');
-          Get.to(const MediaScreen());
-
-          getMedia();
+        
         } else {
           print('response status code not 204');
         }
@@ -418,6 +363,7 @@ class MediaController extends GetxController {
 
   //filter
 
+
   void filterByType(String type) {
     String lowercaseType = type.toLowerCase();
     var filteredMediaList = originalMediaList
@@ -455,7 +401,7 @@ class MediaController extends GetxController {
           MagicSignDB().deleteMedia(media.mediaId);
         }
       }
-      fetchMediaData();
+      getMedia();
     }
   }
 }

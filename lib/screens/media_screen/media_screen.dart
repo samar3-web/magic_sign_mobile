@@ -53,9 +53,7 @@ class _MediaScreenState extends State<MediaScreen> {
 
   Future<List<File>> _selectFiles() async {
     FilePickerResult? results = await FilePicker.platform.pickFiles(
-      allowMultiple: true,
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+      type: FileType.any,
     );
 
     if (results != null) {
@@ -78,7 +76,6 @@ class _MediaScreenState extends State<MediaScreen> {
       body: Scaffold(
         floatingActionButton: FloatingActionButton(
           onPressed: () async {
-            // Call function to select and upload files
             List<File> pickedFiles = await _selectFiles();
             if (pickedFiles.isNotEmpty) {
               mediaController.uploadFiles(context, pickedFiles);

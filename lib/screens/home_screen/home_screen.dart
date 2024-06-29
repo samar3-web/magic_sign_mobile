@@ -222,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: MediaQuery.of(context).size.height / 2,
                       color: Colors.white,
                       child: FutureBuilder<List<Media>>(
-                        future: mediaController.fetchMediaData(),
+                        future: mediaController.getMedia(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
