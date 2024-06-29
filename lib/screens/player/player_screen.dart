@@ -37,7 +37,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
           !_scrollController.position.outOfRange) {}
     });
 
-    print('Player List Length: ${playerController.playerList.length}');
   }
 
   @override
@@ -135,20 +134,15 @@ class _PlayerScreenState extends State<PlayerScreen> {
       Player player, List<Playlist> playlists) async {
     try {
       if (playlists.isEmpty) {
-        print("Fetching playlists as the list is empty...");
         await _fetchPlaylists();
         playlists = playlistController.playlistList;
-        print("Playlists fetched: ${playlists.length}");
       }
 
       List<String> playlistNames =
           playlists.map((playlist) => playlist.layout).toList();
-      print("Playlist names extracted: $playlistNames");
 
-      String? selectedPlaylistName = playlistController.selectedPlaylist.value;
 
       String? defaultPlaylistName = player.defaultLayout;
-      print("Default playlist: $defaultPlaylistName");
 
       if (defaultPlaylistName != null &&
           !playlistNames.contains(defaultPlaylistName)) {
@@ -365,12 +359,12 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         ? playerController.playerList
                             .where((player) =>
                                 player.licensed ==
-                                0) // Filtrer les joueurs sans licence
+                                0)
                             .toList()
                         : playerController.playerList
                             .where((player) =>
                                 player.licensed ==
-                                1) // Filtrer les joueurs avec licence
+                                1) 
                             .toList();
                     return ListView.builder(
                       controller: _scrollController,

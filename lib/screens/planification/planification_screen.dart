@@ -35,22 +35,17 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
     super.initState();
     fetchData();
     planificationController.fetchScheduleEvent();
-    planificationController.getPlaylist();
     playlistController.getPlaylist();
   }
 
   void fetchData() async {
     try {
-      List<Map<String, dynamic>> events =
-          await planificationController.fetchScheduleEvents();
+      List<Map<String, dynamic>> events = await planificationController.fetchScheduleEvents();
       List<Player> players = await playerController.fetchPlayers();
-      List<DisplayGroup> displayGroups =
-          await playerController.fetchDisplayGroup();
+      List<DisplayGroup> displayGroups = await playerController.fetchDisplayGroup();
 
-      List<String> playerDisplayNames =
-          players.map((player) => player.display!).toList();
-      List<String> groupDisplayNames =
-          displayGroups.map((group) => group.displayGroup!).toList();
+      List<String> playerDisplayNames = players.map((player) => player.display!).toList();
+      List<String> groupDisplayNames = displayGroups.map((group) => group.displayGroup!).toList();
 
       _allAppointments = events.map((event) {
         return Appointment(
@@ -74,7 +69,6 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
             AppointmentDataSource(_allAppointments);
       });
     } catch (e) {
-      print('Error fetching data: $e');
     }
   }
 
@@ -101,8 +95,7 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
         createdDt: '',
       ),
     );
-    print('Playlist ID: $playlistId');
-    print('Playlist Name: ${playlist.layout}');
+  
     return playlist.layout;
   }
 
@@ -236,10 +229,7 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
                   int playlistId = int.tryParse(event.location ?? '') ?? 0;
                   String playlistName = getPlaylistName(playlistId);
                   int displayGroupId = int.tryParse(event.notes ?? '') ?? 0;
-
                   String? playerName = getPlayerName(displayGroupId);
-                  print('Event: $event');
-                  print('Playlist Name: $playlistName');
                   return ListTile(
                     title: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
