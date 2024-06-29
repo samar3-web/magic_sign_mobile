@@ -53,7 +53,6 @@ class LoginController extends GetxController {
         username.clear();
         password.clear();
 
-        // Schedule the token refresh
         scheduleTokenRefresh(expiresIn);
       } catch (error) {
         print("Parsing Error: $error");

@@ -1,15 +1,10 @@
 import 'dart:convert';
-import 'dart:developer';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_rx/get_rx.dart';
 import 'package:magic_sign_mobile/controller/connectionController.dart';
 import 'package:magic_sign_mobile/model/Playlist.dart';
-import 'package:magic_sign_mobile/model/PlaylistRessource.dart';
-import 'package:magic_sign_mobile/model/Playlists.dart';
-import 'package:magic_sign_mobile/model/Regions.dart';
 import 'package:magic_sign_mobile/model/Timeline.dart';
 import 'package:magic_sign_mobile/model/Zone.dart';
 import 'package:magic_sign_mobile/screens/playlist/playlist_details.dart';
@@ -21,27 +16,25 @@ class PlaylistController extends GetxController {
   final String apiUrl =
       "https://magic-sign.cloud/v_ar/web/api/layout?embed=regions,playlists";
   var playlistList = <Playlist>[].obs;
-
-  List<String> assignedMedia = [];
   RxList<Timeline> timelines = <Timeline>[].obs;
-  RxList<PlaylistRessource> playlistRessource = <PlaylistRessource>[].obs;
-  RxInt playlistDuration = 0.obs;
   var isLoading = false.obs;
-  var originalPlaylistList = <Playlist>[].obs;
   var selectedPlaylist = ''.obs;
+  List<String> existingNames = [];
+
+  var originalPlaylistList = <Playlist>[].obs;
   var currentPage = 0.obs;
   final int pageSize = 20;
 
   @override
   void onInit() {
     syncronizePlaylists();
+    fetchExistingNames();
   }
 
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('access_token');
-    print(
-        'Access Token stored  *********: $accessToken'); // Print the access token
+    print('Access Token stored  *********: $accessToken');
     return accessToken;
   }
 
@@ -67,9 +60,6 @@ class PlaylistController extends GetxController {
             'Content-Type': 'application/json',
           },
         );
-
-        print('Response Status Code: ${response.statusCode}');
-
         if (response.statusCode == 200) {
           var jsonData = json.decode(response.body) as List?;
           if (jsonData != null) {
@@ -86,30 +76,14 @@ class PlaylistController extends GetxController {
             } else {
               playlistList.addAll(playlists);
             }
-            print('Fetched playlists: $playlists');
-            print('Playlist List Length: ${playlistList.length}');
+
             for (var playlist in playlists) {
               await MagicSignDB().createPlaylist(playlist, 1);
               print(playlist.regions);
             }
-          } else {
-            print('Response body is null or not a list');
-          }
-        } else {
-          print('Failed to load playlist. Status code: ${response.statusCode}');
-          Get.snackbar(
-            "Error",
-            "Failed to load playlist. Status code: ${response.statusCode}",
-            snackPosition: SnackPosition.BOTTOM,
-          );
-        }
+          } else {}
+        } else {}
       } catch (e) {
-        print('Error fetching playlist: $e');
-        Get.snackbar(
-          "Error",
-          "Error fetching playlist. Please try again later.",
-          snackPosition: SnackPosition.BOTTOM,
-        );
       } finally {
         isLoading(false);
       }
@@ -118,13 +92,6 @@ class PlaylistController extends GetxController {
       var playlist = await MagicSignDB().fetchAllPlaylist();
       playlistList.clear();
       playlistList.assignAll(playlist);
-    }
-  }
-
-  void loadMorePlaylist() {
-    if (!isLoading.value) {
-      currentPage.value += 1;
-      getPlaylist(start: currentPage.value * pageSize, length: pageSize);
     }
   }
 
@@ -230,10 +197,11 @@ class PlaylistController extends GetxController {
     }
   }
 
-  addLayout({
-    required String name,
-    String? description,
-  }) async {
+  bool isNameExist(String name) {
+    return existingNames.contains(name);
+  }
+
+  addLayout({required String name, String? description, int? layoutId}) async {
     var isConnected = await Connectioncontroller.isConnected();
     if (isConnected) {
       try {
@@ -243,6 +211,7 @@ class PlaylistController extends GetxController {
           body: {
             'name': name,
             if (description != null) 'description': description,
+            'layoutId': layoutId != null ? layoutId.toString() : null,
           },
           headers: {
             'Authorization': 'Bearer $accessToken',
@@ -251,20 +220,13 @@ class PlaylistController extends GetxController {
         );
 
         if (response.statusCode == 201) {
-          // Layout added successfully
-
-          print('Layout added successfully');
+          existingNames.add(name);
           Get.to(PlaylistDetail(
               playlist: Playlist.fromJson(jsonDecode(response.body))));
         } else {
-          // Handle error response
-          print('Failed to add layout. Status code: ${response.statusCode}');
           throw Exception('Failed to add layout');
         }
-      } catch (e) {
-        // Handle exceptions
-        print('Error adding layout: $e');
-      }
+      } catch (e) {}
     } else {
       var playlist = new Playlist(
           layoutId: 0,
@@ -278,28 +240,6 @@ class PlaylistController extends GetxController {
           createdDt: "createdDt");
       await MagicSignDB().createPlaylist(playlist, 0);
       Get.to(PlaylistDetail(playlist: playlist));
-    }
-  }
-
-  getTemplate() async {
-    try {
-      String? accessToken = await getAccessToken();
-      final response = await http.get(
-        Uri.parse('https://magic-sign.cloud/v_ar/web/api/template'),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        print('get template successfully');
-      } else {
-        print('Failed to get template. Status code: ${response.statusCode}');
-        throw Exception('Failed to get template');
-      }
-    } catch (e) {
-      // Handle exceptions
-      print('Error get template: $e');
     }
   }
 
@@ -321,9 +261,9 @@ class PlaylistController extends GetxController {
       print(response.statusCode);
       print(response.body);
       if (response.statusCode == 200) {
-        final json = jsonDecode(response.body);
-        Get.snackbar('Modification', ' Le playlist a été modifié.',
-            backgroundColor: Colors.green);
+        Get.snackbar('Modification', ' Le playlist a été modifié.');
+        Get.back();
+        getPlaylist();
       } else {
         print('response status code not 200');
       }
@@ -343,6 +283,8 @@ class PlaylistController extends GetxController {
       );
       print(response.statusCode);
       if (response.statusCode == 204) {
+        Get.snackbar('suppression', 'Le playlist a été supprimé');
+        getPlaylist();
         print('Layout deleted successfully');
       } else {
         print('Failed to delete layout');
@@ -384,7 +326,6 @@ class PlaylistController extends GetxController {
         playlistList.assignAll(jsonData);
         originalPlaylistList.assignAll(jsonData);
       } else {
-        print('Failed to search playlist. Status code: ${response.statusCode}');
         Get.snackbar(
           "Error",
           "Failed to search playlist. Status code: ${response.statusCode}",
@@ -420,7 +361,6 @@ class PlaylistController extends GetxController {
       };
       print('Request Body');
       print(body);
-//print(jsonEncode(body));
       http.Response response = await http.post(
         Uri.parse('https://magic-sign.cloud/v_ar/web/api/schedule'),
         body: body,
@@ -456,4 +396,24 @@ class PlaylistController extends GetxController {
       Get.back();
     }
   }
-}
+  
+Future<void> fetchExistingNames() async {
+    try {
+      String? accessToken = await getAccessToken();
+      final response = await http.get(
+        Uri.parse('https://magic-sign.cloud/v_ar/web/api/layout'), 
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        List layouts = json.decode(response.body);
+        existingNames = layouts.map((layout) => layout['layout'].toString()).toList();
+      } else {
+        print('Failed to fetch existing names. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching existing names: $e');
+    }
+  }}

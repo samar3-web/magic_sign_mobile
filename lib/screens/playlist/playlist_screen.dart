@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
-import 'package:magic_sign_mobile/controller/playerController.dart';
 import 'package:magic_sign_mobile/model/Playlist.dart';
 import 'package:magic_sign_mobile/screens/planification/ScheduleEventScreen.dart';
 import 'package:magic_sign_mobile/screens/playlist/addPlaylist.dart';
@@ -19,9 +18,7 @@ class PlaylistScreen extends StatefulWidget {
 
 class _PlaylistScreenState extends State<PlaylistScreen> {
   final PlaylistController playlistController = Get.put(PlaylistController());
-  final PlayerController playerController = Get.put(PlayerController());
   int? selectedLayoutId;
-  bool _isChecked = false;
   bool _isFabVisible = true;
   final ScrollController _scrollController = ScrollController();
 
@@ -40,23 +37,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     });
   }
 
-  /* void _scrollListener() {
-    if (_scrollController.position.atEdge) {
-      if (_scrollController.position.pixels == 0) {
-        setState(() {
-          _isFabVisible = true;
-        });
-      } else {
-        setState(() {
-          _isFabVisible = false;
-        });
-      }
-    } else {
-      setState(() {
-        _isFabVisible = true;
-      });
-    }
-  }*/
+  
 
   @override
   void dispose() {
@@ -115,7 +96,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
             TextButton(
               onPressed: () {
                 playlistController.editLayout(layoutId, newName).then((_) {
-                  playlistController.getPlaylist();
                 });
                 Navigator.of(context).pop();
               },
@@ -167,7 +147,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
 
     if (deleteConfirmed) {
       playlistController.deleteLayout(layoutId).then((_) {
-        playlistController.getPlaylist();
       });
     }
   }
@@ -202,15 +181,15 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                         color:
-                            Colors.white, // Background color of the TextField
+                            Colors.white, 
                         borderRadius:
-                            BorderRadius.circular(12.0), // Radius of the border
+                            BorderRadius.circular(12.0), 
                         boxShadow: [
                           BoxShadow(
                             color: Colors.grey.withOpacity(0.5),
                             spreadRadius: 2,
                             blurRadius: 5,
-                            offset: Offset(0, 3), // changes position of shadow
+                            offset: Offset(0, 3),
                           ),
                         ],
                       ),
