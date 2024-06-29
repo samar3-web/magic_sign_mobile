@@ -26,30 +26,14 @@ class _DeleteDialogState extends State<DeleteDialog> {
         TextButton(
           onPressed: () {
             Navigator.of(context)
-                .pop(false); // Return false to indicate cancellation
+                .pop(false); 
           },
           child: Text('Annuler'),
         ),
         ElevatedButton(
           onPressed: () async {
-            // Perform delete operation using the controller
-            bool deleteSuccess =
                 await mediaController.deleteMedia(widget.media.mediaId);
-            if (deleteSuccess) {
-              // Reload data after successful deletion
-              mediaController.getMedia();
-              // Show snackbar notification
-              Get.snackbar('Suppression',
-                  'Le média ${widget.media.name} a été supprimé.',
-                  backgroundColor: kSecondaryColor);
-            } else {
-              // Handle delete failure
-              Get.snackbar('Erreur',
-                  'Une erreur s\'est produite lors de la suppression.',
-                  backgroundColor: Colors.red);
-            }
-            Navigator.of(context)
-                .popUntil(ModalRoute.withName(MediaScreen.routeName));
+          
           },
           child: Text('Confirmer'),
         ),

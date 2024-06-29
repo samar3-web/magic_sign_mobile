@@ -177,9 +177,7 @@ class MediaController extends GetxController {
       },
     );
 
-    print("Response Status Code: ${response.statusCode}");
     if (response.statusCode == 200) {
-      // Convert the response body from bytes to base64 string
       Uint8List bytes = response.bodyBytes;
       String base64String = base64Encode(bytes);
       return base64String;
@@ -224,7 +222,6 @@ class MediaController extends GetxController {
         int totalFiles = files.length;
         int uploadedFiles = 0;
 
-        // Show the progress dialog
         showProgressDialog(context, progressNotifier);
 
         for (File file in files) {
@@ -265,8 +262,6 @@ class MediaController extends GetxController {
               backgroundColor: Colors.red,
             ));
           }
-
-          // Update the progress
           progressNotifier.value = (uploadedFiles / totalFiles) * 100;
         }
       } catch (e) {
@@ -276,7 +271,6 @@ class MediaController extends GetxController {
           backgroundColor: Colors.red,
         ));
       } finally {
-        // Dismiss the progress dialog
         Navigator.of(context).pop();
       }
     } else {
@@ -329,16 +323,12 @@ class MediaController extends GetxController {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       );
-      print(response.statusCode);
-      print(response.body);
+
       if (response.statusCode == 200) {
-        Get.snackbar('Modification', ' Le média a été modifié.',
-            backgroundColor: Colors.green);
-        Get.back();
+        Get.snackbar('Modification', ' Le média a été modifié.');
+        Get.to(const MediaScreen());
         getMedia();
-      } else {
-        print('response status code not 200');
-      }
+      } else {}
     } catch (e) {
       print(e);
     }
@@ -358,19 +348,17 @@ class MediaController extends GetxController {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
         );
-        print(response.statusCode);
-        print(response.body);
-        if (response.statusCode == 200) {
-          final json = jsonDecode(response.body);
-          print('deleted');
-          Get.snackbar('Supression', ' Le média a été supprimé.',
-              backgroundColor: Colors.green);
+
+        if (response.statusCode == 204) {
+          Get.snackbar('Supression', ' Ls média a été supprimée.');
+          Get.to(const MediaScreen());
+
+          getMedia();
         } else {
-          print('response status code not 200');
+          print('response status code not 204');
         }
         return true;
       } catch (e) {
-        print(e);
         return false;
       }
     } else {
@@ -410,9 +398,7 @@ class MediaController extends GetxController {
 
         print(jsonData);
         mediaList.assignAll(jsonData);
-        //originalMediaList.assignAll(jsonData);
       } else {
-        print('Failed to search media. Status code: ${response.statusCode}');
         Get.snackbar(
           "Error",
           "Failed to search media. Status code: ${response.statusCode}",
@@ -420,7 +406,6 @@ class MediaController extends GetxController {
         );
       }
     } catch (e) {
-      print('Error searching media: $e');
       Get.snackbar(
         "Error",
         "Error searching media. Please try again later.",
