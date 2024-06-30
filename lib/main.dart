@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:magic_sign_mobile/constants.dart';
+import 'package:magic_sign_mobile/controller/ThemeController.dart';
 import 'package:magic_sign_mobile/routes.dart';
 import 'package:magic_sign_mobile/screens/splash_screen.dart';
 
 void main() {
-  runApp(const HomeScreen());
+  runApp( HomeScreen());
 }
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+   HomeScreen({Key? key}) : super(key: key);
+    final ThemeController themeController = Get.put(ThemeController());
+
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +98,8 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-
+        darkTheme: ThemeData.dark(),
+        themeMode: themeController.isDarkMode.value ? ThemeMode.dark : ThemeMode.light,
       // initial route is splash screen
       initialRoute: splashScreen.routeName,
       routes: routes,

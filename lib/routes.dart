@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:magic_sign_mobile/model/Player.dart';
 import 'package:magic_sign_mobile/model/Timeline.dart';
+import 'package:magic_sign_mobile/screens/SettingsScreen.dart';
 import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart';
 import 'package:magic_sign_mobile/screens/media_screen/media_screen.dart';
 import 'package:magic_sign_mobile/model/Playlist.dart';
@@ -28,4 +29,5 @@ Map<String, WidgetBuilder> routes = {
   PreviewScreen.routeName: (BuildContext context) => (PlaylistDetail(
         playlist: ModalRoute.of(context)!.settings.arguments as Playlist,
       )),
+  SettingsScreen.routeName:(context) => const SettingsScreen(),
 };
