@@ -10,11 +10,42 @@ import 'package:magic_sign_mobile/screens/planification/planification_screen.dar
 import 'package:magic_sign_mobile/screens/player/player_screen.dart';
 import 'package:magic_sign_mobile/screens/playlist/playlist_screen.dart';
 
-class NavBar extends StatelessWidget {
+class NavBar extends StatefulWidget {
   NavBar({Key? key}) : super(key: key);
 
-  final LoginController _loginController =
-      LoginController(); 
+  @override
+  State<NavBar> createState() => _NavBarState();
+}
+
+class _NavBarState extends State<NavBar> {
+  final LoginController _loginController = LoginController();
+
+  void _showLogoutConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirmation'),
+          content: Text('Voulez-vous vraiment vous déconnecter ?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Annuler'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Oui'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _loginController.logout();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,20 +100,18 @@ class NavBar extends StatelessWidget {
                     //HORIZONTAL LINE
                     const Divider(),
 
-                     //GO TO PROFILE
+                    //GO TO PROFILE
                     DrawerItem(
                       name: 'Mon profil',
                       icon: Icons.account_circle,
-                      onPressed: () => onItemPressed(context,
-                          index: -1), 
+                      onPressed: () => onItemPressed(context, index: -1),
                     ),
                     //GO TO SETTINGS (Placeholder)
                     DrawerItem(
                       name: 'Paramètres',
                       icon: Icons.settings,
-                      onPressed: () =>                            
-                       Navigator.of(context).pushReplacementNamed('/settings'),
-
+                      onPressed: () => Navigator.of(context)
+                          .pushReplacementNamed('/settings'),
                     ),
 
                     const Divider(),
@@ -91,8 +120,7 @@ class NavBar extends StatelessWidget {
                     DrawerItem(
                       name: 'Se déconnecter',
                       icon: Icons.logout,
-                      onPressed: () =>
-                          _loginController.logout(), 
+                      onPressed: () => _showLogoutConfirmationDialog(),
                     ),
                   ],
                 ),
@@ -132,7 +160,6 @@ final List<Map<String, dynamic>> drawerRoutes = [
     'routeName': PlaylistScreen.routeName
   },
   {'name': 'Afficheurs', 'icon': Icons.tv, 'routeName': PlayerScreen.routeName},
- 
   {
     'name': 'Planification',
     'icon': Icons.event,

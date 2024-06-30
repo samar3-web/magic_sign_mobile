@@ -13,6 +13,9 @@ const Color kErrorBorderColor = Color(0xFFE74C3C);
 const Color boxColor = Color.fromRGBO(51, 51, 51, 1.0);
 const Color kPrimaryColor = Color.fromARGB(255, 242, 243, 246);
 
+const Color kDarkBackgroundColor= Color.fromRGBO(51, 51, 51, 1.0);
+const Color kTextDarkColor = Color.fromARGB(255, 242, 243, 246);
+
 //default value
 const kDefaultPadding = 20.0;
 const sizedBox = SizedBox(

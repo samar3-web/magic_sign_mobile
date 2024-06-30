@@ -88,7 +88,7 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
                         decoration: InputDecoration(
                           labelText: 'Name',
                           labelStyle:
-                              TextStyle(color: kTextBlackColor, fontSize: 17.0),
+                              TextStyle( fontSize: 17.0),
                         ),
                       )
                     : Text(

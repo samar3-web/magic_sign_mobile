@@ -34,7 +34,9 @@ dependencies:
   cached_network_image: ^3.3.1
   sqflite: ^2.3.3+1
   connectivity_plus:
-
+  get_storage: ^2.1.1
+  animate_icons: ^2.0.0
+  eva_icons_flutter: ^3.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -31,7 +31,7 @@ class _MyProfileState extends State<MyProfile> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Profile',
+        title: Text('Mon profil',
             style: Theme.of(context)
                 .textTheme
                 .bodyMedium
