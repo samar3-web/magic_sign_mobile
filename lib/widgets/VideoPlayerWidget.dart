@@ -18,12 +18,11 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   void initState() {
     super.initState();
 
-    _controller = VideoPlayerController.network(
-        "https://magic-sign.cloud/v_ar/web/MSlibrary/${widget.media.mediaID}")
-      ..initialize().then((_) {
-        setState(() {});
-        _controller.play();
-      });
+    _controller = VideoPlayerController.networkUrl(Uri.parse(
+        "https://magic-sign.cloud/v_ar/web/MSlibrary/${widget.media.mediaID}"))..initialize().then((v)=>
+        setState(() {}));
+
+    _controller.play();
   }
 
   @override

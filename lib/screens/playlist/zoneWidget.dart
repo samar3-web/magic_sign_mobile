@@ -35,21 +35,27 @@ class ZoneWidget extends StatefulWidget {
 class _ZoneWidgetState extends State<ZoneWidget> {
   final PlaylistController playlistController = Get.put(PlaylistController());
   final Previewcontroller previewcontroller = Get.put(Previewcontroller());
-  late Duration duration;
-  late Timer timer;
+  Duration duration = new Duration(seconds: 0);
+  Timer? timer;
   var currentIndex = 0;
   late AssignedMedia media;
   late String fileType;
   late List<AssignedMedia> medias;
-  timerCallback() {
-    if (currentIndex < medias.length) {
-      setState(() {
-        currentIndex++;
-      });
-    } else {
-      setState(() {
-        currentIndex = 0;
-      });
+  timerCallback() async {
+    print('timer callback is called ');
+    List<AssignedMedia> media = await getTimeline();
+    if (mounted) {
+      timer!.cancel();
+
+      if (currentIndex < media.length - 1) {
+        setState(() {
+          currentIndex++;
+        });
+      } else {
+        setState(() {
+          currentIndex = 0;
+        });
+      }
     }
   }
 
@@ -60,10 +66,12 @@ class _ZoneWidgetState extends State<ZoneWidget> {
     super.initState();
     previewcontroller.fetchAssignedMedia(widget.layoutId);
     medias = [];
+  }
 
-    duration = new Duration(
-        seconds: medias.isEmpty ? 0 : int.parse(medias.first.duration));
-    timer = new Timer(duration, timerCallback);
+  @override
+  void dispose() {
+    super.dispose();
+    timer!.cancel();
   }
 
   double calculLeft(double left) {
@@ -108,7 +116,12 @@ class _ZoneWidgetState extends State<ZoneWidget> {
     return fileTypes.containsKey(mediaType) ? fileTypes[mediaType]! : 'other';
   }
 
-  
+  getTimeline() async {
+    medias = previewcontroller.mediasList
+        .firstWhere((t) => t.timelineId == widget.zoneId)
+        .mediaList;
+    return medias;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -122,20 +135,30 @@ class _ZoneWidgetState extends State<ZoneWidget> {
           if (previewcontroller.mediasList.isEmpty) {
             return Center(child: CircularProgressIndicator());
           } else {
-            return ListView.builder(
-              itemCount: previewcontroller.mediasList
-                  .firstWhere((t) => t.timelineId == widget.zoneId)
-                  .mediaList
-                  .length,
-              itemBuilder: (context, index) {
-                AssignedMedia media = previewcontroller.mediasList
-                    .firstWhere((t) => t.timelineId == widget.zoneId)
-                    .mediaList[index];
+            return Obx(
+              () => FutureBuilder(
+                future: getTimeline(),
+                builder: (context, data) {
+                  if (data.hasData) {
+                    List<AssignedMedia> AllList =
+                        data.data as List<AssignedMedia>;
+                    AssignedMedia media = AllList[currentIndex];
+                    duration = new Duration(seconds: int.parse(media.duration));
+                    timer = new Timer(duration, timerCallback);
 
-                String fileType = getFileType(media);
+                    print(
+                        "currentIndex $currentIndex has duration ${media.duration}");
+                    String fileType = getFileType(media);
 
-                return Timelinewidget(fileType: fileType,media: media,);
-              },
+                    return Timelinewidget(
+                      fileType: fileType,
+                      media: AllList[currentIndex],
+                    );
+                  } else {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                },
+              ),
             );
           }
         }),

@@ -37,7 +37,7 @@ class _TimelinewidgetState extends State<Timelinewidget> {
     try {
       if (fileType == 'image') {
         print('Media ID: ${media.mediaID}');
-        return await MediaController().getImageUrl(media.storedAs);
+        return await MediaController().getImageUrl(media.mediaID.toString());
       } else {
         switch (fileType) {
           case 'word':
@@ -61,6 +61,7 @@ class _TimelinewidgetState extends State<Timelinewidget> {
   }
   @override
   Widget build(BuildContext context) {
+    
     return FutureBuilder<String>(
       future: getThumbnailUrl(widget.media),
       builder: (context, snapshot) {
