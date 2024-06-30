@@ -182,13 +182,6 @@ class PlayerController extends GetxController {
           int? displayGroupId = display['id'];
           String? name = display['name'];
 
-          /* if (displayGroupId != null && name != null) {
-            DisplayGroup newDisplayGroup = DisplayGroup(
-              id: displayGroupId,
-              name: name,
-            );
-            displayGroups.add(newDisplayGroup);
-          }*/
         });
 
         print('Display Groups: $displayGroups');

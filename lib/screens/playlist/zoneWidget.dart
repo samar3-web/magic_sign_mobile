@@ -8,6 +8,7 @@ import 'package:magic_sign_mobile/controller/playlistController.dart';
 import 'package:magic_sign_mobile/controller/previewController.dart';
 import 'package:magic_sign_mobile/model/AssignedMedia.dart';
 import 'package:magic_sign_mobile/model/Timeline.dart';
+import 'package:magic_sign_mobile/screens/playlist/TimelineWidget.dart';
 import 'package:magic_sign_mobile/widgets/VideoPlayerWidget.dart';
 import 'package:video_player/video_player.dart';
 
@@ -107,42 +108,10 @@ class _ZoneWidgetState extends State<ZoneWidget> {
     return fileTypes.containsKey(mediaType) ? fileTypes[mediaType]! : 'other';
   }
 
-  Future<String> getThumbnailUrl(AssignedMedia media) async {
-    String fileType = getFileType(media);
-    print('File type: $fileType');
-    try {
-      if (fileType == 'image') {
-        print('Media ID: ${media.mediaID}');
-        return await MediaController().getImageUrl(media.storedAs);
-      } else {
-        switch (fileType) {
-          case 'word':
-            return 'assets/images/word-logo.png';
-          case 'pdf':
-            return 'assets/images/pdf-logo.png';
-          case 'excel':
-            return 'assets/images/excel-logo.png';
-          case 'powerpoint':
-            return 'assets/images/pp-logo.png';
-          case 'video':
-            return 'assets/images/video-logo.png';
-          default:
-            return 'assets/images/default.png';
-        }
-      }
-    } catch (e) {
-      print('Error loading image: $e');
-      return 'assets/images/default.png';
-    }
-  }
+  
 
   @override
   Widget build(BuildContext context) {
-    medias = previewcontroller.mediasList.value
-        .firstWhere((t) => t.timelineId == widget.zoneId)
-        .mediaList;
-    media = medias[currentIndex];
-
     return Positioned(
       left: calculLeft(widget.left),
       top: widget.top,
@@ -153,51 +122,21 @@ class _ZoneWidgetState extends State<ZoneWidget> {
           if (previewcontroller.mediasList.isEmpty) {
             return Center(child: CircularProgressIndicator());
           } else {
-            /*return ListView.builder(
-              itemCount: previewcontroller.mediasList.firstWhere((t) => t.timelineId == widget.zoneId).mediaList.length,
+            return ListView.builder(
+              itemCount: previewcontroller.mediasList
+                  .firstWhere((t) => t.timelineId == widget.zoneId)
+                  .mediaList
+                  .length,
               itemBuilder: (context, index) {
-                AssignedMedia media = previewcontroller.mediasList.firstWhere((t) => t.timelineId == widget.zoneId).mediaList[index];
-               
+                AssignedMedia media = previewcontroller.mediasList
+                    .firstWhere((t) => t.timelineId == widget.zoneId)
+                    .mediaList[index];
+
                 String fileType = getFileType(media);
-*/
-            return FutureBuilder<String>(
-              future: getThumbnailUrl(medias[currentIndex]),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Icon(Icons.error);
-                } else {
-                  String url = snapshot.data!;
-                  return fileType == 'image'
-                      ? Center(
-                          child: Image.network(
-                            "https://magic-sign.cloud/v_ar/web/MSlibrary/${medias[currentIndex].mediaID}",
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes !=
-                                          null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
-                                      : null,
-                                ),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(Icons.error);
-                            },
-                          ),
-                        )
-                      : fileType == 'video'
-                          ? VideoPlayerWidget(media: medias[currentIndex])
-                          : Image.asset(url);
-                }
+
+                return Timelinewidget(fileType: fileType,media: media,);
               },
             );
-            //},
-            //);
           }
         }),
         decoration: BoxDecoration(
