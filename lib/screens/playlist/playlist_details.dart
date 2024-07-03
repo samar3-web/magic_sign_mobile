@@ -40,9 +40,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
 
   Future<void> _fetchPlaylist() async {
     try {
-      print('Fetching assigned media...');
       await playlistController.getAssignedMedia(widget.playlist!.layoutId);
-      print('Data fetched successfully.');
     } catch (e) {
       print('Error fetching data: $e');
     }
@@ -197,13 +195,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            IconButton(
-                              icon: Icon(Icons.personal_video),
-                              color: Colors.grey,
-                              onPressed: () {
-                                _showZonesInDialog();
-                              },
-                            ),
+                            
                             IconButton(
                               icon: Icon(Icons.visibility),
                               color: Colors.grey,

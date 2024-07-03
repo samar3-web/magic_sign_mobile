@@ -9,6 +9,7 @@ class MagicSignDB {
   final mediaTable = 'media';
   final eventTable = 'events';
   final playlistTable = 'playlist';
+  final layoutTable = 'layoutImages';
 
   Future<void> createTables(Database database) async {
     await database.execute("""CREATE TABLE IF NOT EXISTS $afficheurTable (
@@ -73,6 +74,13 @@ class MagicSignDB {
   regions TEXT,
   createdDt TEXT,
   sync INT
+); """);
+    database.execute("""
+      CREATE TABLE IF NOT EXISTS $layoutTable (
+
+  layoutId INTEGER PRIMARY KEY,
+  layout TEXT
+
 ); """);
   }
 
@@ -160,6 +168,24 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?);
       sync
     ]);
   }
+
+
+    Future<List<dynamic>> fetchAllLayouts() async {
+    final database = await DatabaseService().database;
+    final layouts =
+        await database.rawQuery('''SELECT * FROM $layoutTable ; ''');
+    return layouts;
+  }
+
+
+Future<int> saveLayout(int id, String image) async {
+    final database = await DatabaseService().database;
+    return await database.rawInsert('''
+     INSERT OR IGNORE INTO $layoutTable 
+      VALUES (?, ?)
+    ''', [id, image]);
+  }
+
 
   Future<int> createPlayer(Player player, int sync) async {
     print("insert a player");

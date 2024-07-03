@@ -40,22 +40,28 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
 
   void fetchData() async {
     try {
-      List<Map<String, dynamic>> events = await planificationController.fetchScheduleEvents();
+      List<dynamic> events =
+          await planificationController.fetchScheduleEvents();
       List<Player> players = await playerController.fetchPlayers();
-      List<DisplayGroup> displayGroups = await playerController.fetchDisplayGroup();
+      List<DisplayGroup> displayGroups =
+          await playerController.fetchDisplayGroup();
 
-      List<String> playerDisplayNames = players.map((player) => player.display!).toList();
-      List<String> groupDisplayNames = displayGroups.map((group) => group.displayGroup!).toList();
+      List<String> playerDisplayNames =
+          players.map((player) => player.display!).toList();
+      List<String> groupDisplayNames =
+          displayGroups.map((group) => group.displayGroup!).toList();
 
-      _allAppointments = events.map((event) {
-        return Appointment(
+      for (var event in events) {
+        _allAppointments.add(Appointment(
           startTime: event['start_time'],
           endTime: event['end_time'],
           location: event['CampaignID'],
           color: kSecondaryColor,
           notes: event['DisplayGroupID'],
-        );
-      }).toList();
+        ));
+        print(_allAppointments);
+        print("new event");
+      }
 
       setState(() {
         _displayItems = [
@@ -68,8 +74,7 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
         planificationController.appointmentsDataSource =
             AppointmentDataSource(_allAppointments);
       });
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 
   String? getPlayerName(int displayGroupId) {
@@ -95,7 +100,7 @@ class _PlanificationScreenState extends State<PlanificationScreen> {
         createdDt: '',
       ),
     );
-  
+
     return playlist.layout;
   }
 

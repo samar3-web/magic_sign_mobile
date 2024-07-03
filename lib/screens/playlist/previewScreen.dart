@@ -22,12 +22,12 @@ class _PreviewScreenState extends State<PreviewScreen> {
     super.initState();
     futureZones = playlistController.fetchZones(widget.layoutId);
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Zones Display'),
+        title: Text('Preview'),
       ),
       body: Container(
         width: Get.width,
