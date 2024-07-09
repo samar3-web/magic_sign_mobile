@@ -27,42 +27,44 @@ class _PreviewScreenState extends State<PreviewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Preview'),
+        title: Text('Prévisualisation'),
       ),
-      body: Container(
-        width: Get.width,
-        height: Get.height,
-        child: Center(
-          child: FutureBuilder<Map<String, List<Zone>>>(
-            future: futureZones,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text("Error: ${snapshot.error}"));
-              } else if (snapshot.data != null && snapshot.data!.isNotEmpty) {
-                return Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height -
-                      AppBar().preferredSize.height,
-                  child: Stack(
-                    children: snapshot.data!.entries.expand((entry) {
-                      return entry.value.map((zone) {
-                        return ZoneWidget(
-                          left: zone.left,
-                          width: zone.width,
-                          layoutId: widget.layoutId,
-                          top: double.parse(zone.top.toString()),
-                          zoneId: zone.zoneId,
-                        );
-                      }).toList();
-                    }).toList(),
-                  ),
-                );
-              } else {
-                return Center(child: Text("No zones data available"));
-              }
-            },
+      body: Center(
+        child: Container(
+          width: Get.width,
+          height: Get.height,
+          child: Center(
+            child: FutureBuilder<Map<String, List<Zone>>>(
+              future: futureZones,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text("Error: ${snapshot.error}"));
+                } else if (snapshot.data != null && snapshot.data!.isNotEmpty) {
+                  return Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height -
+                        AppBar().preferredSize.height,
+                    child: Stack(
+                      children: snapshot.data!.entries.expand((entry) {
+                        return entry.value.map((zone) {
+                          return ZoneWidget(
+                            left: zone.left,
+                            width: zone.width,
+                            layoutId: widget.layoutId,
+                            top: double.parse(zone.top.toString()),
+                            zoneId: zone.zoneId,
+                          );
+                        }).toList();
+                      }).toList(),
+                    ),
+                  );
+                } else {
+                  return Center(child: Text("No zones data available"));
+                }
+              },
+            ),
           ),
         ),
       ),

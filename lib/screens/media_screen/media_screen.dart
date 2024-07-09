@@ -10,6 +10,7 @@ import 'package:magic_sign_mobile/screens/media_screen/media_details_dialog.dart
 import 'package:magic_sign_mobile/model/Media.dart';
 import 'package:magic_sign_mobile/widgets/BaseScreen.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:path/path.dart' as path;
 
 class MediaScreen extends StatefulWidget {
   const MediaScreen({Key? key}) : super(key: key);
@@ -57,6 +58,12 @@ class _MediaScreenState extends State<MediaScreen> {
     );
 
     if (results != null) {
+      PlatformFile file = results.files.first;
+
+      print(file.name);
+      print(file.size);
+      print(file.extension);
+      print(file.path);
       return results.files.map((file) => File(file.path!)).toList();
     } else {
       return [];
@@ -203,7 +210,7 @@ class _MediaScreenState extends State<MediaScreen> {
                     ),
                     itemCount: mediaController.mediaList.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return GridItem(media: mediaController.mediaList[index]);
+                      return GridItem(media: mediaController.mediaList[index], isConnected: false,);
                     },
                   ),
                 ),
@@ -219,17 +226,29 @@ class _MediaScreenState extends State<MediaScreen> {
 class GridItem extends StatelessWidget {
   final Media media;
   final int maxNameLength;
+final bool isConnected;
+  const GridItem({Key? key, required this.media, 
+      required this.isConnected, // Added isConnected
 
-  const GridItem({Key? key, required this.media, this.maxNameLength = 20})
+  this.maxNameLength = 20})
       : super(key: key);
 
-  String getShortenedName(String name) {
-    if (name.length <= maxNameLength) {
-      return name;
-    } else {
-      return name.substring(0, maxNameLength) + '...';
-    }
+ String getShortenedName(String name, bool isConnected, int maxNameLength) {
+  if (isConnected) {
+    return name; // Display full path when connected
+  } else {
+    return _truncateFileName(name, maxNameLength); // Display truncated filename when offline
   }
+}
+
+String _truncateFileName(String filePath, int maxLength) {
+  String fileName = path.basename(filePath);
+  if (fileName.length <= maxLength) {
+    return fileName;
+  } else {
+    return fileName.substring(0, maxLength) + '...';
+  }
+}
 
   String getFileType() {
     String mediaType = media.mediaType.toLowerCase();
@@ -252,10 +271,15 @@ class GridItem extends StatelessWidget {
   Future<String> getThumbnailUrl() async {
     String fileType = getFileType();
     print('File type: $fileType');
+
     try {
       if (fileType == 'image') {
-        print('Media ID: ${media.mediaId}');
-        return await MediaController().getImageUrl(media.storedAs);
+        if (media.localImagePath != null && media.localImagePath!.isNotEmpty) {
+          print('local image ${media.localImagePath} ');
+          return media.localImagePath!;
+        } else {
+          return await MediaController().getImageUrl(media.storedAs);
+        }
       } else {
         switch (fileType) {
           case 'word':
@@ -352,7 +376,7 @@ class GridItem extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      getShortenedName(media.name),
+    getShortenedName(media.name, isConnected, 20), // Adjust maxNameLength as needed
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,

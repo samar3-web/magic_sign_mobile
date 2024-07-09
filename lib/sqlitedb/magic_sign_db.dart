@@ -42,6 +42,7 @@ class MagicSignDB {
   retired TEXT,
   createdDt TEXT,
   fileSize TEXT,
+  localImagePath TEXT,
   sync INT
 );
 """);
@@ -89,6 +90,23 @@ class MagicSignDB {
     return await database.rawDelete('''
     DELETE FROM $mediaTable WHERE mediaId=?''', [id]);
   }
+
+  Future<void> saveMedia(Media media, {String? localImagePath}) async {
+  final database = await DatabaseService().database;
+  await database.insert(
+    mediaTable,
+    {
+      'mediaId': media.mediaId,
+      'name': media.name,
+      'mediaType': media.mediaType,
+      'storedAs': media.storedAs,
+      'localImagePath': localImagePath ?? media.localImagePath,
+      'sync': 0,
+    },
+    conflictAlgorithm: ConflictAlgorithm.replace,
+  );
+}
+
 
   Future<int> createEvent(Map<String, dynamic> event, int sync) async {
     final database = await DatabaseService().database;
@@ -153,7 +171,7 @@ class MagicSignDB {
     final database = await DatabaseService().database;
     return await database.rawInsert('''
     INSERT OR IGNORE INTO $mediaTable 
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?);
     ''', [
       media.mediaId,
       media.ownerId,
@@ -165,6 +183,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?);
       media.retired,
       media.createdDt,
       media.fileSize,
+      media.localImagePath,
       sync
     ]);
   }

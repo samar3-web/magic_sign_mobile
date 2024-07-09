@@ -125,46 +125,51 @@ class _ZoneWidgetState extends State<ZoneWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      left: calculLeft(widget.left),
-      top: widget.top,
-      child: Container(
-        height: Get.height * 0.5,
-        width: calculWidth(widget.width),
-        child: Obx(() {
-          if (previewcontroller.mediasList.isEmpty) {
-            return Center(child: CircularProgressIndicator());
-          } else {
-            return Obx(
-              () => FutureBuilder(
-                future: getTimeline(),
-                builder: (context, data) {
-                  if (data.hasData) {
-                    List<AssignedMedia> AllList =
-                        data.data as List<AssignedMedia>;
-                    AssignedMedia media = AllList[currentIndex];
-                    duration = new Duration(seconds: int.parse(media.duration));
-                    timer = new Timer(duration, timerCallback);
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Positioned(
+        left: calculLeft(widget.left),
+        top: widget.top,
+        child: Container(
+          height: Get.height * 0.5,
+          width: calculWidth(widget.width),
+          child: Obx(() {
+            if (previewcontroller.mediasList.isEmpty) {
+              return Center(child: CircularProgressIndicator());
+            } else {
+              return Obx(
+                () => FutureBuilder(
+                  future: getTimeline(),
+                  builder: (context, data) {
+                    if (data.hasData) {
+                      List<AssignedMedia> AllList =
+                          data.data as List<AssignedMedia>;
+                      AssignedMedia media = AllList[currentIndex];
+                      duration =
+                          new Duration(seconds: int.parse(media.duration));
+                      timer = new Timer(duration, timerCallback);
 
-                    print(
-                        "currentIndex $currentIndex has duration ${media.duration}");
-                    String fileType = getFileType(media);
+                      print(
+                          "currentIndex $currentIndex has duration ${media.duration}");
+                      String fileType = getFileType(media);
 
-                    return Timelinewidget(
-                      fileType: fileType,
-                      media: AllList[currentIndex],
-                    );
-                  } else {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                },
-              ),
-            );
-          }
-        }),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.red),
-          borderRadius: BorderRadius.all(Radius.circular(3)),
+                      return Timelinewidget(
+                        fileType: fileType,
+                        media: AllList[currentIndex],
+                      );
+                    } else {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                  },
+                ),
+              );
+            }
+          }),
+          decoration: BoxDecoration(
+            color: Colors.black,
+            border: Border.all(color: Colors.red),
+            borderRadius: BorderRadius.all(Radius.circular(3)),
+          ),
         ),
       ),
     );
