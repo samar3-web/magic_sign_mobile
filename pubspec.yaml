@@ -33,7 +33,7 @@ dependencies:
   cached_network_image_builder: ^0.3.0
   cached_network_image: ^3.3.1
   sqflite: ^2.3.3+1
-  connectivity_plus:
+  connectivity_plus: ^6.0.3
   get_storage: ^2.1.1
   animate_icons: ^2.0.0
   eva_icons_flutter: ^3.1.0
@@ -55,5 +55,11 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/images/default.png
+    - assets/images/word-logo.png
+    - assets/images/pdf-logo.png
+    - assets/images/excel-logo.png
+    - assets/images/pp-logo.png
+    - assets/images/video-logo.png
     - assets/template/
 

@@ -178,9 +178,7 @@ Future<void> uploadFiles(BuildContext context, List<File> files) async {
         print('Attempting to upload file: $filePath');
 
         try {
-          if (!(await file.exists())) {
-            throw FileSystemException('File does not exist', filePath);
-          }
+        
 
           if (await file.length() > maxFileSize) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -196,7 +194,7 @@ Future<void> uploadFiles(BuildContext context, List<File> files) async {
           request.files.add(await http.MultipartFile.fromPath('files', filePath));
           request.headers['Authorization'] = 'Bearer $accessToken';
 
-          print('Sending request with file path: $filePath'); // Debugging print
+          print('Sending request with file path: $filePath'); 
           var response = await request.send();
 
           if (response.statusCode == 200) {
@@ -208,6 +206,14 @@ Future<void> uploadFiles(BuildContext context, List<File> files) async {
                 backgroundColor: Colors.green,
               ),
             );
+              // Save local path to database
+          Media media = Media(
+            Random().nextInt(1000),
+            9,
+            filePath, 
+            '', '', filePath, '', '', '', '', '', filePath
+          );
+          await MagicSignDB().createMedia(media, 0);
             await Future.delayed(Duration(seconds: 1));
             await getMedia();
           } else {
@@ -243,24 +249,22 @@ Future<void> uploadFiles(BuildContext context, List<File> files) async {
       print('Extracted filename: $fileName');
 
       try {
-        if (!(await file.exists())) {
-          throw FileSystemException('File does not exist', filePath);
-        }
+      
 
         if (await file.length() < maxFileSize) {
           Media media = Media(
             Random().nextInt(1000),
             9,
-            filePath, // Store only the filename
+            filePath, 
             '',
             '',
-            filePath, // Use the full path here
-            '',
-            '',
-            '',
+            filePath, 
             '',
             '',
             '',
+            '',
+            '',
+            filePath,
           );
           await MagicSignDB().createMedia(media, 0);
           print('File processed offline: $filePath');

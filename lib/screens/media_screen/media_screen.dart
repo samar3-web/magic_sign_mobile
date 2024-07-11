@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:cached_network_image_builder/cached_network_image_builder.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
+import 'package:magic_sign_mobile/controller/connectionController.dart';
 import 'package:magic_sign_mobile/controller/mediaController.dart';
 import 'package:magic_sign_mobile/screens/media_screen/media_details_dialog.dart';
 import 'package:magic_sign_mobile/model/Media.dart';
@@ -25,6 +27,7 @@ class _MediaScreenState extends State<MediaScreen> {
   final ScrollController _scrollController = ScrollController();
   bool isloading = false;
   bool allMediaLoaded = false;
+  bool isConnected = false;
 
   Future<void> _refreshMedia() async {
     await mediaController.getMedia();
@@ -38,6 +41,21 @@ class _MediaScreenState extends State<MediaScreen> {
       if (_scrollController.offset >=
               _scrollController.position.maxScrollExtent &&
           !_scrollController.position.outOfRange) {}
+    });
+    checkConnectivity();
+
+    // Listen to connectivity changes
+    /* Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+      setState(() {
+        isConnected = result == ConnectivityResult.mobile || result == ConnectivityResult.wifi;
+      });
+    });*/
+  }
+
+  Future<void> checkConnectivity() async {
+    bool connected = await Connectioncontroller.isConnected();
+    setState(() {
+      isConnected = connected;
     });
   }
 
@@ -210,7 +228,10 @@ class _MediaScreenState extends State<MediaScreen> {
                     ),
                     itemCount: mediaController.mediaList.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return GridItem(media: mediaController.mediaList[index], isConnected: false,);
+                      return GridItem(
+                        media: mediaController.mediaList[index],
+                        isConnected: isConnected,
+                      );
                     },
                   ),
                 ),
@@ -226,29 +247,30 @@ class _MediaScreenState extends State<MediaScreen> {
 class GridItem extends StatelessWidget {
   final Media media;
   final int maxNameLength;
-final bool isConnected;
-  const GridItem({Key? key, required this.media, 
-      required this.isConnected, // Added isConnected
-
-  this.maxNameLength = 20})
+  final bool isConnected;
+  const GridItem(
+      {Key? key,
+      required this.media,
+      required this.isConnected,
+      this.maxNameLength = 20})
       : super(key: key);
 
- String getShortenedName(String name, bool isConnected, int maxNameLength) {
-  if (isConnected) {
-    return name; // Display full path when connected
-  } else {
-    return _truncateFileName(name, maxNameLength); // Display truncated filename when offline
+  String getShortenedName(String name, bool isConnected, int maxNameLength) {
+    if (isConnected) {
+      return name;
+    } else {
+      return _truncateFileName(name, maxNameLength);
+    }
   }
-}
 
-String _truncateFileName(String filePath, int maxLength) {
-  String fileName = path.basename(filePath);
-  if (fileName.length <= maxLength) {
-    return fileName;
-  } else {
-    return fileName.substring(0, maxLength) + '...';
+  String _truncateFileName(String filePath, int maxLength) {
+    String fileName = path.basename(filePath);
+    if (fileName.length <= maxLength) {
+      return fileName;
+    } else {
+      return fileName.substring(0, maxLength) + '...';
+    }
   }
-}
 
   String getFileType() {
     String mediaType = media.mediaType.toLowerCase();
@@ -265,22 +287,42 @@ String _truncateFileName(String filePath, int maxLength) {
       'video': 'video',
     };
 
-    return fileTypes.containsKey(mediaType) ? fileTypes[mediaType]! : 'other';
+    String? fileType = fileTypes[mediaType];
+    if (fileType != null) {
+      return fileType;
+    } else {
+      String extension = media.name.split('.').last.toLowerCase();
+      fileType = fileTypes[extension];
+      return fileType ?? 'other';
+    }
   }
 
   Future<String> getThumbnailUrl() async {
     String fileType = getFileType();
     print('File type: $fileType');
-
+    print('connectivity : $isConnected');
     try {
       if (fileType == 'image') {
-        if (media.localImagePath != null && media.localImagePath!.isNotEmpty) {
-          print('local image ${media.localImagePath} ');
-          return media.localImagePath!;
+        if (!isConnected) {
+          print('Using local image path: ${media.localImagePath}');
+
+          // Offline mode, try local image path
+          if (media.localImagePath != null &&
+              media.localImagePath!.isNotEmpty) {
+            print('Using local image path: ${media.localImagePath}');
+            return media.localImagePath!;
+          } else {
+            // No local image path available
+            print('No local image path available');
+            return 'assets/images/default.png'; // Fallback to default image
+          }
         } else {
+          // Online mode, fetch image from network
+          print('Fetching online image: ${media.storedAs}');
           return await MediaController().getImageUrl(media.storedAs);
         }
       } else {
+        // Non-image file types
         switch (fileType) {
           case 'word':
             return 'assets/images/word-logo.png';
@@ -298,7 +340,7 @@ String _truncateFileName(String filePath, int maxLength) {
       }
     } catch (e) {
       print('Error loading image: $e');
-      return 'assets/images/default.png';
+      return 'assets/images/default.png'; // Fallback in case of any error
     }
   }
 
@@ -352,31 +394,96 @@ String _truncateFileName(String filePath, int maxLength) {
                     child: Container(
                       width: double.infinity,
                       height: 150,
-                      child: getFileType() == 'image'
-                          ? CachedNetworkImageBuilder(
-                              url:
-                                  "https://magic-sign.cloud/v_ar/web/MSlibrary/${media.storedAs}",
-                              builder: (image) {
-                                return Center(child: Image.file(image));
-                              },
-                              placeHolder: Shimmer.fromColors(
-                                baseColor: Colors.grey[300]!,
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  color: Colors.white,
-                                ),
+                      child: FutureBuilder<String>(
+                        future: getThumbnailUrl(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                color: Colors.white,
                               ),
-                            )
-                          : Image.asset(
-                              thumbnailUrl,
-                              fit: BoxFit.cover,
-                            ),
+                            );
+                          } else if (snapshot.hasError) {
+                            return Center(
+                                child: Text('Error: ${snapshot.error}'));
+                          } else {
+                            String thumbnailUrl = snapshot.data!;
+                            if (isConnected) {
+                              if (getFileType() == 'image') {
+                                // If connected, use CachedNetworkImageBuilder for all images
+                                return CachedNetworkImageBuilder(
+                                  url:
+                                      "https://magic-sign.cloud/v_ar/web/MSlibrary/${media.storedAs}",
+                                  builder: (image) {
+                                    return Center(child: Image.file(image));
+                                  },
+                                  placeHolder: Shimmer.fromColors(
+                                    baseColor: Colors.grey[300]!,
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                // For non-image files, use the appropriate asset
+                                return Image.asset(
+                                  thumbnailUrl,
+                                  fit: BoxFit.cover,
+                                );
+                              }
+                            } else {
+                              // If not connected
+                              if (getFileType() == 'image') {
+                                // If local image path is available, use it
+                                if (media.localImagePath != null &&
+                                    media.localImagePath!.isNotEmpty) {
+                                  print(
+                                      'Local image path: ${media.localImagePath}');
+                                  File localImageFile =
+                                      File(media.localImagePath!);
+                                  if (localImageFile.existsSync()) {
+                                    print('Local image file exists');
+                                    return Image.file(
+                                      localImageFile,
+                                      fit: BoxFit.cover,
+                                    );
+                                  } else {
+                                    print('Local image file does not exist');
+                                    return Image.asset(
+                                      'assets/images/default.png',
+                                      fit: BoxFit.cover,
+                                    );
+                                  }
+                                } else {
+                                  // If local image path is not available, use placeholder
+                                  print(
+                                      'No local image path available, using default');
+                                  return Image.asset(
+                                    'assets/images/default.png',
+                                    fit: BoxFit.cover,
+                                  );
+                                }
+                              } else {
+                                // For non-image files, use the appropriate asset
+                                return Image.asset(
+                                  thumbnailUrl,
+                                  fit: BoxFit.cover,
+                                );
+                              }
+                            }
+                          }
+                        },
+                      ),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-    getShortenedName(media.name, isConnected, 20), // Adjust maxNameLength as needed
+                      getShortenedName(media.name, isConnected, 20),
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,

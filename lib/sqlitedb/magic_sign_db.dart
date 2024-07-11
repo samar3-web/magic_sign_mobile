@@ -85,28 +85,26 @@ class MagicSignDB {
 ); """);
   }
 
-  Future<int> deleteMedia(int id) async {
-    final database = await DatabaseService().database;
-    return await database.rawDelete('''
-    DELETE FROM $mediaTable WHERE mediaId=?''', [id]);
-  }
-
-  Future<void> saveMedia(Media media, {String? localImagePath}) async {
+Future<void> deleteMedia(int mediaId) async {
   final database = await DatabaseService().database;
-  await database.insert(
-    mediaTable,
-    {
-      'mediaId': media.mediaId,
-      'name': media.name,
-      'mediaType': media.mediaType,
-      'storedAs': media.storedAs,
-      'localImagePath': localImagePath ?? media.localImagePath,
-      'sync': 0,
-    },
-    conflictAlgorithm: ConflictAlgorithm.replace,
-  );
+  await database.rawDelete('''
+    DELETE FROM $mediaTable WHERE mediaId = ?''', [mediaId]);
 }
-
+  Future<void> saveMedia(Media media, {String? localImagePath}) async {
+    final database = await DatabaseService().database;
+    await database.insert(
+      mediaTable,
+      {
+        'mediaId': media.mediaId,
+        'name': media.name,
+        'mediaType': media.mediaType,
+        'storedAs': media.storedAs,
+        'localImagePath': localImagePath ?? media.localImagePath,
+        'sync': 0,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
 
   Future<int> createEvent(Map<String, dynamic> event, int sync) async {
     final database = await DatabaseService().database;
@@ -188,23 +186,20 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?);
     ]);
   }
 
-
-    Future<List<dynamic>> fetchAllLayouts() async {
+  Future<List<dynamic>> fetchAllLayouts() async {
     final database = await DatabaseService().database;
     final layouts =
         await database.rawQuery('''SELECT * FROM $layoutTable ; ''');
     return layouts;
   }
 
-
-Future<int> saveLayout(int id, String image) async {
+  Future<int> saveLayout(int id, String image) async {
     final database = await DatabaseService().database;
     return await database.rawInsert('''
      INSERT OR IGNORE INTO $layoutTable 
       VALUES (?, ?)
     ''', [id, image]);
   }
-
 
   Future<int> createPlayer(Player player, int sync) async {
     print("insert a player");

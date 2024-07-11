@@ -6,32 +6,33 @@ class Media {
   final String name;
   final String mediaType;
   final String type;
-  final String? localImagePath;
   final String storedAs;
   final String duration;
   final String owner;
   final String retired;
   final String createdDt;
   final String fileSize;
+  final String? localImagePath;
+
   Media(
-      this.mediaId,
-      this.ownerId,
-      this.name,
-      this.mediaType,
-      this.type,
-      this.localImagePath,
-      this.storedAs,
-      this.duration,
-      this.owner,
-      this.retired,
-      this.createdDt,
-      this.fileSize);
+    this.mediaId,
+    this.ownerId,
+    this.name,
+    this.mediaType,
+    this.type,
+    this.storedAs,
+    this.duration,
+    this.owner,
+    this.retired,
+    this.createdDt,
+    this.fileSize,
+    this.localImagePath,
+  );
   Media._({
     required this.mediaId,
     required this.ownerId,
     required this.mediaType,
     required this.type,
-    this.localImagePath,
     required this.name,
     required this.storedAs,
     required this.duration,
@@ -39,6 +40,7 @@ class Media {
     required this.retired,
     required this.createdDt,
     required this.fileSize,
+    this.localImagePath,
   });
 
   factory Media.fromJson(Map<String, dynamic> json) {
@@ -54,13 +56,13 @@ class Media {
       name: json['name'] ?? 'Unknown',
       mediaType: json['mediaType'] ?? 'Unknown Type',
       type: json['type'] ?? 'Unknown Type',
-      localImagePath: json['localImagePath'],
       storedAs: json['storedAs'] ?? 'Not Available',
       duration: json['duration']?.toString() ?? '0',
       owner: json['owner'] ?? 'No Owner',
       retired: json['retired']?.toString() ?? 'false',
       createdDt: json['createdDt'] ?? 'Unknown',
       fileSize: json['fileSize']?.toString() ?? '0',
+      localImagePath: json['localImagePath'],
     );
   }
 }
