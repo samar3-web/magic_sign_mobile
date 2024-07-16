@@ -1,19 +1,21 @@
-import 'dart:io';
-
-import 'package:cached_network_image_builder/cached_network_image_builder.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:magic_sign_mobile/controller/connectionController.dart';
+import 'package:magic_sign_mobile/controller/mediaController.dart';
 import 'package:magic_sign_mobile/model/Media.dart';
 import 'package:magic_sign_mobile/screens/media_screen/MediaDialog.dart';
-import 'package:magic_sign_mobile/screens/media_screen/media_details_dialog.dart';
-import 'package:magic_sign_mobile/controller/mediaController.dart';
 
 class GridItem extends StatelessWidget {
   final Media media;
   final Function(Media) onDoubleTap;
+  final Function(Media) onAddToTimeline; // Added parameter
 
-  GridItem({required this.media, required this.onDoubleTap});
+  GridItem({
+    required this.media,
+    required this.onDoubleTap,
+    required this.onAddToTimeline, // Constructor parameter
+  });
 
   String getFileType() {
     String mediaType = media.mediaType.toLowerCase();
@@ -36,11 +38,9 @@ class GridItem extends StatelessWidget {
   Future<String> getThumbnailUrl() async {
     var isConnected = await Connectioncontroller.isConnected();
     String fileType = getFileType();
-    print('File type: $fileType');
     try {
       if (fileType == 'image') {
         if (isConnected) {
-          print('Media ID: ${media.mediaId}');
           return await MediaController().getImageUrl(media.storedAs);
         } else {
           return 'assets/images/logo.jpg';
@@ -74,7 +74,10 @@ class GridItem extends StatelessWidget {
         showDialog(
           context: context,
           builder: (BuildContext context) {
-            return MediaDialog(media: media);
+            return MediaDialog(
+              media: media,
+              onAddToTimeline: onAddToTimeline, // Pass onAddToTimeline to MediaDialog
+            );
           },
         );
       },
@@ -85,7 +88,16 @@ class GridItem extends StatelessWidget {
         future: getThumbnailUrl(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+              ),
+            );
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
@@ -112,12 +124,14 @@ class GridItem extends StatelessWidget {
                       width: double.infinity,
                       height: 150,
                       child: getFileType() == 'image'
-                          ? CachedNetworkImageBuilder(
-                              url:
+                          ? CachedNetworkImage(
+                              imageUrl:
                                   "https://magic-sign.cloud/v_ar/web/MSlibrary/${media.storedAs}",
-                              builder: (image) {
-                                return Center(child: Image.file(image));
-                              },
+                              placeholder: (context, url) =>
+                                  Center(child: CircularProgressIndicator()),
+                              errorWidget: (context, url, error) =>
+                                  Icon(Icons.error),
+                              fit: BoxFit.cover,
                             )
                           : Image.asset(
                               thumbnailUrl,

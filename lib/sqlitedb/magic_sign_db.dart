@@ -85,11 +85,35 @@ class MagicSignDB {
 ); """);
   }
 
+
+
+
 Future<void> deleteMedia(int mediaId) async {
   final database = await DatabaseService().database;
-  await database.rawDelete('''
+  int count = await database.rawDelete('''
     DELETE FROM $mediaTable WHERE mediaId = ?''', [mediaId]);
+  print('$count media entries deleted locally');
 }
+
+Future<Media?> getMediaById(int mediaId) async {
+    final db = await DatabaseService().database;
+    List<Map<String, dynamic>> results = await db.query(
+      mediaTable,
+      where: 'mediaId = ?',
+      whereArgs: [mediaId],
+    );
+
+    if (results.isNotEmpty) {
+      return Media.fromJson(results.first); 
+    } else {
+      return null;
+    }
+  }
+
+
+
+
+
   Future<void> saveMedia(Media media, {String? localImagePath}) async {
     final database = await DatabaseService().database;
     await database.insert(

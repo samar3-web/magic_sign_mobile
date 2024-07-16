@@ -165,14 +165,48 @@ class _PlaylistDetail extends State<PlaylistDetail> {
       ),
     );
   }
-    Future<void> _showZonesInDialog() async {
+
+  Future<void> _showZonesInDialog() async {
     try {
-      final futureZones = playlistController.fetchZones(widget.playlist!.layoutId);
+      final futureZones =
+          playlistController.fetchZones(widget.playlist!.layoutId);
       final zones = await futureZones;
       PositioningAlertDialog.show(context, zones);
     } catch (e) {
       print("Error fetching zones data: $e");
     }
+  }
+
+  Future<void> _showMediaGridDialog() async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: SizedBox(
+            child: GridView.builder(
+              padding: EdgeInsets.all(16.0),
+              scrollDirection: Axis.vertical,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 6.0,
+                mainAxisSpacing: 10.0,
+                childAspectRatio: 1.0,
+              ),
+              itemCount: mediaController.mediaList.length,
+              itemBuilder: (BuildContext context, int index) {
+                return GridItem(
+                  media: mediaController.mediaList[index],
+                  onDoubleTap: _showPlaylistSelectionDialog,
+                  onAddToTimeline: (Media) {
+                    _showPlaylistSelectionDialog(Media);
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -195,7 +229,6 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            
                             IconButton(
                               icon: Icon(Icons.visibility),
                               color: Colors.grey,
@@ -211,6 +244,19 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                             ),
                           ],
                         ),
+                        GestureDetector(
+                          onTap: () {
+                            _showMediaGridDialog();
+                          },
+                          child: SizedBox(
+                            child: Image.asset(
+                              'assets/images/dossier.png',
+                              fit: BoxFit.cover,
+                              height: 150,
+                            ),
+                          ),
+                        ),
+                        /*
                         SizedBox(
                           height: MediaQuery.of(context).size.height / 2.5,
                           child: GridView.builder(
@@ -231,7 +277,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                               );
                             },
                           ),
-                        ),
+                        ),*/
                         SizedBox(height: 5),
                         Expanded(
                           child: Container(
@@ -275,8 +321,6 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                           child: Row(
                                             children: timeline.mediaList
                                                 .map((Media media) {
-                                              print(
-                                                  'Media: ${media.name}, Duration: ${media.duration}, Additional Info: ${media.mediaId}');
                                               return GestureDetector(
                                                 onTap: () {
                                                   showDialog(
@@ -284,7 +328,13 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                                     builder:
                                                         (BuildContext context) {
                                                       return MediaDialog(
-                                                          media: media);
+                                                        media: media,
+                                                        onAddToTimeline:
+                                                            (Media) {
+                                                          _showPlaylistSelectionDialog(
+                                                              Media);
+                                                        },
+                                                      );
                                                     },
                                                   );
                                                 },

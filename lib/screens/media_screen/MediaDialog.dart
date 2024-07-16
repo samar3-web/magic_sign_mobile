@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
@@ -9,8 +10,9 @@ import 'package:video_player/video_player.dart';
 
 class MediaDialog extends StatefulWidget {
   final Media media;
+  final Function(Media) onAddToTimeline;
 
-  MediaDialog({required this.media});
+  MediaDialog({required this.media, required this.onAddToTimeline});
 
   @override
   State<MediaDialog> createState() => _MediaDialogState();
@@ -70,83 +72,46 @@ class _MediaDialogState extends State<MediaDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.media.name),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.media.name,
+                  style: TextStyle(
+                    fontSize: 16,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.close),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
       content: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Obx(
-              () => Container(
-                child: mediaController.isUpdating.value
-                    ? TextField(
-                        controller: mediaController.name,
-                        style: TextStyle(
-                          fontSize: 17.0,
-                          fontWeight: FontWeight.w300,
-                        ),
-                        decoration: InputDecoration(
-                          labelText: 'Name',
-                          labelStyle:
-                              TextStyle(color: kTextBlackColor, fontSize: 17.0),
-                        ),
-                      )
-                    : Text(
-                        'Name: ${widget.media.name}',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-              ),
-            ),
             SizedBox(height: 2),
-            Text(
-              'Type: ${widget.media.mediaType}',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 2),
-            Obx(
-              () => Container(
-                child: mediaController.isUpdating.value
-                    ? TextField(
-                        controller: mediaController.duration,
-                        style: TextStyle(
-                          fontSize: 17.0,
-                          fontWeight: FontWeight.w300,
-                        ),
-                        decoration: InputDecoration(
-                          labelText: 'Duration',
-                          labelStyle:
-                              TextStyle(color: kTextBlackColor, fontSize: 17.0),
-                        ),
-                      )
-                    : Text(
-                        'Duration: ${widget.media.duration}',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-              ),
-            ),
-            SizedBox(height: 2),
-            Text(
-              'Crée le : ${widget.media.createdDt}',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 4),
             if (widget.media.mediaType.toLowerCase() == 'image')
-              FutureBuilder<String>(
-                future: _getImageUrl(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  } else {
-                    return Image.network(
-                      snapshot.data!,
-                      fit: BoxFit.cover,
-                    );
-                  }
-                },
+              CachedNetworkImage(
+                imageUrl:
+                    "https://magic-sign.cloud/v_ar/web/MSlibrary/${widget.media.storedAs}",
+                placeholder: (context, url) =>
+                    Center(child: CircularProgressIndicator()),
+                errorWidget: (context, url, error) => Icon(Icons.error),
+                fit: BoxFit.cover,
               ),
             if (widget.media.mediaType.toLowerCase() == 'video')
               SizedBox(
@@ -174,16 +139,17 @@ class _MediaDialogState extends State<MediaDialog> {
                   "https://magic-sign.cloud/v_ar/web/MSlibrary/${widget.media.storedAs}",
                 ),
               ),
+            SizedBox(height: 10),
+            ElevatedButton(
+             onPressed: () {
+                widget.onAddToTimeline(widget.media); // Invoke callback
+              },
+              child: Text("Ajouter à la timeline"),
+            ),
           ],
         ),
       ),
       actions: [],
     );
-  }
-
-  @override
-  void dispose() {
-    _videoPlayerController?.dispose();
-    super.dispose();
   }
 }

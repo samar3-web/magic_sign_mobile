@@ -50,7 +50,7 @@ class _splashScreenState extends State<splashScreen> {
             Image.asset(
               'assets/images/logo_magic.png',
               height: height,
-              width: width, 
+              width: width,
             ),
           ],
         ),

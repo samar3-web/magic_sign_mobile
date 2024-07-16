@@ -8,7 +8,6 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:magic_sign_mobile/controller/connectionController.dart';
 import 'package:magic_sign_mobile/controller/loginController.dart';
-import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart';
 import 'package:magic_sign_mobile/model/Media.dart';
 import 'package:magic_sign_mobile/screens/media_screen/media_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -160,27 +159,106 @@ class MediaController extends GetxController {
     );
   }
 
-Future<void> uploadFiles(BuildContext context, List<File> files) async {
-  const int maxFileSize = 100 * 1024 * 1024;
-  var isConnected = await Connectioncontroller.isConnected();
-  if (isConnected) {
-    ValueNotifier<double> progressNotifier = ValueNotifier<double>(0);
+  Future<void> uploadFiles(BuildContext context, List<File> files) async {
+    const int maxFileSize = 100 * 1024 * 1024;
+    var isConnected = await Connectioncontroller.isConnected();
+    if (isConnected) {
+      ValueNotifier<double> progressNotifier = ValueNotifier<double>(0);
 
-    try {
-      String? accessToken = await getAccessToken();
-      int totalFiles = files.length;
-      int uploadedFiles = 0;
+      try {
+        String? accessToken = await getAccessToken();
+        int totalFiles = files.length;
+        int uploadedFiles = 0;
 
-      showProgressDialog(context, progressNotifier);
+        showProgressDialog(context, progressNotifier);
 
-      for (File file in files) {
+        for (File file in files) {
+          String filePath = file.path;
+          print('Attempting to upload file: $filePath');
+
+          try {
+            if (await file.length() > maxFileSize) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('File $filePath exceeds 100 MB size limit.'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              continue;
+            }
+
+            var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
+            request.files
+                .add(await http.MultipartFile.fromPath('files', filePath));
+            request.headers['Authorization'] = 'Bearer $accessToken';
+
+            print('Sending request with file path: $filePath');
+            var response = await request.send();
+
+            if (response.statusCode == 200) {
+              uploadedFiles++;
+              print('File uploaded successfully');
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('File uploaded successfully'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              await Future.delayed(Duration(seconds: 1));
+              await getMedia();
+            } else {
+              print(
+                  'File upload failed with status code: ${response.statusCode}');
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(
+                    'File upload failed with status code: ${response.statusCode}'),
+                backgroundColor: Colors.red,
+              ));
+            }
+            progressNotifier.value = (uploadedFiles / totalFiles) * 100;
+          } catch (e) {
+            print('Error uploading file $filePath: $e');
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('File upload failed: $e'),
+              backgroundColor: Colors.red,
+            ));
+          }
+        }
+      } catch (e) {
+        print('Error uploading files: $e');
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('File upload failed'),
+          backgroundColor: Colors.red,
+        ));
+      } finally {
+        Navigator.of(context).pop();
+      }
+    } else {
+      for (var file in files) {
         String filePath = file.path;
-        print('Attempting to upload file: $filePath');
+        String fileName = path.basename(filePath);
+        print('Attempting to process file offline: $filePath');
+        print('Extracted filename: $fileName');
 
         try {
-        
-
-          if (await file.length() > maxFileSize) {
+          if (await file.length() < maxFileSize) {
+            Media media = Media(
+              Random().nextInt(1000),
+              9,
+              filePath,
+              '',
+              '',
+              filePath,
+              '',
+              '',
+              '',
+              '',
+              '',
+              filePath,
+            );
+            await MagicSignDB().createMedia(media, 0);
+            print('File processed offline: $filePath');
+          } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('File $filePath exceeds 100 MB size limit.'),
@@ -189,108 +267,21 @@ Future<void> uploadFiles(BuildContext context, List<File> files) async {
             );
             continue;
           }
-
-          var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
-          request.files.add(await http.MultipartFile.fromPath('files', filePath));
-          request.headers['Authorization'] = 'Bearer $accessToken';
-
-          print('Sending request with file path: $filePath'); 
-          var response = await request.send();
-
-          if (response.statusCode == 200) {
-            uploadedFiles++;
-            print('File uploaded successfully');
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('File uploaded successfully'),
-                backgroundColor: Colors.green,
-              ),
-            );
-              // Save local path to database
-          Media media = Media(
-            Random().nextInt(1000),
-            9,
-            filePath, 
-            '', '', filePath, '', '', '', '', '', filePath
-          );
-          await MagicSignDB().createMedia(media, 0);
-            await Future.delayed(Duration(seconds: 1));
-            await getMedia();
-          } else {
-            print('File upload failed with status code: ${response.statusCode}');
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text('File upload failed with status code: ${response.statusCode}'),
-              backgroundColor: Colors.red,
-            ));
-          }
-          progressNotifier.value = (uploadedFiles / totalFiles) * 100;
+          getMedia();
         } catch (e) {
-          print('Error uploading file $filePath: $e');
+          print('Error processing file $filePath: $e');
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('File upload failed: $e'),
+            content: Text('File processing failed: $e'),
             backgroundColor: Colors.red,
           ));
         }
       }
-    } catch (e) {
-      print('Error uploading files: $e');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('File upload failed'),
-        backgroundColor: Colors.red,
-      ));
-    } finally {
-      Navigator.of(context).pop();
-    }
-  } else {
-    for (var file in files) {
-      String filePath = file.path;
-      String fileName = path.basename(filePath);
-      print('Attempting to process file offline: $filePath');
-      print('Extracted filename: $fileName');
-
-      try {
-      
-
-        if (await file.length() < maxFileSize) {
-          Media media = Media(
-            Random().nextInt(1000),
-            9,
-            filePath, 
-            '',
-            '',
-            filePath, 
-            '',
-            '',
-            '',
-            '',
-            '',
-            filePath,
-          );
-          await MagicSignDB().createMedia(media, 0);
-          print('File processed offline: $filePath');
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('File $filePath exceeds 100 MB size limit.'),
-              backgroundColor: Colors.red,
-            ),
-          );
-          continue;
-        }
-        getMedia();
-      } catch (e) {
-        print('Error processing file $filePath: $e');
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('File processing failed: $e'),
-          backgroundColor: Colors.red,
-        ));
-      }
     }
   }
-}
-String getFileName(String filePath) {
-  return path.basename(filePath);
-}
+
+  String getFileName(String filePath) {
+    return path.basename(filePath);
+  }
 
   updateMediaData(
       int mediaId, String name, String duration, String retired) async {
@@ -337,6 +328,8 @@ String getFileName(String filePath) {
         );
 
         if (response.statusCode == 204) {
+        await MagicSignDB().deleteMedia(mediaId);
+          getMedia();
         } else {
           print('response status code not 204');
         }
@@ -429,9 +422,9 @@ String getFileName(String filePath) {
   void syncMedias() async {
     var isConnected = await Connectioncontroller.isConnected();
     if (isConnected) {
-      var unsyncedMedias = await MagicSignDB().SYNCfetchAllMedia();
-      if (unsyncedMedias.isNotEmpty) {
-        for (var media in unsyncedMedias) {
+      var media = await MagicSignDB().SYNCfetchAllMedia();
+      if (media.isNotEmpty) {
+        for (var media in media) {
           print("syncronizing files ");
           File file = new File(media.name);
           await uploadFiles(Get.context!, [file]);
