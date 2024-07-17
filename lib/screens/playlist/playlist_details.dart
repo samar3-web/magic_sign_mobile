@@ -196,7 +196,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
               itemBuilder: (BuildContext context, int index) {
                 return GridItem(
                   media: mediaController.mediaList[index],
-                  onDoubleTap: _showPlaylistSelectionDialog,
+                  onLongPress: _showPlaylistSelectionDialog,
                   onAddToTimeline: (Media) {
                     _showPlaylistSelectionDialog(Media);
                   },
@@ -256,28 +256,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                             ),
                           ),
                         ),
-                        /*
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height / 2.5,
-                          child: GridView.builder(
-                            padding: EdgeInsets.all(16.0),
-                            scrollDirection: Axis.horizontal,
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 6.0,
-                              mainAxisSpacing: 10.0,
-                              childAspectRatio: 1.0,
-                            ),
-                            itemCount: mediaController.mediaList.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              return GridItem(
-                                media: mediaController.mediaList[index],
-                                onDoubleTap: _showPlaylistSelectionDialog,
-                              );
-                            },
-                          ),
-                        ),*/
+                      
                         SizedBox(height: 5),
                         Expanded(
                           child: Container(

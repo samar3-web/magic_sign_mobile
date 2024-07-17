@@ -37,8 +37,6 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     });
   }
 
-  
-
   @override
   void dispose() {
     _scrollController.dispose();
@@ -95,8 +93,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
             ),
             TextButton(
               onPressed: () {
-                playlistController.editLayout(layoutId, newName).then((_) {
-                });
+                playlistController.editLayout(layoutId, newName).then((_) {});
                 Navigator.of(context).pop();
               },
               child: Text('Modifier'),
@@ -146,8 +143,7 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
     );
 
     if (deleteConfirmed) {
-      playlistController.deleteLayout(layoutId).then((_) {
-      });
+      playlistController.deleteLayout(layoutId).then((_) {});
     }
   }
 
@@ -180,10 +176,8 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color:
-                            Colors.white, 
-                        borderRadius:
-                            BorderRadius.circular(12.0), 
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12.0),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.grey.withOpacity(0.5),
@@ -370,7 +364,11 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
                                               );
                                             }
                                           },
-                                          child: Icon(Icons.arrow_drop_down),
+                                          child: Icon(
+                                            Icons.arrow_drop_down,
+                                            weight: 700,
+                                            size: 35,
+                                          ),
                                         ),
                                       ),
                                     ),

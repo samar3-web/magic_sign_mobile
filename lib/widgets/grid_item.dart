@@ -8,13 +8,13 @@ import 'package:magic_sign_mobile/screens/media_screen/MediaDialog.dart';
 
 class GridItem extends StatelessWidget {
   final Media media;
-  final Function(Media) onDoubleTap;
-  final Function(Media) onAddToTimeline; // Added parameter
+  final Function(Media) onLongPress;
+  final Function(Media) onAddToTimeline;
 
   GridItem({
     required this.media,
-    required this.onDoubleTap,
-    required this.onAddToTimeline, // Constructor parameter
+    required this.onLongPress,
+    required this.onAddToTimeline,
   });
 
   String getFileType() {
@@ -76,13 +76,13 @@ class GridItem extends StatelessWidget {
           builder: (BuildContext context) {
             return MediaDialog(
               media: media,
-              onAddToTimeline: onAddToTimeline, // Pass onAddToTimeline to MediaDialog
+              onAddToTimeline: onAddToTimeline,
             );
           },
         );
       },
-      onDoubleTap: () {
-        onDoubleTap(media);
+      onLongPress: () {
+        onLongPress(media);
       },
       child: FutureBuilder<String>(
         future: getThumbnailUrl(),

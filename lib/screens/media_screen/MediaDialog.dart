@@ -142,8 +142,9 @@ class _MediaDialogState extends State<MediaDialog> {
             SizedBox(height: 10),
             ElevatedButton(
              onPressed: () {
-                widget.onAddToTimeline(widget.media); // Invoke callback
+                widget.onAddToTimeline(widget.media); 
               },
+
               child: Text("Ajouter à la timeline"),
             ),
           ],
