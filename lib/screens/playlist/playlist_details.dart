@@ -250,7 +250,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                           },
                           child: SizedBox(
                             child: Image.asset(
-                              'assets/images/dossier.png',
+                              'assets/images/media.png',
                               fit: BoxFit.cover,
                               height: 150,
                             ),

@@ -13,6 +13,7 @@ import 'package:magic_sign_mobile/model/Media.dart';
 import 'package:magic_sign_mobile/widgets/BaseScreen.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 
 class MediaScreen extends StatefulWidget {
   const MediaScreen({Key? key}) : super(key: key);
@@ -44,12 +45,7 @@ class _MediaScreenState extends State<MediaScreen> {
     });
     checkConnectivity();
 
-    // Listen to connectivity changes
-    /* Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-      setState(() {
-        isConnected = result == ConnectivityResult.mobile || result == ConnectivityResult.wifi;
-      });
-    });*/
+    
   }
 
   Future<void> checkConnectivity() async {
@@ -73,6 +69,7 @@ class _MediaScreenState extends State<MediaScreen> {
   Future<List<File>> _selectFiles() async {
     FilePickerResult? results = await FilePicker.platform.pickFiles(
       type: FileType.any,
+       allowMultiple: true,
     );
 
     if (results != null) {
@@ -340,7 +337,7 @@ class GridItem extends StatelessWidget {
       }
     } catch (e) {
       print('Error loading image: $e');
-      return 'assets/images/default.png'; // Fallback in case of any error
+      return 'assets/images/default.png'; 
     }
   }
 
