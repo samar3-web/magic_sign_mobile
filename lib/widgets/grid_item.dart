@@ -7,19 +7,22 @@ import 'package:magic_sign_mobile/model/Media.dart';
 import 'package:magic_sign_mobile/screens/media_screen/MediaDialog.dart';
 
 class GridItem extends StatelessWidget {
-  final Media media;
+  final List<Media> mediaList;
+  final int index;
   final Function(Media) onLongPress;
   final Function(Media) onAddToTimeline;
 
   GridItem({
-    required this.media,
+    required this.mediaList,
+    required this.index,
     required this.onLongPress,
     required this.onAddToTimeline,
   });
 
+  Media get media => mediaList[index];
+
   String getFileType() {
     String mediaType = media.mediaType.toLowerCase();
-
     Map<String, String> fileTypes = {
       'jpg': 'image',
       'image': 'image',
@@ -31,7 +34,6 @@ class GridItem extends StatelessWidget {
       'pptx': 'powerpoint',
       'video': 'video',
     };
-
     return fileTypes.containsKey(mediaType) ? fileTypes[mediaType]! : 'other';
   }
 
@@ -75,7 +77,8 @@ class GridItem extends StatelessWidget {
           context: context,
           builder: (BuildContext context) {
             return MediaDialog(
-              media: media,
+              mediaList: mediaList,
+              initialIndex: index,
               onAddToTimeline: onAddToTimeline,
             );
           },

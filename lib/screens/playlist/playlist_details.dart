@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/controller/mediaController.dart';
+import 'package:magic_sign_mobile/controller/widgetController.dart';
 import 'package:magic_sign_mobile/model/Playlist.dart';
 import 'package:magic_sign_mobile/model/Timeline.dart';
 import 'package:magic_sign_mobile/controller/playlistController.dart';
@@ -24,6 +25,7 @@ class PlaylistDetail extends StatefulWidget {
 class _PlaylistDetail extends State<PlaylistDetail> {
   final MediaController mediaController = Get.put(MediaController());
   final PlaylistController playlistController = Get.put(PlaylistController());
+  final WidgetController widgetController = Get.put(WidgetController());
   Timeline? timeline;
   Media? media;
 
@@ -140,6 +142,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
+              
             },
             child: Text('OK'),
           ),
@@ -177,32 +180,53 @@ class _PlaylistDetail extends State<PlaylistDetail> {
     }
   }
 
-  Future<void> _showMediaGridDialog() async {
-    showDialog(
+  void _showMediaGridDialog() {
+    showGeneralDialog(
       context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          child: SizedBox(
-            child: GridView.builder(
-              padding: EdgeInsets.all(16.0),
-              scrollDirection: Axis.vertical,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 6.0,
-                mainAxisSpacing: 10.0,
-                childAspectRatio: 1.0,
-              ),
-              itemCount: mediaController.mediaList.length,
-              itemBuilder: (BuildContext context, int index) {
-                return GridItem(
-                  media: mediaController.mediaList[index],
-                  onLongPress: _showPlaylistSelectionDialog,
-                  onAddToTimeline: (Media) {
-                    _showPlaylistSelectionDialog(Media);
-                  },
-                );
+      barrierDismissible: true,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      pageBuilder: (BuildContext context, Animation animation,
+          Animation secondaryAnimation) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text('Parcourir les médias'),
+            leading: IconButton(
+              icon: Icon(Icons.close),
+              onPressed: () {
+                Navigator.of(context).pop();
               },
             ),
+          ),
+          body: GridView.builder(
+            padding: EdgeInsets.all(12.0),
+            scrollDirection: Axis.vertical,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 6.0,
+              mainAxisSpacing: 10.0,
+              childAspectRatio: 1.0,
+            ),
+            itemCount: mediaController.mediaList.length,
+            itemBuilder: (BuildContext context, int index) {
+              return GridItem(
+                mediaList: mediaController.mediaList,
+                index: index,
+                onLongPress: _showPlaylistSelectionDialog,
+                onAddToTimeline: (Media) {
+                  _showPlaylistSelectionDialog(Media);
+                },
+              );
+            },
+          ),
+        );
+      },
+      transitionDuration: const Duration(milliseconds: 200),
+      transitionBuilder: (context, a1, a2, widget) {
+        return Transform.scale(
+          scale: a1.value,
+          child: Opacity(
+            opacity: a1.value,
+            child: widget,
           ),
         );
       },
@@ -213,7 +237,8 @@ class _PlaylistDetail extends State<PlaylistDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.playlist!.layout),
+        title: Text(widget.playlist!.layout,
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
       ),
       body: Stack(
         children: [
@@ -248,15 +273,24 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                           onTap: () {
                             _showMediaGridDialog();
                           },
-                          child: SizedBox(
-                            child: Image.asset(
-                              'assets/images/media.png',
-                              fit: BoxFit.cover,
-                              height: 150,
-                            ),
+                          child: Column(
+                            children: [
+                              Text(
+                                'Appuyez pour parcourir les médias',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Image.asset(
+                                'assets/images/media.png',
+                                fit: BoxFit.cover,
+                                height: 150,
+                              ),
+                            ],
                           ),
                         ),
-                      
                         SizedBox(height: 5),
                         Expanded(
                           child: Container(
@@ -300,23 +334,11 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                           child: Row(
                                             children: timeline.mediaList
                                                 .map((Media media) {
+                                              int index = timeline.mediaList
+                                                  .indexOf(media);
+                                              int ordre = index + 1;
+                                              print('ordre : $ordre');
                                               return GestureDetector(
-                                                onTap: () {
-                                                  showDialog(
-                                                    context: context,
-                                                    builder:
-                                                        (BuildContext context) {
-                                                      return MediaDialog(
-                                                        media: media,
-                                                        onAddToTimeline:
-                                                            (Media) {
-                                                          _showPlaylistSelectionDialog(
-                                                              Media);
-                                                        },
-                                                      );
-                                                    },
-                                                  );
-                                                },
                                                 child: Padding(
                                                   padding: EdgeInsets.symmetric(
                                                       horizontal: 8.0),
@@ -337,7 +359,7 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                                               .ellipsis,
                                                         ),
                                                         Text(
-                                                          'Duration :  ${formatDuration(widget.playlist!.duration)}',
+                                                          'Duration :  ${formatDuration(timeline.mediaList[0].duration)}',
                                                           style: TextStyle(
                                                               color:
                                                                   Colors.white),
@@ -364,7 +386,35 @@ class _PlaylistDetail extends State<PlaylistDetail> {
                                                                 color:
                                                                     Colors.grey,
                                                               ),
-                                                              onPressed: () {},
+                                                              onPressed: () {
+                                                                if (widget.playlist !=
+                                                                        null &&
+                                                                    widget
+                                                                        .playlist!
+                                                                        .regions
+                                                                        .isNotEmpty) {
+                                                                  final regions = widget
+                                                                      .playlist!
+                                                                      .regions;
+
+                                                                  for (var region
+                                                                      in regions) {
+                                                                    print(
+                                                                        "Region ID: ${region.regionId}, Name: ${region.name}");
+                                                                    print(
+                                                                        "display order :  $ordre");
+
+                                                                    widgetController.deleteWidget(
+                                                                        region
+                                                                            .regionId,
+                                                                        ordre);
+                                                                    _refreshAssignedMedia();
+                                                                  }
+                                                                } else {
+                                                                  print(
+                                                                      "Playlist or regions are null or empty.");
+                                                                }
+                                                              },
                                                             ),
                                                           ],
                                                         ),

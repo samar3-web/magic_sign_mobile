@@ -11,17 +11,17 @@ class Playlist {
   final List<Region> regions;
   final String createdDt;
 
-  Playlist(
-      {required this.layoutId,
-      required this.campaignId,
-      required this.layout,
-      required this.status,
-      required this.duration,
-      required this.owner,
-      required this.playlistId,
-      required this.regions,
-          required this.createdDt,
-});
+  Playlist({
+    required this.layoutId,
+    required this.campaignId,
+    required this.layout,
+    required this.status,
+    required this.duration,
+    required this.owner,
+    required this.playlistId,
+    required this.regions,
+    required this.createdDt,
+  });
 
   factory Playlist.fromJson(Map<String, dynamic> json) {
     return Playlist(
@@ -36,8 +36,7 @@ class Playlist {
             return Region.fromJson(regionJson);
           }).toList() ??
           [],
-                createdDt: json['createdDt'] ?? 'Unknown',
-
+      createdDt: json['createdDt'] ?? 'Unknown',
     );
   }
 }
@@ -65,21 +64,55 @@ class Region {
   }
 }
 
+class Widgets {
+  int? widgetId;
+  int? playlistId;
+  int? duration;
+  String? displayOrder;
+  String? useDuration;
+  String? calculatedDuration;
+
+  Widgets({
+    this.widgetId,
+    this.playlistId,
+    this.duration,
+    this.displayOrder,
+    this.useDuration,
+    this.calculatedDuration,
+  });
+
+  factory Widgets.fromJson(Map<String, dynamic> json) {
+    return Widgets(
+      widgetId: json['widgetId'],
+      playlistId: json['playlistId'],
+      duration: json['duration'],
+      displayOrder: json['displayOrder'],
+      useDuration: json['useDuration'],
+      calculatedDuration: json['calculatedDuration'],
+    );
+  }
+}
+
 class PlaylistInRegion {
   final int playlistId;
   final String name;
-  List<Map<String, dynamic>> widgets;
+  List<Widgets>? widgets;
 
-  PlaylistInRegion(
-      {required this.playlistId, required this.name, required this.widgets});
+  PlaylistInRegion({
+    required this.playlistId,
+    required this.name,
+    required this.widgets,
+  });
 
   factory PlaylistInRegion.fromJson(Map<String, dynamic> json) {
-    List<Map<String, dynamic>> parsedWidgets =
-        List<Map<String, dynamic>>.from(json['widgets']);
+    // Parse the 'widgets' list from JSON
+    List<dynamic>? jsonWidgets = json['widgets'];
+    List<Widgets>? widgets = jsonWidgets?.map((widgetJson) => Widgets.fromJson(widgetJson)).toList();
+
     return PlaylistInRegion(
       playlistId: json['playlistId'] ?? 0,
       name: json['name'] ?? 'Unknown Playlist',
-      widgets: parsedWidgets,
+      widgets: widgets ?? [],
     );
   }
 }
