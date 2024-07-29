@@ -136,8 +136,8 @@ class _PlaylistDetail extends State<PlaylistDetail> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Success'),
-        content: Text('The media has been successfully assigned.'),
+        title: Text('Succès'),
+        content: Text('Le média a été attribué avec succès..'),
         actions: <Widget>[
           TextButton(
             onPressed: () {
@@ -181,33 +181,32 @@ class _PlaylistDetail extends State<PlaylistDetail> {
   }
 
   void _showMediaGridDialog() {
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-      pageBuilder: (BuildContext context, Animation animation,
-          Animation secondaryAnimation) {
-        return Scaffold(
-          appBar: AppBar(
-            title: Text('Parcourir les médias'),
-            leading: IconButton(
-              icon: Icon(Icons.close),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
+  showGeneralDialog(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+    pageBuilder: (BuildContext context, Animation animation,
+        Animation secondaryAnimation) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('Parcourir les médias'),
+          leading: IconButton(
+            icon: Icon(Icons.close),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
           ),
-          body: GridView.builder(
-            padding: EdgeInsets.all(12.0),
-            scrollDirection: Axis.vertical,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 6.0,
-              mainAxisSpacing: 10.0,
-              childAspectRatio: 1.0,
-            ),
-            itemCount: mediaController.mediaList.length,
-            itemBuilder: (BuildContext context, int index) {
+        ),
+        body: GridView.count(
+          padding: EdgeInsets.all(12.0),
+          scrollDirection: Axis.vertical,
+          crossAxisCount: 2,
+          crossAxisSpacing: 6.0,
+          mainAxisSpacing: 10.0,
+          childAspectRatio: 1.0,
+          children: List.generate(
+            mediaController.mediaList.length,
+            (index) {
               return GridItem(
                 mediaList: mediaController.mediaList,
                 index: index,
@@ -218,20 +217,21 @@ class _PlaylistDetail extends State<PlaylistDetail> {
               );
             },
           ),
-        );
-      },
-      transitionDuration: const Duration(milliseconds: 200),
-      transitionBuilder: (context, a1, a2, widget) {
-        return Transform.scale(
-          scale: a1.value,
-          child: Opacity(
-            opacity: a1.value,
-            child: widget,
-          ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+    transitionDuration: const Duration(milliseconds: 200),
+    transitionBuilder: (context, a1, a2, widget) {
+      return Transform.scale(
+        scale: a1.value,
+        child: Opacity(
+          opacity: a1.value,
+          child: widget,
+        ),
+      );
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context) {

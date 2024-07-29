@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/controller/mediaController.dart';
 import 'package:magic_sign_mobile/model/Media.dart';
@@ -23,6 +24,8 @@ class MediaDialog extends StatefulWidget {
 }
 
 class _MediaDialogState extends State<MediaDialog> {
+ 
+
   PageController? _pageController;
   VideoPlayerController? _videoPlayerController;
   ChewieController? _chewieController;
@@ -36,40 +39,40 @@ class _MediaDialogState extends State<MediaDialog> {
     mediaController = Get.put(MediaController());
     _currentMediaName = widget.mediaList[widget.initialIndex].name;
     _pageController = PageController(initialPage: widget.initialIndex);
-    if (widget.mediaList[widget.initialIndex].mediaType.toLowerCase() == 'video') {
+    if (widget.mediaList[widget.initialIndex].mediaType.toLowerCase() ==
+        'video') {
       _initializeVideoPlayer(widget.mediaList[widget.initialIndex]);
     }
   }
 
-    void _initializeVideoPlayer(Media media) {
+  void _initializeVideoPlayer(Media media) {
     _videoPlayerController = VideoPlayerController.network(
       'https://magic-sign.cloud/v_ar/web/MSlibrary/${media.storedAs}',
     )..initialize().then((_) {
-      setState(() {
-        _chewieController = ChewieController(
-          videoPlayerController: _videoPlayerController!,
-          autoPlay: true,
-          looping: true,
-          materialProgressColors: ChewieProgressColors(
-            playedColor: Colors.red,
-            handleColor: Colors.red,
-            backgroundColor: Colors.black,
-            bufferedColor: Colors.grey,
-          ),
-          placeholder: Center(child: CircularProgressIndicator()),
-        );
-        _isVideoPlayerInitialized = true;
+        setState(() {
+          _chewieController = ChewieController(
+            videoPlayerController: _videoPlayerController!,
+            autoPlay: true,
+            looping: true,
+            materialProgressColors: ChewieProgressColors(
+              playedColor: Colors.red,
+              handleColor: Colors.red,
+              backgroundColor: Colors.black,
+              bufferedColor: Colors.grey,
+            ),
+            placeholder: Center(child: CircularProgressIndicator()),
+          );
+          _isVideoPlayerInitialized = true;
+        });
+      }).catchError((error) {
+        print('Error initializing video player: $error');
+        setState(() {
+          _isVideoPlayerInitialized = false;
+        });
       });
-    }).catchError((error) {
-      print('Error initializing video player: $error');
-      setState(() {
-        _isVideoPlayerInitialized = false;
-      });
-    });
   }
 
   void _disposeVideoPlayer() {
-    _chewieController?.dispose();
     _videoPlayerController?.dispose();
     _isVideoPlayerInitialized = false;
   }
@@ -85,18 +88,9 @@ class _MediaDialogState extends State<MediaDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Expanded(
-            child: Text(
-              _currentMediaName,
-              style: TextStyle(
-                fontSize: 16,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
           IconButton(
             icon: Icon(Icons.close),
             onPressed: () {
@@ -105,9 +99,9 @@ class _MediaDialogState extends State<MediaDialog> {
           ),
         ],
       ),
-       content: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height * 0.5,
+      content: Container(
+        width: MediaQuery.of(context).size.width * 0.9,
+        height: MediaQuery.of(context).size.height * 0.7,
         child: PageView.builder(
           controller: _pageController,
           itemCount: widget.mediaList.length,
@@ -131,13 +125,15 @@ class _MediaDialogState extends State<MediaDialog> {
                 children: [
                   if (media.mediaType.toLowerCase() == 'image')
                     CachedNetworkImage(
-                      imageUrl:
-                          "https://magic-sign.cloud/v_ar/web/MSlibrary/${media.storedAs}",
-                      placeholder: (context, url) =>
-                          Center(child: CircularProgressIndicator()),
-                      errorWidget: (context, url, error) => Icon(Icons.error),
-                      fit: BoxFit.cover,
-                    ),
+                              imageUrl:
+                                  "https://magic-sign.cloud/v_ar/web/MSlibrary/${media.storedAs}",
+                              placeholder: (context, url) =>
+                                  Center(child: CircularProgressIndicator()),
+                              errorWidget: (context, url, error) =>
+                                  Icon(Icons.error),
+                              fit: BoxFit.cover,
+                           
+                            ),
                   if (media.mediaType.toLowerCase() == 'video')
                     _isVideoPlayerInitialized
                         ? Column(

@@ -41,13 +41,7 @@ class GridItem extends StatelessWidget {
     var isConnected = await Connectioncontroller.isConnected();
     String fileType = getFileType();
     try {
-      if (fileType == 'image') {
-        if (isConnected) {
-          return await MediaController().getImageUrl(media.storedAs);
-        } else {
-          return 'assets/images/logo.jpg';
-        }
-      } else {
+      
         switch (fileType) {
           case 'word':
             return 'assets/images/word-logo.png';
@@ -62,7 +56,7 @@ class GridItem extends StatelessWidget {
           default:
             return 'assets/images/default.png';
         }
-      }
+      
     } catch (e) {
       print('Error loading image: $e');
       return 'assets/images/default.png';
