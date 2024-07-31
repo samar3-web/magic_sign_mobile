@@ -197,13 +197,11 @@ class _AddLayoutPopupState extends State<AddLayoutPopup> {
 
                       child: isconnected
                           ? Image.network(
-                              imageUrl +
-                                  templates[index]["image"],
+                              imageUrl,
                               fit: BoxFit.fill,
                             )
                           : Image.asset(
-                             imageUrl +
-                                  templates[index]["image"],
+                             imageUrl ,
                               fit: BoxFit.fill,
                             ),
                     ),

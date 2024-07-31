@@ -43,7 +43,7 @@ class LoginController extends GetxController {
 
   String get baseUrl => baseUrlController.text;
 
- Future<void> saveBaseUrl(
+  Future<void> saveBaseUrl(
       String url, String clientId, String clientSecret) async {
     print('Saving base URL: $url');
     print('Saving client ID: $clientId');
@@ -55,25 +55,25 @@ class LoginController extends GetxController {
     await prefs.setString('client_secret', clientSecret);
   }
 
- Future<void> _loadBaseUrl() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? url = prefs.getString('base_url');
-  String? clientId = prefs.getString('client_id');
-  String? clientSecret = prefs.getString('client_secret');
-  
-  if (url == null || clientId == null || clientSecret == null) {
-    return;
+  Future<void> _loadBaseUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? url = prefs.getString('base_url');
+    String? clientId = prefs.getString('client_id');
+    String? clientSecret = prefs.getString('client_secret');
+
+    if (url == null || clientId == null || clientSecret == null) {
+      return;
+    }
+
+    // Continue with setting values
+    baseUrlController.text = url;
+    clientIdController.text = clientId;
+    clientSecretController.text = clientSecret;
+
+    ApiConfig.baseUrl = url;
+    ApiConfig.clientId = clientId;
+    ApiConfig.clientSecret = clientSecret;
   }
-  
-  // Continue with setting values
-  baseUrlController.text = url;
-  clientIdController.text = clientId;
-  clientSecretController.text = clientSecret;
-  
-  ApiConfig.baseUrl = url;
-  ApiConfig.clientId = clientId;
-  ApiConfig.clientSecret = clientSecret;
-}
 
   Future<void> login() async {
     setApiConfiguration();
@@ -108,7 +108,8 @@ class LoginController extends GetxController {
         var expiryDate = DateTime.now().add(Duration(seconds: expiresIn));
         await saveAccessToken(accessToken, expiryDate);
         await saveCredentials(username.text, password.text);
-        await saveBaseUrl(baseUrlController.text,clientIdController.text,clientSecretController.text);
+        await saveBaseUrl(baseUrlController.text, clientIdController.text,
+            clientSecretController.text);
         print('**********response data *********');
         print(accessToken);
         print(tokenType);
@@ -258,38 +259,39 @@ class LoginController extends GetxController {
   }
 
   Future<List<dynamic>> fetchUsers() async {
-    await _loadBaseUrl(); 
+    await _loadBaseUrl();
 
-  if (ApiConfig.baseUrl!.isEmpty) {
-    throw Exception('Base URL is not set');
-  }
+    if (ApiConfig.baseUrl!.isEmpty) {
+      throw Exception('Base URL is not set');
+    }
 
-  String? accessToken = await getAccessToken();
-  var url = _getFullUrl('/web/api/user');
+    String? accessToken = await getAccessToken();
+    var url = _getFullUrl('/web/api/user');
 
-  if (accessToken == null) {
-    await refreshAccessToken();
-    accessToken = await getAccessToken();
-  }
+    if (accessToken == null) {
+      await refreshAccessToken();
+      accessToken = await getAccessToken();
+    }
 
-  final response = await http.get(Uri.parse(url), headers: {
-    'Authorization': 'Bearer $accessToken',
-  });
+    final response = await http.get(Uri.parse(url), headers: {
+      'Authorization': 'Bearer $accessToken',
+    });
 
-  if (response.statusCode == 200) {
-    return jsonDecode(response.body);
-  } else {
-    throw Exception('Failed to load users');
-  }
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load users');
+    }
   }
 
   Future<Map<String, dynamic>> getUser() async {
     String? accessToken = await getAccessToken();
-await _loadBaseUrl(); 
+    await _loadBaseUrl();
 
-  if (ApiConfig.baseUrl!.isEmpty) {
-    throw Exception('Base URL is not set');
-  }    var url = _getFullUrl('/web/api/user/me');
+    if (ApiConfig.baseUrl!.isEmpty) {
+      throw Exception('Base URL is not set');
+    }
+    var url = _getFullUrl('/web/api/user/me');
 
     if (accessToken == null) {
       await refreshAccessToken();
@@ -315,5 +317,18 @@ await _loadBaseUrl();
     await prefs.remove('password');
     print('Access Token Removed');
     Get.offAll(() => LoginScreen());
+  }
+
+  Future<void> clearApiConfiguration() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('access_token');
+    await prefs.remove('expiry_date');
+
+    await prefs.remove('username');
+    await prefs.remove('password');
+    await prefs.remove('base_url');
+    await prefs.remove('client_id');
+    await prefs.remove('client_secret');
+    print('API Configuration cleared');
   }
 }
