@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/controller/connectionController.dart';
+import 'package:magic_sign_mobile/controller/loginController.dart';
 import 'package:magic_sign_mobile/controller/mediaController.dart';
 import 'package:magic_sign_mobile/screens/media_screen/media_details_dialog.dart';
 import 'package:magic_sign_mobile/model/Media.dart';
@@ -30,6 +31,7 @@ class _MediaScreenState extends State<MediaScreen> {
   bool allMediaLoaded = false;
   bool isConnected = false;
 
+   
   Future<void> _refreshMedia() async {
     await mediaController.getMedia();
   }
@@ -241,7 +243,7 @@ class _MediaScreenState extends State<MediaScreen> {
   }
 }
 
-class GridItem extends StatelessWidget {
+class GridItem extends StatefulWidget {
   final Media media;
   final int maxNameLength;
   final bool isConnected;
@@ -251,6 +253,15 @@ class GridItem extends StatelessWidget {
       required this.isConnected,
       this.maxNameLength = 20})
       : super(key: key);
+
+  @override
+  State<GridItem> createState() => _GridItemState();
+}
+
+class _GridItemState extends State<GridItem> {
+
+  final LoginController loginController = Get.find();
+  String get apiUrl => loginController.baseUrl;
 
   String getShortenedName(String name, bool isConnected, int maxNameLength) {
     if (isConnected) {
@@ -270,7 +281,7 @@ class GridItem extends StatelessWidget {
   }
 
   String getFileType() {
-    String mediaType = media.mediaType.toLowerCase();
+    String mediaType = widget.media.mediaType.toLowerCase();
 
     Map<String, String> fileTypes = {
       'jpg': 'image',
@@ -288,7 +299,7 @@ class GridItem extends StatelessWidget {
     if (fileType != null) {
       return fileType;
     } else {
-      String extension = media.name.split('.').last.toLowerCase();
+      String extension = widget.media.name.split('.').last.toLowerCase();
       fileType = fileTypes[extension];
       return fileType ?? 'other';
     }
@@ -297,17 +308,17 @@ class GridItem extends StatelessWidget {
   Future<String> getThumbnailUrl() async {
     String fileType = getFileType();
     print('File type: $fileType');
-    print('connectivity : $isConnected');
+    print('connectivity : ${widget.isConnected}');
     try {
       if (fileType == 'image') {
-        if (!isConnected) {
-          print('Using local image path: ${media.localImagePath}');
+        if (!widget.isConnected) {
+          print('Using local image path: ${widget.media.localImagePath}');
 
           // Offline mode, try local image path
-          if (media.localImagePath != null &&
-              media.localImagePath!.isNotEmpty) {
-            print('Using local image path: ${media.localImagePath}');
-            return media.localImagePath!;
+          if (widget.media.localImagePath != null &&
+              widget.media.localImagePath!.isNotEmpty) {
+            print('Using local image path: ${widget.media.localImagePath}');
+            return widget.media.localImagePath!;
           } else {
             // No local image path available
             print('No local image path available');
@@ -315,8 +326,8 @@ class GridItem extends StatelessWidget {
           }
         } else {
           // Online mode, fetch image from network
-          print('Fetching online image: ${media.storedAs}');
-          return await MediaController().getImageUrl(media.storedAs);
+          print('Fetching online image: ${widget.media.storedAs}');
+          return await MediaController().getImageUrl(widget.media.storedAs);
         }
       } else {
         // Non-image file types
@@ -348,7 +359,7 @@ class GridItem extends StatelessWidget {
         showDialog(
           context: context,
           builder: (BuildContext context) {
-            return MediaDetailsDialog(media: media);
+            return MediaDetailsDialog(media: widget.media);
           },
         );
       },
@@ -408,12 +419,12 @@ class GridItem extends StatelessWidget {
                                 child: Text('Error: ${snapshot.error}'));
                           } else {
                             String thumbnailUrl = snapshot.data!;
-                            if (isConnected) {
+                            if (widget.isConnected) {
                               if (getFileType() == 'image') {
                                 // If connected, use CachedNetworkImageBuilder for all images
                                 return CachedNetworkImageBuilder(
                                   url:
-                                      "https://magic-sign.cloud/v_ar/web/MSlibrary/${media.storedAs}",
+                                      "${loginController.baseUrl}/web/MSlibrary/${widget.media.storedAs}",
                                   builder: (image) {
                                     return Center(child: Image.file(image));
                                   },
@@ -436,12 +447,12 @@ class GridItem extends StatelessWidget {
                               // If not connected
                               if (getFileType() == 'image') {
                                 // If local image path is available, use it
-                                if (media.localImagePath != null &&
-                                    media.localImagePath!.isNotEmpty) {
+                                if (widget.media.localImagePath != null &&
+                                    widget.media.localImagePath!.isNotEmpty) {
                                   print(
-                                      'Local image path: ${media.localImagePath}');
+                                      'Local image path: ${widget.media.localImagePath}');
                                   File localImageFile =
-                                      File(media.localImagePath!);
+                                      File(widget.media.localImagePath!);
                                   if (localImageFile.existsSync()) {
                                     print('Local image file exists');
                                     return Image.file(
@@ -480,7 +491,7 @@ class GridItem extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      getShortenedName(media.name, isConnected, 20),
+                      getShortenedName(widget.media.name, widget.isConnected, 20),
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,

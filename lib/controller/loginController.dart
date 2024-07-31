@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:magic_sign_mobile/api_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart';
 import 'package:magic_sign_mobile/screens/login_screen/login_screen.dart';
@@ -10,18 +11,83 @@ import 'package:magic_sign_mobile/screens/login_screen/login_screen.dart';
 class LoginController extends GetxController {
   TextEditingController username = TextEditingController();
   TextEditingController password = TextEditingController();
-  Timer? _timer; 
+  TextEditingController baseUrlController = TextEditingController();
+  TextEditingController clientIdController = TextEditingController();
+  TextEditingController clientSecretController = TextEditingController();
+  Timer? _timer;
   bool isRefreshingToken = false;
 
+  @override
+  void onInit() {
+    super.onInit();
+    _loadBaseUrl();
+  }
+
+  void setApiConfiguration() {
+    String baseUrl = baseUrlController.text.trim();
+    String clientId = clientIdController.text.trim();
+    String clientSecret = clientSecretController.text.trim();
+
+    if (baseUrl.isEmpty || clientId.isEmpty || clientSecret.isEmpty) {
+      Get.snackbar('Configuration Error',
+          'Base URL, Client ID, and Client Secret cannot be empty');
+      return;
+    }
+
+    ApiConfig.setConfiguration(baseUrl, clientId, clientSecret);
+  }
+
+  String _getFullUrl(String endpoint) {
+    return Uri.parse('${ApiConfig.baseUrl}$endpoint').toString();
+  }
+
+  String get baseUrl => baseUrlController.text;
+
+ Future<void> saveBaseUrl(
+      String url, String clientId, String clientSecret) async {
+    print('Saving base URL: $url');
+    print('Saving client ID: $clientId');
+    print('Saving client secret: $clientSecret');
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('base_url', url);
+    await prefs.setString('client_id', clientId);
+    await prefs.setString('client_secret', clientSecret);
+  }
+
+ Future<void> _loadBaseUrl() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? url = prefs.getString('base_url');
+  String? clientId = prefs.getString('client_id');
+  String? clientSecret = prefs.getString('client_secret');
+  
+  if (url == null || clientId == null || clientSecret == null) {
+    return;
+  }
+  
+  // Continue with setting values
+  baseUrlController.text = url;
+  clientIdController.text = clientId;
+  clientSecretController.text = clientSecret;
+  
+  ApiConfig.baseUrl = url;
+  ApiConfig.clientId = clientId;
+  ApiConfig.clientSecret = clientSecret;
+}
+
   Future<void> login() async {
-    var url = "https://magic-sign.cloud/v_ar/web/api/authorize/access_token";
+    setApiConfiguration();
+
+    var url = _getFullUrl('/web/api/authorize/access_token');
     Map<String, dynamic> body = {
       "username": username.text,
       "password": password.text,
       "grant_type": "client_credentials",
-      "client_id": "xpFXul0aZEVcNbXZaMfMZS6XcUivtI5xhFFyBaps",
-      "client_secret":
-          "6KtHovsZM52sW9dvYKhYTHXhTyCbEXWpyST5niIvtLKBQw8tiYai1xrCtGdimzTjIe7nUMVtPgY5KiK3WipDTDOxZl0De8AhOwzZI5bhFsEEwuQklXbU2xHH3lbiCdQiEFniqN2p0f2HCpOtzifABrJvgPsXNP12WrVuybdGv4Pj6IpcJflrrQ4spOwiwDOHr3boiQkA2tTthyV7yTjl8qctb4zNPnU7NHnMnuCYguE6hLATxIbvCY4Pz3yP0J"
+      "client_id": ApiConfig.clientId,
+      "client_secret": ApiConfig.clientSecret,
+      //"client_id": "xpFXul0aZEVcNbXZaMfMZS6XcUivtI5xhFFyBaps",
+      //"client_secret":
+      //  "6KtHovsZM52sW9dvYKhYTHXhTyCbEXWpyST5niIvtLKBQw8tiYai1xrCtGdimzTjIe7nUMVtPgY5KiK3WipDTDOxZl0De8AhOwzZI5bhFsEEwuQklXbU2xHH3lbiCdQiEFniqN2p0f2HCpOtzifABrJvgPsXNP12WrVuybdGv4Pj6IpcJflrrQ4spOwiwDOHr3boiQkA2tTthyV7yTjl8qctb4zNPnU7NHnMnuCYguE6hLATxIbvCY4Pz3yP0J"
     };
 
     var response = await http.post(
@@ -31,17 +97,18 @@ class LoginController extends GetxController {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
     );
+    print(url);
 
     if (response.statusCode == 200) {
       try {
         var data = jsonDecode(response.body);
         var accessToken = data['access_token'];
         var tokenType = data['token_type'];
-        var expiresIn = data['expires_in']; 
+        var expiresIn = data['expires_in'];
         var expiryDate = DateTime.now().add(Duration(seconds: expiresIn));
         await saveAccessToken(accessToken, expiryDate);
-        await saveCredentials(username.text, password.text); 
-
+        await saveCredentials(username.text, password.text);
+        await saveBaseUrl(baseUrlController.text,clientIdController.text,clientSecretController.text);
         print('**********response data *********');
         print(accessToken);
         print(tokenType);
@@ -75,11 +142,11 @@ class LoginController extends GetxController {
   }
 
   Future<void> refreshAccessToken() async {
-    if (isRefreshingToken) return; 
+    if (isRefreshingToken) return;
     isRefreshingToken = true;
 
     print('Attempting to refresh token...');
-    var url = "https://magic-sign.cloud/v_ar/web/api/authorize/access_token";
+    var url = _getFullUrl('/web/api/authorize/access_token');
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? username = prefs.getString('username');
     String? password = prefs.getString('password');
@@ -89,9 +156,8 @@ class LoginController extends GetxController {
         "username": username,
         "password": password,
         "grant_type": "client_credentials",
-        "client_id": "xpFXul0aZEVcNbXZaMfMZS6XcUivtI5xhFFyBaps",
-        "client_secret":
-            "6KtHovsZM52sW9dvYKhYTHXhTyCbEXWpyST5niIvtLKBQw8tiYai1xrCtGdimzTjIe7nUMVtPgY5KiK3WipDTDOxZl0De8AhOwzZI5bhFsEEwuQklXbU2xHH3lbiCdQiEFniqN2p0f2HCpOtzifABrJvgPsXNP12WrVuybdGv4Pj6IpcJflrrQ4spOwiwDOHr3boiQkA2tTthyV7yTjl8qctb4zNPnU7NHnMnuCYguE6hLATxIbvCY4Pz3yP0J"
+        "client_id": ApiConfig.clientId,
+        "client_secret": ApiConfig.clientSecret,
       };
 
       var response = await http.post(
@@ -130,8 +196,7 @@ class LoginController extends GetxController {
 
   Future<void> verifyCredentials(
       String accessToken, String username, String password) async {
-    var url =
-        "https://magic-sign.cloud/v_ar/web/api/login_ws/$username/$password";
+    var url = _getFullUrl('/web/api/login_ws/$username/$password');
     var response = await http.get(
       Uri.parse(url),
       headers: {
@@ -193,38 +258,47 @@ class LoginController extends GetxController {
   }
 
   Future<List<dynamic>> fetchUsers() async {
-    String? accessToken = await getAccessToken();
+    await _loadBaseUrl(); 
 
-    if (accessToken == null) {
-      await refreshAccessToken();
-      accessToken = await getAccessToken();
-    }
+  if (ApiConfig.baseUrl!.isEmpty) {
+    throw Exception('Base URL is not set');
+  }
 
-    final response = await http
-        .get(Uri.parse('https://magic-sign.cloud/v_ar/web/api/user'), headers: {
-      'Authorization': 'Bearer $accessToken',
-    });
+  String? accessToken = await getAccessToken();
+  var url = _getFullUrl('/web/api/user');
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to load users');
-    }
+  if (accessToken == null) {
+    await refreshAccessToken();
+    accessToken = await getAccessToken();
+  }
+
+  final response = await http.get(Uri.parse(url), headers: {
+    'Authorization': 'Bearer $accessToken',
+  });
+
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body);
+  } else {
+    throw Exception('Failed to load users');
+  }
   }
 
   Future<Map<String, dynamic>> getUser() async {
     String? accessToken = await getAccessToken();
+await _loadBaseUrl(); 
+
+  if (ApiConfig.baseUrl!.isEmpty) {
+    throw Exception('Base URL is not set');
+  }    var url = _getFullUrl('/web/api/user/me');
 
     if (accessToken == null) {
       await refreshAccessToken();
       accessToken = await getAccessToken();
     }
 
-    final response = await http.get(
-        Uri.parse('https://magic-sign.cloud/v_ar/web/api/user/me'),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-        });
+    final response = await http.get(Uri.parse(url), headers: {
+      'Authorization': 'Bearer $accessToken',
+    });
 
     if (response.statusCode == 200) {
       print(response.body);
@@ -237,8 +311,8 @@ class LoginController extends GetxController {
   logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('access_token');
-    await prefs.remove('username'); 
-    await prefs.remove('password'); 
+    await prefs.remove('username');
+    await prefs.remove('password');
     print('Access Token Removed');
     Get.offAll(() => LoginScreen());
   }

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:magic_sign_mobile/controller/connectionController.dart';
+import 'package:magic_sign_mobile/controller/loginController.dart';
 import 'package:magic_sign_mobile/model/Player.dart';
 import 'package:magic_sign_mobile/model/Playlist.dart';
 import 'package:magic_sign_mobile/screens/planification/planification_screen.dart';
@@ -13,6 +14,10 @@ import '../sqlitedb/magic_sign_db.dart';
 class PlanificationController extends GetxController {
   late AppointmentDataSource appointmentsDataSource;
   RxList<Playlist> playlistList = <Playlist>[].obs;
+
+  LoginController loginController = Get.put(LoginController());
+
+  String get apiUrl => loginController.baseUrl;
 
   PlanificationController() {
     appointmentsDataSource = AppointmentDataSource([]);
@@ -28,8 +33,6 @@ class PlanificationController extends GetxController {
     return accessToken;
   }
 
- 
-
   Future<List<Map<String, dynamic>>> fetchScheduleEvent() async {
     var isConnected = await Connectioncontroller.isConnected();
     if (isConnected) {
@@ -43,13 +46,15 @@ class PlanificationController extends GetxController {
         return [];
       }
 
-      const apiUrl = 'https://magic-sign.cloud/v_ar/web/api/events.php';
-
       try {
-        final response = await http.get(Uri.parse(apiUrl), headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Content-Type': 'application/json',
-        });
+        final response = await http.get(
+            Uri.parse('${loginController.baseUrl}/web/api/events.php'),
+            headers: {
+              'Authorization': 'Bearer $accessToken',
+              'Content-Type': 'application/json',
+            });
+
+        print(' eveents : $Uri.base');
 
         print(response.body);
 
@@ -106,7 +111,7 @@ class PlanificationController extends GetxController {
       }
 
       final response = await http.get(
-        Uri.parse("https://magic-sign.cloud/v_ar/web/api/layout"),
+        Uri.parse("'${loginController.baseUrl}/web/api/layout"),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',

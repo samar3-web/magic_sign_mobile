@@ -135,6 +135,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               ElevatedButton(
                                 onPressed: () {
+                                            controller.setApiConfiguration();
+
                                   if (_formKey.currentState!.validate()) {
                                     controller.login();
                                   }

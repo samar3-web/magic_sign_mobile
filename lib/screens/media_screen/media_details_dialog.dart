@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
+import 'package:magic_sign_mobile/controller/loginController.dart';
 import 'package:magic_sign_mobile/controller/mediaController.dart';
 import 'package:magic_sign_mobile/screens/media_screen/DeleteDialog.dart';
 import 'package:magic_sign_mobile/model/Media.dart';
@@ -23,6 +24,9 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
   IconButton? _pauseButton;
   late MediaController mediaController;
 
+   final LoginController loginController = Get.find();
+  String get apiUrl => loginController.baseUrl;
+
   String formatDuration(String durationString) {
     int duration = int.tryParse(durationString) ?? 0;
     int hours = duration ~/ 3600;
@@ -33,7 +37,7 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
 
   Future<String> _getImageUrl() async {
     await Future.delayed(Duration(seconds: 2));
-    return "https://magic-sign.cloud/v_ar/web/MSlibrary/${widget.media.storedAs}";
+    return "${loginController.baseUrl}/web/MSlibrary/${widget.media.storedAs}";
   }
 
   @override
@@ -42,7 +46,7 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
     mediaController = Get.put(MediaController());
     if (widget.media.mediaType.toLowerCase() == 'video') {
       _videoPlayerController = VideoPlayerController.network(
-          'https://magic-sign.cloud/v_ar/web/MSlibrary/${widget.media.storedAs}');
+          '${loginController.baseUrl}/web/MSlibrary/${widget.media.storedAs}');
       _videoPlayerController!.initialize().then((_) {
         if (mounted) {
           setState(() {
@@ -173,7 +177,7 @@ class _MediaDetailsDialogState extends State<MediaDetailsDialog> {
                 width: 300,
                 height: 250,
                 child: SfPdfViewer.network(
-                  "https://magic-sign.cloud/v_ar/web/MSlibrary/${widget.media.storedAs}",
+                  "${loginController.baseUrl}/web/MSlibrary/${widget.media.storedAs}",
                 ),
               ),
           ],

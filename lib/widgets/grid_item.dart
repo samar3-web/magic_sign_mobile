@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:get/get.dart';
+import 'package:magic_sign_mobile/controller/loginController.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:magic_sign_mobile/controller/connectionController.dart';
 import 'package:magic_sign_mobile/controller/mediaController.dart';
 import 'package:magic_sign_mobile/model/Media.dart';
 import 'package:magic_sign_mobile/screens/media_screen/MediaDialog.dart';
 
-class GridItem extends StatelessWidget {
+class GridItem extends StatefulWidget {
   final List<Media> mediaList;
   final int index;
   final Function(Media) onLongPress;
@@ -19,7 +21,14 @@ class GridItem extends StatelessWidget {
     required this.onAddToTimeline,
   });
 
-  Media get media => mediaList[index];
+  @override
+  State<GridItem> createState() => _GridItemState();
+}
+
+class _GridItemState extends State<GridItem> {
+  Media get media => widget.mediaList[widget.index];
+  final LoginController loginController = Get.find();
+  String get apiUrl => loginController.baseUrl;
 
   String getFileType() {
     String mediaType = media.mediaType.toLowerCase();
@@ -71,15 +80,15 @@ class GridItem extends StatelessWidget {
           context: context,
           builder: (BuildContext context) {
             return MediaDialog(
-              mediaList: mediaList,
-              initialIndex: index,
-              onAddToTimeline: onAddToTimeline,
+              mediaList: widget.mediaList,
+              initialIndex: widget.index,
+              onAddToTimeline: widget.onAddToTimeline,
             );
           },
         );
       },
       onLongPress: () {
-        onLongPress(media);
+        widget.onLongPress(media);
       },
       child: FutureBuilder<String>(
         future: getThumbnailUrl(),
@@ -123,7 +132,7 @@ class GridItem extends StatelessWidget {
                       child: getFileType() == 'image'
                           ? CachedNetworkImage(
                               imageUrl:
-                                  "https://magic-sign.cloud/v_ar/web/MSlibrary/${media.storedAs}",
+                                  "${loginController.baseUrl}/web/MSlibrary/${media.storedAs}",
                               placeholder: (context, url) =>
                                   Center(child: CircularProgressIndicator()),
                               errorWidget: (context, url, error) =>

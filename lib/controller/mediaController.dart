@@ -16,7 +16,6 @@ import 'package:path/path.dart' as path;
 import '../sqlitedb/magic_sign_db.dart';
 
 class MediaController extends GetxController {
-  final String apiUrl = "https://magic-sign.cloud/v_ar/web/api/library";
   var isConnected = false;
   var isLoading = false.obs;
   var mediaList = <Media>[].obs;
@@ -28,6 +27,8 @@ class MediaController extends GetxController {
   TextEditingController name = TextEditingController();
   TextEditingController duration = TextEditingController();
   LoginController loginController = Get.put(LoginController());
+
+  String get apiUrl => '${loginController.baseUrl}/web/api/library';
 
   Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -64,6 +65,7 @@ class MediaController extends GetxController {
             'Cache-Control': 'no-cache',
           },
         );
+        print('media get : $apiUrl');
 
         if (response.statusCode == 200) {
           var jsonData = (json.decode(response.body) as List)
@@ -119,7 +121,7 @@ class MediaController extends GetxController {
     String? accessToken = await getAccessToken();
 
     final response = await http.get(
-      Uri.parse('https://magic-sign.cloud/v_ar/web/MSlibrary/$storedAs'),
+      Uri.parse('${loginController.baseUrl}/web/MSlibrary/$storedAs'),
       headers: {
         'Authorization': 'Bearer $accessToken',
       },
@@ -294,7 +296,7 @@ class MediaController extends GetxController {
       String? accessToken = await getAccessToken();
 
       http.Response response = await http.put(
-        Uri.parse('https://magic-sign.cloud/v_ar/web/api/library/$mediaId'),
+        Uri.parse('${loginController.baseUrl}/web/api/library/$mediaId'),
         body: body,
         headers: {
           'Authorization': 'Bearer $accessToken',
@@ -319,7 +321,7 @@ class MediaController extends GetxController {
         Map<String, dynamic> body = {'forceDelete': '1'};
         String? accessToken = await getAccessToken();
         http.Response response = await http.delete(
-          Uri.parse('https://magic-sign.cloud/v_ar/web/api/library/$mediaId'),
+        Uri.parse('${loginController.baseUrl}/web/api/library/$mediaId'),
           body: body,
           headers: {
             'Authorization': 'Bearer $accessToken',
@@ -328,7 +330,7 @@ class MediaController extends GetxController {
         );
 
         if (response.statusCode == 204) {
-        await MagicSignDB().deleteMedia(mediaId);
+          await MagicSignDB().deleteMedia(mediaId);
           getMedia();
         } else {
           print('response status code not 204');

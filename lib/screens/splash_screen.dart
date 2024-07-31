@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/screens/home_screen/home_screen.dart';
 import 'package:magic_sign_mobile/screens/login_screen/login_screen.dart';
+import 'package:magic_sign_mobile/screens/preLogin_screen/PreLoginScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
 
@@ -38,7 +39,7 @@ class _splashScreenState extends State<splashScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(seconds: 2), () {
-        Get.off(() => isLoggedIn ? const HomeScreen() : const LoginScreen());
+        Get.off(() => isLoggedIn ? const HomeScreen() : const Preloginscreen());
       });
     });
 

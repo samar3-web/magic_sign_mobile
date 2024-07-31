@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:magic_sign_mobile/controller/loginController.dart';
 import 'package:magic_sign_mobile/model/AssignedMedia.dart';
 import 'package:video_player/video_player.dart';
 
@@ -13,13 +15,15 @@ class VideoPlayerWidget extends StatefulWidget {
 
 class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   late VideoPlayerController _controller;
+  final LoginController loginController = Get.find();
+  String get apiUrl => loginController.baseUrl;
 
   @override
   void initState() {
     super.initState();
 
     _controller = VideoPlayerController.networkUrl(Uri.parse(
-        "https://magic-sign.cloud/v_ar/web/MSlibrary/${widget.media.mediaID}"))..initialize().then((v)=>
+        "${loginController.baseUrl}/web/MSlibrary/${widget.media.mediaID}"))..initialize().then((v)=>
         setState(() {}));
 
     _controller.play();

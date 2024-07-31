@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:magic_sign_mobile/controller/loginController.dart';
 import 'package:magic_sign_mobile/controller/mediaController.dart';
 import 'package:magic_sign_mobile/model/AssignedMedia.dart';
 import 'package:magic_sign_mobile/widgets/VideoPlayerWidget.dart';
@@ -13,6 +15,9 @@ class Timelinewidget extends StatefulWidget {
 }
 
 class _TimelinewidgetState extends State<Timelinewidget> {
+
+    final LoginController loginController = Get.find();
+  String get apiUrl => loginController.baseUrl;
 
    String getFileType(AssignedMedia media) {
     String mediaType = media.type.toLowerCase();
@@ -74,7 +79,7 @@ class _TimelinewidgetState extends State<Timelinewidget> {
           return widget.fileType == 'image'
               ? Center(
                   child: Image.network(
-                    "https://magic-sign.cloud/v_ar/web/MSlibrary/${widget.media.mediaID}",
+                    "${loginController.baseUrl}/web/MSlibrary/${widget.media.mediaID}",
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
                       return Center(

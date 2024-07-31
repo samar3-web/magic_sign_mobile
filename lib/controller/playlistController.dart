@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_rx/get_rx.dart';
 import 'package:magic_sign_mobile/controller/connectionController.dart';
+import 'package:magic_sign_mobile/controller/loginController.dart';
 import 'package:magic_sign_mobile/model/Playlist.dart';
 import 'package:magic_sign_mobile/model/Timeline.dart';
 import 'package:magic_sign_mobile/model/Zone.dart';
@@ -13,8 +14,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class PlaylistController extends GetxController {
-  final String apiUrl =
-      "https://magic-sign.cloud/v_ar/web/api/layout?embed=regions,playlists";
   var playlistList = <Playlist>[].obs;
   RxList<Timeline> timelines = <Timeline>[].obs;
   var isLoading = false.obs;
@@ -24,6 +23,9 @@ class PlaylistController extends GetxController {
   var originalPlaylistList = <Playlist>[].obs;
   var currentPage = 0.obs;
   final int pageSize = 20;
+
+ LoginController loginController = Get.put(LoginController());
+  String get apiUrl => loginController.baseUrl;
 
   @override
   void onInit() {
@@ -54,7 +56,7 @@ class PlaylistController extends GetxController {
         }
 
         final response = await http.get(
-          Uri.parse('$apiUrl?start=$start&length=$length'),
+          Uri.parse('${loginController.baseUrl}/web/api/layout?embed=regions,playlists?start=$start&length=$length'),
           headers: {
             'Authorization': 'Bearer $accessToken',
             'Content-Type': 'application/json',
@@ -111,7 +113,7 @@ class PlaylistController extends GetxController {
       final request = http.MultipartRequest(
         'POST',
         Uri.parse(
-            'https://magic-sign.cloud/v_ar/web/api/playlist/library/assign/$playlistId'),
+            '${loginController.baseUrl}/web/api/playlist/library/assign/$playlistId'),
       );
 
       request.headers['Content-Type'] = 'application/x-www-form-urlencoded';
@@ -142,7 +144,7 @@ class PlaylistController extends GetxController {
     try {
       String? accessToken = await getAccessToken();
       String url =
-          'https://magic-sign.cloud/v_ar/web/api/objects_timeline.php?layoutId=$layoutId';
+          '${loginController.baseUrl}/web/api/objects_timeline.php?layoutId=$layoutId';
       print('Request URL: $url');
 
       http.Response response = await http.get(
@@ -179,7 +181,7 @@ class PlaylistController extends GetxController {
 
   Future<Map<String, List<Zone>>> fetchZones(int layoutId) async {
     var url = Uri.parse(
-        'https://magic-sign.cloud/v_ar/web/api/dimensions_timeline.php?layoutId=$layoutId');
+        '${loginController.baseUrl}/web/api/dimensions_timeline.php?layoutId=$layoutId');
     var response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -207,7 +209,7 @@ class PlaylistController extends GetxController {
       try {
         String? accessToken = await getAccessToken();
         final response = await http.post(
-          Uri.parse('https://magic-sign.cloud/v_ar/web/api/layout'),
+          Uri.parse('${loginController.baseUrl}/web/api/layout'),
           body: {
             'name': name,
             if (description != null) 'description': description,
@@ -251,7 +253,7 @@ class PlaylistController extends GetxController {
 
       String? accessToken = await getAccessToken();
       http.Response response = await http.put(
-        Uri.parse('https://magic-sign.cloud/v_ar/web/api/layout/$layoutId'),
+        Uri.parse('${loginController.baseUrl}/web/api/layout/$layoutId'),
         body: body,
         headers: {
           'Authorization': 'Bearer $accessToken',
@@ -276,7 +278,7 @@ class PlaylistController extends GetxController {
     try {
       String? accessToken = await getAccessToken();
       http.Response response = await http.delete(
-        Uri.parse('https://magic-sign.cloud/v_ar/web/api/layout/$layoutId'),
+        Uri.parse('${loginController.baseUrl}/web/api/layout/$layoutId'),
         headers: {
           'Authorization': 'Bearer $accessToken',
         },
@@ -310,7 +312,7 @@ class PlaylistController extends GetxController {
       }
 
       final response = await http.get(
-        Uri.parse('https://magic-sign.cloud/v_ar/web/api/layout?layout=$value'),
+        Uri.parse('${loginController.baseUrl}/web/api/layout?layout=$value'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -362,7 +364,7 @@ class PlaylistController extends GetxController {
       print('Request Body');
       print(body);
       http.Response response = await http.post(
-        Uri.parse('https://magic-sign.cloud/v_ar/web/api/schedule'),
+        Uri.parse('${loginController.baseUrl}/web/api/schedule'),
         body: body,
         headers: {
           'Authorization': 'Bearer $accessToken',
@@ -401,7 +403,7 @@ Future<void> fetchExistingNames() async {
     try {
       String? accessToken = await getAccessToken();
       final response = await http.get(
-        Uri.parse('https://magic-sign.cloud/v_ar/web/api/layout'), 
+        Uri.parse('${loginController.baseUrl}/web/api/layout'), 
         headers: {
           'Authorization': 'Bearer $accessToken',
         },

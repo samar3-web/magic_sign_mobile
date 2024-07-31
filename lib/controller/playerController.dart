@@ -14,10 +14,12 @@ import 'package:http/http.dart' as http;
 class PlayerController extends GetxController {
   var playerList = <Player>[].obs;
   var displayGroupList = <DisplayGroup>[].obs;
-  String apiUrl = 'https://magic-sign.cloud/v_ar/web/api/displaygroup';
   var selectedPlaylist = ''.obs;
   LoginController loginController = Get.put(LoginController());
 
+  String get apiUrl => loginController.baseUrl;
+
+  
   @override
   void onInit() {
     fetchData();
@@ -31,7 +33,6 @@ class PlayerController extends GetxController {
   }
 
   fetchData() async {
-    String apiUrl = 'https://magic-sign.cloud/v_ar/web/api/display-ms';
     var isConnected = await Connectioncontroller.isConnected();
     if (isConnected) {
       try {
@@ -42,7 +43,7 @@ class PlayerController extends GetxController {
         }
 
         http.Response response = await http.get(
-          Uri.parse(apiUrl),
+      Uri.parse('${loginController.baseUrl}/web/api/display-ms'),
           headers: {
             'Authorization': 'Bearer $accessToken',
             'Content-Type': 'application/json',
@@ -94,7 +95,6 @@ class PlayerController extends GetxController {
   }
 
   Future<List<Map<String, dynamic>>> fetch() async {
-    String apiUrl = 'https://magic-sign.cloud/v_ar/web/api/display-ms';
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult.contains(ConnectivityResult.mobile) ||
         connectivityResult.contains(ConnectivityResult.wifi)) {
@@ -110,7 +110,7 @@ class PlayerController extends GetxController {
         }
 
         http.Response response = await http.get(
-          Uri.parse(apiUrl),
+      Uri.parse('${loginController.baseUrl}/web/api/display-ms'),
           headers: {
             'Authorization': 'Bearer $accessToken',
             'Content-Type': 'application/json',
@@ -165,7 +165,7 @@ class PlayerController extends GetxController {
     }
     try {
       http.Response response = await http.get(
-        Uri.parse(apiUrl),
+        Uri.parse('${loginController.baseUrl}/web/api/displaygroup'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -203,8 +203,6 @@ class PlayerController extends GetxController {
   }
 
   Future<void> authorizePlayer(int displayId) async {
-    final url =
-        'https://magic-sign.cloud/v_ar/web/api/display-ms/authorise/$displayId';
     String? accessToken = await getAccessToken();
     if (accessToken == null) {
       Get.snackbar(
@@ -215,7 +213,7 @@ class PlayerController extends GetxController {
     }
     try {
       final response = await http.put(
-        Uri.parse(url),
+        Uri.parse('${loginController.baseUrl}/web/api/display-ms/authorise/$displayId'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -244,7 +242,7 @@ class PlayerController extends GetxController {
       return;
     }
     final String apiUrl =
-        "https://magic-sign.cloud/v_ar/web/api/display-ms/defaultlayout/$displayId";
+        "${loginController.baseUrl}/web/api/display-ms/defaultlayout/$displayId";
 
     try {
       Map<String, String> headers = {
@@ -309,7 +307,7 @@ class PlayerController extends GetxController {
       String? accessToken = await getAccessToken();
       http.Response response = await http.put(
         Uri.parse(
-            'https://magic-sign.cloud/v_ar/web/api/display-ms/$displayId'),
+            '${loginController.baseUrl}/web/api/display-ms/$displayId'),
         body: body,
         headers: {
           'Authorization': 'Bearer $accessToken',
@@ -333,7 +331,7 @@ class PlayerController extends GetxController {
       String? accessToken = await getAccessToken();
       http.Response response = await http.delete(
         Uri.parse(
-            'https://magic-sign.cloud/v_ar/web/api/display-ms/$displayId'),
+            '${loginController.baseUrl}/web/api/display-ms/$displayId'),
         headers: {
           'Authorization': 'Bearer $accessToken',
         },

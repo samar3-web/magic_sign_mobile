@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:get/get.dart';
 import 'package:get/get.dart';
+import 'package:magic_sign_mobile/controller/loginController.dart';
 import 'package:magic_sign_mobile/model/PreviewTimeline.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -12,6 +13,10 @@ class Previewcontroller extends GetxController {
   var mediasList = <PreviewTimeline>[].obs;
   RxList<PreviewTimeline> timelines = <PreviewTimeline>[].obs;
 
+  LoginController loginController = Get.put(LoginController());
+
+  String get apiUrl => loginController.baseUrl;
+
   @override
   void onInit() {
     super.onInit();
@@ -21,19 +26,17 @@ class Previewcontroller extends GetxController {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('access_token');
     print(
-        'Access Token stored  *********: $accessToken'); // Print the access token
+        'Access Token stored  *********: $accessToken'); 
     return accessToken;
   }
 
   fetchAssignedMedia(int layoutId) async {
     try {
       String? accessToken = await getAccessToken();
-      String url =
-          'https://magic-sign.cloud/v_ar/web/api/objects_timeline.php?layoutId=$layoutId';
-      print('Request URL: $url');
+      
 
       http.Response response = await http.get(
-        Uri.parse(url),
+        Uri.parse('${loginController.baseUrl}//web/api/objects_timeline.php?layoutId=$layoutId'),
         headers: {'Authorization': 'Bearer $accessToken'},
       );
 
@@ -51,7 +54,8 @@ class Previewcontroller extends GetxController {
               throw Exception('Invalid timeline ID: $key');
             }
 
-            PreviewTimeline timeline = PreviewTimeline.fromJson(timelineId, value);
+            PreviewTimeline timeline =
+                PreviewTimeline.fromJson(timelineId, value);
             fetchedTimelines.add(timeline);
 
             print(

@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/controller/connectionController.dart';
+import 'package:magic_sign_mobile/controller/loginController.dart';
 import 'package:magic_sign_mobile/controller/playlistController.dart';
 import 'package:magic_sign_mobile/sqlitedb/magic_sign_db.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,11 +17,12 @@ class AddLayoutPopup extends StatefulWidget {
 
 class _AddLayoutPopupState extends State<AddLayoutPopup> {
   final PlaylistController playlistController = Get.find();
+  final LoginController loginController = Get.find();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   var isconnected = true;
+
   List<Map<String, dynamic>> templates = [];
-  var url = 'https://magic-sign.cloud//v_ar/web/theme/default/img';
   List<String> templateImages = [
     //midldle zone
     '/template/h1.png',
@@ -52,7 +54,10 @@ class _AddLayoutPopupState extends State<AddLayoutPopup> {
 
   initUrl() async {
     isconnected = await Connectioncontroller.isConnected();
-    url = isconnected ? url : "assets";
+    String url = isconnected
+        ? '${loginController.baseUrl}/web/theme/default/img'
+        : "assets";
+    print('url images : $url');
   }
 
   Future<String?> getAccessToken() async {
@@ -63,13 +68,13 @@ class _AddLayoutPopupState extends State<AddLayoutPopup> {
   }
 
   Future<void> getTemplate() async {
-      var  isconnected = await Connectioncontroller.isConnected();
+    var isconnected = await Connectioncontroller.isConnected();
 
     if (isconnected) {
       try {
         String? accessToken = await getAccessToken();
         final response = await http.get(
-          Uri.parse('https://magic-sign.cloud/v_ar/web/api/template'),
+          Uri.parse('${loginController.baseUrl}/web/api/template'),
           headers: {
             'Authorization': 'Bearer $accessToken',
           },
@@ -165,8 +170,15 @@ class _AddLayoutPopupState extends State<AddLayoutPopup> {
                   mainAxisSpacing: 8.0,
                 ),
                 itemCount: templates.length,
-                itemBuilder: (context, index) {
+                itemBuilder: (context, index)
+                 {
+                    // Construct the full URL
+      String imageUrl = '${loginController.baseUrl}/web/theme/default/img' + templates[index]["image"];
+
+      // Print the URL to the console for debugging
+      print('Image URL: $imageUrl');
                   return GestureDetector(
+                    
                     onTap: () {
                       setState(() {
                         selectedLayoutId = templates[index]["layoutId"];
@@ -175,19 +187,23 @@ class _AddLayoutPopupState extends State<AddLayoutPopup> {
                     child: Container(
                       decoration: BoxDecoration(
                         border: Border.all(
-                          color: selectedLayoutId == templates[index]["layoutId"]
-                              ? Colors.blue
-                              : Colors.transparent,
+                          color:
+                              selectedLayoutId == templates[index]["layoutId"]
+                                  ? Colors.blue
+                                  : Colors.transparent,
                           width: 2,
                         ),
                       ),
+
                       child: isconnected
                           ? Image.network(
-                              url + templates[index]["image"],
+                              imageUrl +
+                                  templates[index]["image"],
                               fit: BoxFit.fill,
                             )
                           : Image.asset(
-                              url + templates[index]["image"],
+                             imageUrl +
+                                  templates[index]["image"],
                               fit: BoxFit.fill,
                             ),
                     ),

@@ -3,6 +3,7 @@ import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
+import 'package:magic_sign_mobile/controller/loginController.dart';
 import 'package:magic_sign_mobile/controller/mediaController.dart';
 import 'package:magic_sign_mobile/model/Media.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
@@ -24,14 +25,15 @@ class MediaDialog extends StatefulWidget {
 }
 
 class _MediaDialogState extends State<MediaDialog> {
- 
-
   PageController? _pageController;
   VideoPlayerController? _videoPlayerController;
   ChewieController? _chewieController;
   bool _isVideoPlayerInitialized = false;
   late MediaController mediaController;
   late String _currentMediaName;
+
+  final LoginController loginController = Get.find();
+  String get apiUrl => loginController.baseUrl;
 
   @override
   void initState() {
@@ -47,7 +49,7 @@ class _MediaDialogState extends State<MediaDialog> {
 
   void _initializeVideoPlayer(Media media) {
     _videoPlayerController = VideoPlayerController.network(
-      'https://magic-sign.cloud/v_ar/web/MSlibrary/${media.storedAs}',
+      '${loginController.baseUrl}/web/MSlibrary/${media.storedAs}',
     )..initialize().then((_) {
         setState(() {
           _chewieController = ChewieController(
@@ -88,7 +90,6 @@ class _MediaDialogState extends State<MediaDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Row(
-        
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           IconButton(
@@ -125,15 +126,13 @@ class _MediaDialogState extends State<MediaDialog> {
                 children: [
                   if (media.mediaType.toLowerCase() == 'image')
                     CachedNetworkImage(
-                              imageUrl:
-                                  "https://magic-sign.cloud/v_ar/web/MSlibrary/${media.storedAs}",
-                              placeholder: (context, url) =>
-                                  Center(child: CircularProgressIndicator()),
-                              errorWidget: (context, url, error) =>
-                                  Icon(Icons.error),
-                              fit: BoxFit.cover,
-                           
-                            ),
+                      imageUrl:
+                          "${loginController.baseUrl}/web/MSlibrary/${media.storedAs}",
+                      placeholder: (context, url) =>
+                          Center(child: CircularProgressIndicator()),
+                      errorWidget: (context, url, error) => Icon(Icons.error),
+                      fit: BoxFit.cover,
+                    ),
                   if (media.mediaType.toLowerCase() == 'video')
                     _isVideoPlayerInitialized
                         ? Column(
@@ -170,7 +169,7 @@ class _MediaDialogState extends State<MediaDialog> {
                       width: 300,
                       height: 250,
                       child: SfPdfViewer.network(
-                        "https://magic-sign.cloud/v_ar/web/MSlibrary/${media.storedAs}",
+                        "${loginController.baseUrl}/web/MSlibrary/${media.storedAs}",
                       ),
                     ),
                   SizedBox(height: 10),
