@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:magic_sign_mobile/Theme/ThemeService.dart';
+import 'package:magic_sign_mobile/api_config.dart';
 import 'package:magic_sign_mobile/controller/ThemeController.dart';
 import 'package:magic_sign_mobile/controller/loginController.dart';
 import 'package:magic_sign_mobile/screens/preLogin_screen/PreLoginScreen.dart';
@@ -17,7 +18,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final ThemeController themeController = Get.find();
-  final LoginController loginController = Get.find();
+  final LoginController loginController = Get.put(LoginController());
 
   List<String> serverUrls = [];
   String? activeServerUrl;
@@ -33,12 +34,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       serverUrls = prefs.getStringList('base_url') ?? [];
       activeServerUrl = prefs.getString('active_server_url') ??
-          (serverUrls.isNotEmpty
-              ? serverUrls.first
-              : 'Aucun serveur configuré');
+          (serverUrls.isNotEmpty ? serverUrls.last : 'Aucun serveur configuré');
     });
     // Print the length of the stored base URL list
     print('Length of stored base URL list: ${serverUrls.length}');
+    print('Active Server URL after load: $activeServerUrl');
   }
 
   Future<void> _addServer() async {
@@ -58,12 +58,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await prefs.setString('active_server_url', url);
     setState(() {
       activeServerUrl = url;
+      ApiConfig.activeServerUrl = url;
     });
   }
 
-  void _connectToServer() {
+  void _connectToServer() async {
     if (activeServerUrl != null && activeServerUrl!.isNotEmpty) {
-      Get.snackbar('Connecté', 'Connexion au serveur $activeServerUrl réussie');
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      List<String> baseUrlList = prefs.getStringList('base_url') ?? [];
+      List<String> clientIdList = prefs.getStringList('client_id') ?? [];
+      List<String> clientSecretList =
+          prefs.getStringList('client_secret') ?? [];
+
+      print('Stored base URLs: $baseUrlList');
+      print('Stored client IDs: $clientIdList');
+      print('Stored client Secrets: $clientSecretList');
+      print('Active Server URL: $activeServerUrl');
+
+      int serverIndex = baseUrlList.indexOf(activeServerUrl!);
+      print('Server Index: $serverIndex');
+
+      if (serverIndex != -1) {
+        String? clientId = clientIdList[serverIndex];
+        String? clientSecret = clientSecretList[serverIndex];
+
+        print('Retrieved client ID: $clientId');
+        print('Retrieved client Secret: $clientSecret');
+
+        loginController.username.text =
+            prefs.getString('${activeServerUrl}_username') ?? '';
+        loginController.password.text =
+            prefs.getString('${activeServerUrl}_password') ?? '';
+
+        print('Retrieved username: ${loginController.username.text}');
+        print('Retrieved password: ${loginController.password.text}');
+
+        ApiConfig.clientId = [clientId];
+        ApiConfig.clientSecret = [clientSecret];
+        ApiConfig.baseUrl = [activeServerUrl!];
+
+        await loginController.login();
+        Get.snackbar(
+            'Connecté', 'Connexion au serveur $activeServerUrl réussie');
+      } else {
+        Get.snackbar('Erreur',
+            'Impossible de retrouver les identifiants pour ce serveur');
+      }
     } else {
       Get.snackbar('Erreur', 'Aucun serveur configuré');
     }
@@ -132,6 +173,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         : null,
                     onTap: () async {
                       await _saveActiveServerUrl(serverUrls[index]);
+                      setState(() {
+                        activeServerUrl = serverUrls[index];
+                      });
+                      _connectToServer();
                     },
                   );
                 },

@@ -81,11 +81,22 @@ class LoginController extends GetxController {
   }
 
   String get baseUrl {
+    String? activeServerUrl = ApiConfig.activeServerUrl;
+
+    if (activeServerUrl != null && activeServerUrl.isNotEmpty) {
+      print('Using active server URL: $activeServerUrl');
+      return activeServerUrl;
+    }
+
     List<String> baseUrls = ApiConfig.baseUrl ?? [];
     if (baseUrls.isNotEmpty) {
+      print('Using last base URL: ${baseUrls.last}');
       return baseUrls.last;
     }
-    return baseUrlController.text.trim();
+
+    String fallbackUrl = baseUrlController.text.trim();
+    print('Using fallback base URL: $fallbackUrl');
+    return fallbackUrl;
   }
 
   Future<void> _loadBaseUrl() async {
@@ -148,8 +159,7 @@ class LoginController extends GetxController {
         var expiresIn = data['expires_in'];
         var expiryDate = DateTime.now().add(Duration(seconds: expiresIn));
         await saveAccessToken(accessToken, expiryDate);
-        await saveCredentials(username.text, password.text);
-
+        await saveCredentials(username.text, password.text, baseUrl);
         print('**********response data *********');
         print(accessToken);
         print(tokenType);
@@ -281,10 +291,11 @@ class LoginController extends GetxController {
     await prefs.setString('expiry_date', expiryDate.toIso8601String());
   }
 
-  Future<void> saveCredentials(String username, String password) async {
+  Future<void> saveCredentials(
+      String username, String password, String baseUrl) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('username', username);
-    await prefs.setString('password', password);
+    await prefs.setString('${baseUrl}_username', username);
+    await prefs.setString('${baseUrl}_password', password);
   }
 
   Future<String?> getAccessToken() async {
@@ -313,62 +324,77 @@ class LoginController extends GetxController {
     print('Access Token cleared');
   }
 
-  Future<List<dynamic>> fetchUsers() async {
-    await _loadBaseUrl();
+ Future<List<dynamic>> fetchUsers() async {
+  await _loadBaseUrl();
 
-    if (ApiConfig.baseUrl!.isEmpty) {
-      throw Exception('Base URL is not set');
-    }
+  // Get the active server URL from ApiConfig
+  String? activeServerUrl = ApiConfig.activeServerUrl;
 
-    String? accessToken = await getAccessToken();
-
-    if (accessToken == null) {
-      await refreshAccessToken();
-      accessToken = await getAccessToken();
-    }
-
-    // Assuming you want to use only the last base URL
-    String baseUrl = ApiConfig.baseUrl!.last;
-    var url = _getFullUrl(baseUrl, '/web/api/user');
-    final response = await http.get(Uri.parse(url), headers: {
-      'Authorization': 'Bearer $accessToken',
-    });
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+  // If no active server URL is set, fall back to the last base URL
+  if (activeServerUrl == null || activeServerUrl.isEmpty) {
+    List<String> baseUrls = ApiConfig.baseUrl ?? [];
+    if (baseUrls.isNotEmpty) {
+      activeServerUrl = baseUrls.last;
     } else {
-      throw Exception('Failed to load users from $baseUrl');
+      throw Exception('Base URL is not set and no default URL is available');
     }
   }
 
-  Future<Map<String, dynamic>> getUser() async {
-    await _loadBaseUrl();
+  String? accessToken = await getAccessToken();
 
-    if (ApiConfig.baseUrl!.isEmpty) {
-      throw Exception('Base URL is not set');
-    }
+  if (accessToken == null) {
+    await refreshAccessToken();
+    accessToken = await getAccessToken();
+  }
 
-    String? accessToken = await getAccessToken();
+  var url = _getFullUrl(activeServerUrl, '/web/api/user');
+  final response = await http.get(Uri.parse(url), headers: {
+    'Authorization': 'Bearer $accessToken',
+  });
 
-    if (accessToken == null) {
-      await refreshAccessToken();
-      accessToken = await getAccessToken();
-    }
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body);
+  } else {
+    throw Exception('Failed to load users from $activeServerUrl');
+  }
+}
 
-    // Assuming you want to use only the last base URL
-    String baseUrl = ApiConfig.baseUrl!.last;
-    var url = _getFullUrl(baseUrl, '/web/api/user/me');
-    final response = await http.get(Uri.parse(url), headers: {
-      'Authorization': 'Bearer $accessToken',
-    });
+ Future<Map<String, dynamic>> getUser() async {
+  await _loadBaseUrl();
 
-    if (response.statusCode == 200) {
-      print(response.body);
-      return jsonDecode(response.body);
+  // Get the active server URL from ApiConfig
+  String? activeServerUrl = ApiConfig.activeServerUrl;
+
+  // If no active server URL is set, fall back to the last base URL
+  if (activeServerUrl == null || activeServerUrl.isEmpty) {
+    List<String> baseUrls = ApiConfig.baseUrl ?? [];
+    if (baseUrls.isNotEmpty) {
+      activeServerUrl = baseUrls.last;
     } else {
-      throw Exception('Failed to load user from $baseUrl');
+      throw Exception('Base URL is not set and no default URL is available');
     }
   }
+
+  String? accessToken = await getAccessToken();
+
+  if (accessToken == null) {
+    await refreshAccessToken();
+    accessToken = await getAccessToken();
+  }
+
+  var url = _getFullUrl(activeServerUrl, '/web/api/user/me');
+  final response = await http.get(Uri.parse(url), headers: {
+    'Authorization': 'Bearer $accessToken',
+  });
+
+  if (response.statusCode == 200) {
+    print(response.body);
+    return jsonDecode(response.body);
+  } else {
+    throw Exception('Failed to load user from $activeServerUrl');
+  }
+}
+
 
   logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

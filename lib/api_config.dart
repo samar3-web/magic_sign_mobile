@@ -2,6 +2,7 @@ class ApiConfig {
   static List<String>? baseUrl;
   static List<String>? clientId;
   static List<String>? clientSecret;
+  static String? activeServerUrl;
 
   static void setConfiguration(List<String> baseUrl, List<String> clientId, List<String> clientSecret) {
     ApiConfig.baseUrl = baseUrl;
