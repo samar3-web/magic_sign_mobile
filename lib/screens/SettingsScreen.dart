@@ -19,31 +19,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final ThemeController themeController = Get.find();
   final LoginController loginController = Get.find();
 
-  String serverUrl = '';
+  List<String> serverUrls = [];
+  String? activeServerUrl;
 
   @override
   void initState() {
     super.initState();
-    _loadServerUrl();
+    _loadServerUrls();
   }
 
-  Future<void> _loadServerUrl() async {
+  Future<void> _loadServerUrls() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      serverUrl = prefs.getString('base_url') ?? 'Aucun serveur configuré';
+      serverUrls = prefs.getStringList('base_url') ?? [];
+      activeServerUrl = prefs.getString('active_server_url') ??
+          (serverUrls.isNotEmpty
+              ? serverUrls.first
+              : 'Aucun serveur configuré');
+    });
+    // Print the length of the stored base URL list
+    print('Length of stored base URL list: ${serverUrls.length}');
+  }
+
+  Future<void> _addServer() async {
+    await loginController.clearApiConfiguration();
+    // Navigate to the PreLoginScreen to add a new server
+    await Get.to(() => Preloginscreen());
+    // After returning, update the server list
+    await _loadServerUrls();
+  }
+
+  Future<void> _saveActiveServerUrl(String? url) async {
+    if (url == null || url.isEmpty) {
+      return;
+    }
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('active_server_url', url);
+    setState(() {
+      activeServerUrl = url;
     });
   }
 
-  Future<void> _changeServer() async {
-    await loginController.clearApiConfiguration();
-
-    Get.to(Preloginscreen());
-  }
-
   void _connectToServer() {
-    // Ajoutez ici votre logique pour se connecter au serveur actuel
-    // Par exemple, vous pouvez appeler une méthode de connexion dans votre contrôleur
-    Get.snackbar('Connecté', 'Connexion au serveur $serverUrl réussie');
+    if (activeServerUrl != null && activeServerUrl!.isNotEmpty) {
+      Get.snackbar('Connecté', 'Connexion au serveur $activeServerUrl réussie');
+    } else {
+      Get.snackbar('Erreur', 'Aucun serveur configuré');
+    }
   }
 
   @override
@@ -74,23 +97,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             SizedBox(height: 8),
             Text(
-              serverUrl,
+              activeServerUrl ?? 'Aucun serveur configuré',
               style: TextStyle(fontSize: 15),
             ),
             SizedBox(height: 20),
             Wrap(
+              spacing: 8,
               children: [
                 ElevatedButton.icon(
-                  icon: Icon(Icons.swap_horiz),
-                  label: Text('Changer de serveur'),
-                  onPressed: _changeServer,
+                  icon: Icon(Icons.add),
+                  label: Text('Ajouter serveur'),
+                  onPressed: _addServer,
                 ),
-                /*ElevatedButton.icon(
+                ElevatedButton.icon(
                   icon: Icon(Icons.cloud_done),
                   label: Text('Se connecter'),
                   onPressed: _connectToServer,
-                ),*/
+                ),
               ],
+            ),
+            SizedBox(height: 20),
+            Expanded(
+              child: ListView.builder(
+                itemCount: serverUrls.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(
+                      serverUrls[index],
+                      style:
+                          TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                    ),
+                    trailing: activeServerUrl == serverUrls[index]
+                        ? Icon(Icons.check, color: Colors.green)
+                        : null,
+                    onTap: () async {
+                      await _saveActiveServerUrl(serverUrls[index]);
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),

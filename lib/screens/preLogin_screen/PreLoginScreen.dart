@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:magic_sign_mobile/constants.dart';
 import 'package:magic_sign_mobile/controller/loginController.dart';
 import 'package:magic_sign_mobile/screens/login_screen/login_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Preloginscreen extends StatefulWidget {
   const Preloginscreen({super.key});
@@ -13,6 +14,18 @@ class Preloginscreen extends StatefulWidget {
 
 class _PreloginscreenState extends State<Preloginscreen> {
   final LoginController controller = Get.put(LoginController());
+
+  @override
+  void initState() {
+    super.initState();
+    _printServerUrlsLength();
+  }
+
+  Future<void> _printServerUrlsLength() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> serverUrls = prefs.getStringList('base_url') ?? [];
+    print('Length of stored base URL list: ${serverUrls.length}');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -133,10 +146,8 @@ class _PreloginscreenState extends State<Preloginscreen> {
               ),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  controller.setApiConfiguration();
-                  
-
+                onPressed: ()async {
+                 await controller.setApiConfiguration();
                   Get.to(LoginScreen());
                 },
                 style: ElevatedButton.styleFrom(

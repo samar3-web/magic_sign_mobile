@@ -11,6 +11,7 @@ import 'package:magic_sign_mobile/screens/login_screen/login_screen.dart';
 class LoginController extends GetxController {
   TextEditingController username = TextEditingController();
   TextEditingController password = TextEditingController();
+
   TextEditingController baseUrlController = TextEditingController();
   TextEditingController clientIdController = TextEditingController();
   TextEditingController clientSecretController = TextEditingController();
@@ -23,7 +24,9 @@ class LoginController extends GetxController {
     _loadBaseUrl();
   }
 
-  void setApiConfiguration() {
+  Future<void> setApiConfiguration() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
     String baseUrl = baseUrlController.text.trim();
     String clientId = clientIdController.text.trim();
     String clientSecret = clientSecretController.text.trim();
@@ -34,41 +37,70 @@ class LoginController extends GetxController {
       return;
     }
 
-    ApiConfig.setConfiguration(baseUrl, clientId, clientSecret);
+    List<String> baseUrlList = prefs.getStringList('base_url') ?? [];
+    List<String> clientIdList = prefs.getStringList('client_id') ?? [];
+    List<String> clientSecretList = prefs.getStringList('client_secret') ?? [];
+
+    // Append new server information
+    baseUrlList.add(baseUrl);
+    clientIdList.add(clientId);
+    clientSecretList.add(clientSecret);
+
+    // Store updated lists
+    await prefs.setStringList('base_url', baseUrlList);
+    await prefs.setStringList('client_id', clientIdList);
+    await prefs.setStringList('client_secret', clientSecretList);
+
+    // Initialize ApiConfig
+    ApiConfig.baseUrl = baseUrlList;
+    ApiConfig.clientId = clientIdList;
+    ApiConfig.clientSecret = clientSecretList;
+
+    print("Base URLs: ${ApiConfig.baseUrl}");
+    print("Client IDs: ${ApiConfig.clientId}");
+    print("Client Secrets: ${ApiConfig.clientSecret}");
   }
 
-  String _getFullUrl(String endpoint) {
-    return Uri.parse('${ApiConfig.baseUrl}$endpoint').toString();
+  String _getFullUrl(String baseUrl, String endpoint) {
+    if (!baseUrl.startsWith(RegExp(r'https?://'))) {
+      throw Exception('Base URL does not start with a valid scheme');
+    }
+
+    if (!baseUrl.endsWith('/')) {
+      baseUrl = '$baseUrl/';
+    }
+
+    if (endpoint.startsWith('/')) {
+      endpoint = endpoint.substring(1);
+    }
+
+    String fullUrl = '$baseUrl$endpoint';
+    print('Debug: Full URL = $fullUrl');
+
+    return Uri.parse(fullUrl).toString();
   }
 
-  String get baseUrl => baseUrlController.text;
-
-  Future<void> saveBaseUrl(
-      String url, String clientId, String clientSecret) async {
-    print('Saving base URL: $url');
-    print('Saving client ID: $clientId');
-    print('Saving client secret: $clientSecret');
-
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('base_url', url);
-    await prefs.setString('client_id', clientId);
-    await prefs.setString('client_secret', clientSecret);
+  String get baseUrl {
+    List<String> baseUrls = ApiConfig.baseUrl ?? [];
+    if (baseUrls.isNotEmpty) {
+      return baseUrls.last;
+    }
+    return baseUrlController.text.trim();
   }
 
   Future<void> _loadBaseUrl() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? url = prefs.getString('base_url');
-    String? clientId = prefs.getString('client_id');
-    String? clientSecret = prefs.getString('client_secret');
+    List<String>? url = prefs.getStringList('base_url');
+    List<String>? clientId = prefs.getStringList('client_id');
+    List<String>? clientSecret = prefs.getStringList('client_secret');
 
     if (url == null || clientId == null || clientSecret == null) {
       return;
     }
 
-    // Continue with setting values
-    baseUrlController.text = url;
-    clientIdController.text = clientId;
-    clientSecretController.text = clientSecret;
+    baseUrlController.text = url.join(', ');
+    clientIdController.text = clientId.join(', ');
+    clientSecretController.text = clientSecret.join(', ');
 
     ApiConfig.baseUrl = url;
     ApiConfig.clientId = clientId;
@@ -76,18 +108,26 @@ class LoginController extends GetxController {
   }
 
   Future<void> login() async {
-    setApiConfiguration();
+    if (ApiConfig.clientId == null || ApiConfig.clientId!.isEmpty) {
+      Get.snackbar('Configuration Error', 'Client ID is not set');
+      return;
+    }
+    if (ApiConfig.clientSecret == null || ApiConfig.clientSecret!.isEmpty) {
+      Get.snackbar('Configuration Error', 'Client Secret is not set');
+      return;
+    }
 
-    var url = _getFullUrl('/web/api/authorize/access_token');
+    String selectedBaseUrl = ApiConfig.baseUrl!.last;
+    String clientId = ApiConfig.clientId!.last;
+    String clientSecret = ApiConfig.clientSecret!.last;
+    var url = _getFullUrl(selectedBaseUrl, '/web/api/authorize/access_token');
+
     Map<String, dynamic> body = {
       "username": username.text,
       "password": password.text,
       "grant_type": "client_credentials",
-      "client_id": ApiConfig.clientId,
-      "client_secret": ApiConfig.clientSecret,
-      //"client_id": "xpFXul0aZEVcNbXZaMfMZS6XcUivtI5xhFFyBaps",
-      //"client_secret":
-      //  "6KtHovsZM52sW9dvYKhYTHXhTyCbEXWpyST5niIvtLKBQw8tiYai1xrCtGdimzTjIe7nUMVtPgY5KiK3WipDTDOxZl0De8AhOwzZI5bhFsEEwuQklXbU2xHH3lbiCdQiEFniqN2p0f2HCpOtzifABrJvgPsXNP12WrVuybdGv4Pj6IpcJflrrQ4spOwiwDOHr3boiQkA2tTthyV7yTjl8qctb4zNPnU7NHnMnuCYguE6hLATxIbvCY4Pz3yP0J"
+      "client_id": clientId,
+      "client_secret": clientSecret
     };
 
     var response = await http.post(
@@ -97,6 +137,7 @@ class LoginController extends GetxController {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
     );
+
     print(url);
 
     if (response.statusCode == 200) {
@@ -108,8 +149,7 @@ class LoginController extends GetxController {
         var expiryDate = DateTime.now().add(Duration(seconds: expiresIn));
         await saveAccessToken(accessToken, expiryDate);
         await saveCredentials(username.text, password.text);
-        await saveBaseUrl(baseUrlController.text, clientIdController.text,
-            clientSecretController.text);
+
         print('**********response data *********');
         print(accessToken);
         print(tokenType);
@@ -120,13 +160,16 @@ class LoginController extends GetxController {
 
         username.clear();
         password.clear();
+        baseUrlController.clear();
+        clientIdController.clear();
+        clientSecretController.clear();
 
         scheduleTokenRefresh(expiresIn);
       } catch (error) {
         print("Parsing Error: $error");
       }
     } else {
-      print("Login Failed");
+      print("Login Failed for $url");
       Get.snackbar('La connexion a échoué',
           'Nom d\'utilisateur ou mot de passe incorrect',
           backgroundColor: Colors.red, colorText: Colors.white);
@@ -147,47 +190,53 @@ class LoginController extends GetxController {
     isRefreshingToken = true;
 
     print('Attempting to refresh token...');
-    var url = _getFullUrl('/web/api/authorize/access_token');
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? username = prefs.getString('username');
     String? password = prefs.getString('password');
 
     if (username != null && password != null) {
-      Map<String, dynamic> body = {
-        "username": username,
-        "password": password,
-        "grant_type": "client_credentials",
-        "client_id": ApiConfig.clientId,
-        "client_secret": ApiConfig.clientSecret,
-      };
+      for (int i = 0; i < ApiConfig.baseUrl!.length; i++) {
+        var url = _getFullUrl(
+            ApiConfig.baseUrl![i], '/web/api/authorize/access_token');
+        String clientId = ApiConfig.clientId![i];
+        String clientSecret = ApiConfig.clientSecret![i];
 
-      var response = await http.post(
-        Uri.parse(url),
-        body: body,
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      );
+        Map<String, dynamic> body = {
+          "username": username,
+          "password": password,
+          "grant_type": "client_credentials",
+          "client_id": clientId,
+          "client_secret": clientSecret,
+        };
 
-      if (response.statusCode == 200) {
-        try {
-          var data = jsonDecode(response.body);
-          var accessToken = data['access_token'];
-          var tokenType = data['token_type'];
-          var expiresIn = data['expires_in'];
-          var expiryDate = DateTime.now().add(Duration(seconds: expiresIn));
-          await saveAccessToken(accessToken, expiryDate);
+        var response = await http.post(
+          Uri.parse(url),
+          body: body,
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        );
 
-          print('Token refreshed successfully');
-          print('New Access Token: $accessToken');
-          print('Expires In: $expiresIn seconds');
+        if (response.statusCode == 200) {
+          try {
+            var data = jsonDecode(response.body);
+            var accessToken = data['access_token'];
+            var expiresIn = data['expires_in'];
+            var expiryDate = DateTime.now().add(Duration(seconds: expiresIn));
+            await saveAccessToken(accessToken, expiryDate);
 
-          scheduleTokenRefresh(expiresIn);
-        } catch (error) {
-          print("Parsing Error: $error");
+            print('Token refreshed successfully for $url');
+            print('New Access Token: $accessToken');
+            print('Expires In: $expiresIn seconds');
+
+            scheduleTokenRefresh(expiresIn);
+            break;
+          } catch (error) {
+            print("Parsing Error: $error");
+          }
+        } else {
+          print("Token refresh failed for $url");
         }
-      } else {
-        print("Token refresh failed");
       }
     } else {
       print("Username or password not found in SharedPreferences");
@@ -197,7 +246,13 @@ class LoginController extends GetxController {
 
   Future<void> verifyCredentials(
       String accessToken, String username, String password) async {
-    var url = _getFullUrl('/web/api/login_ws/$username/$password');
+    if (ApiConfig.baseUrl == null || ApiConfig.baseUrl!.isEmpty) {
+      throw Exception('Base URL is not set');
+    }
+
+    String selectedBaseUrl = ApiConfig.baseUrl!.last;
+    var url =
+        _getFullUrl(selectedBaseUrl, '/web/api/login_ws/$username/$password');
     var response = await http.get(
       Uri.parse(url),
       headers: {
@@ -266,13 +321,15 @@ class LoginController extends GetxController {
     }
 
     String? accessToken = await getAccessToken();
-    var url = _getFullUrl('/web/api/user');
 
     if (accessToken == null) {
       await refreshAccessToken();
       accessToken = await getAccessToken();
     }
 
+    // Assuming you want to use only the last base URL
+    String baseUrl = ApiConfig.baseUrl!.last;
+    var url = _getFullUrl(baseUrl, '/web/api/user');
     final response = await http.get(Uri.parse(url), headers: {
       'Authorization': 'Bearer $accessToken',
     });
@@ -280,24 +337,27 @@ class LoginController extends GetxController {
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      throw Exception('Failed to load users');
+      throw Exception('Failed to load users from $baseUrl');
     }
   }
 
   Future<Map<String, dynamic>> getUser() async {
-    String? accessToken = await getAccessToken();
     await _loadBaseUrl();
 
     if (ApiConfig.baseUrl!.isEmpty) {
       throw Exception('Base URL is not set');
     }
-    var url = _getFullUrl('/web/api/user/me');
+
+    String? accessToken = await getAccessToken();
 
     if (accessToken == null) {
       await refreshAccessToken();
       accessToken = await getAccessToken();
     }
 
+    // Assuming you want to use only the last base URL
+    String baseUrl = ApiConfig.baseUrl!.last;
+    var url = _getFullUrl(baseUrl, '/web/api/user/me');
     final response = await http.get(Uri.parse(url), headers: {
       'Authorization': 'Bearer $accessToken',
     });
@@ -306,7 +366,7 @@ class LoginController extends GetxController {
       print(response.body);
       return jsonDecode(response.body);
     } else {
-      throw Exception('Failed to load user');
+      throw Exception('Failed to load user from $baseUrl');
     }
   }
 
@@ -326,9 +386,9 @@ class LoginController extends GetxController {
 
     await prefs.remove('username');
     await prefs.remove('password');
-    await prefs.remove('base_url');
-    await prefs.remove('client_id');
-    await prefs.remove('client_secret');
+    //await prefs.remove('base_url');
+    // await prefs.remove('client_id');
+    //await prefs.remove('client_secret');
     print('API Configuration cleared');
   }
 }
