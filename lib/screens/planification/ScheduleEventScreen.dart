@@ -81,7 +81,9 @@ class _ScheduleEventScreenState extends State<ScheduleEventScreen> {
         ),
       ),
       actions: <Widget>[
-        Expanded(
+        // Use a Container or SizedBox to set the width of the TextField
+        Container(
+          width: MediaQuery.of(context).size.width * 0.6,
           child: TextField(
             controller: fromDtController,
             style: TextStyle(
@@ -133,15 +135,18 @@ class _ScheduleEventScreenState extends State<ScheduleEventScreen> {
             ),
           ],
         ),
-        TextField(
-          controller: toDtController,
-          style: TextStyle(
-            fontSize: 17.0,
-            fontWeight: FontWeight.w300,
+        Container(
+          width: MediaQuery.of(context).size.width * 0.6,
+          child: TextField(
+            controller: toDtController,
+            style: TextStyle(
+              fontSize: 17.0,
+              fontWeight: FontWeight.w300,
+            ),
+            decoration: InputDecoration(
+                labelText: 'Date de fin (YYYY-MM-DD HH:MM:SS)',
+                labelStyle: TextStyle(color: Colors.black, fontSize: 12.0)),
           ),
-          decoration: InputDecoration(
-              labelText: 'Date de fin (YYYY-MM-DD HH:MM:SS)',
-              labelStyle: TextStyle(color: Colors.black, fontSize: 12.0)),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
